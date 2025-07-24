@@ -1,16 +1,8 @@
 /* ACIDWARP.H */
 
-#define VERSION "Acid Warp Version 4.10 (C)Copyright 1992, 1993 by Noah Spurrier and Mark Bilk\nSDL port by Boris Gjenero based on Linux port by Steven Wills"
+#define VERSION "Acid Warp Version 4.10 (C)Copyright 1992, 1993 by Noah Spurrier and Mark Bilk\nAndroid port by Matthew Zavislak, based on SDL port by Boris Gjenero, based on Linux port by Steven Wills"
 
 #define DIRECTN_CHANGE_PERIOD_IN_TICKS               256
-
-#ifdef EMSCRIPTEN
-#define ENABLE_WORKER
-#else /* !EMSCRIPTEN */
-/* Full screen doesn't work with Emscripten. Use F11 instead. */
-#define HAVE_FULLSCREEN
-#define ENABLE_THREADS
-#endif
 
 /* Palette types  */
 #define RGBW_PAL          	0
@@ -30,38 +22,25 @@
 #define NOAHS_FACE   0
 
 enum acidwarp_command {
-  CMD_PAUSE = 1,
   CMD_SKIP,
   CMD_QUIT,
   CMD_NEWPAL,
-  CMD_LOCK,
   CMD_PAL_FASTER,
   CMD_PAL_SLOWER,
-  CMD_RESIZE
+  CMD_RESIZE,
 };
 
-void handleinput(enum acidwarp_command cmd);
+void handleInput(enum acidwarp_command cmd);
 void generate_image_float(int imageFuncNum, UCHAR *buf_graf,
                           int xcenter, int ycenter,
                           int width, int height,
                           int colors, int pitch, int normalize);
-void generate_image(int imageFuncNum, UCHAR *buf_graf,
-                    int xcenter, int ycenter,
-                    int width, int height,
-                    int colors, int pitch);
 void fatalSDLError(const char *msg);
-void quit(int retcode);
+void quit();
 void makeShuffledList(int *list, int listSize);
-#ifdef ENABLE_WORKER
-void startloop(void);
-#endif
 
 #define DRAW_LOGO 1
-#define DRAW_FLOAT 2
 #define DRAW_SCALED 4
 void draw_init(int flags);
 void draw_same(void);
 void draw_next(void);
-void draw_abort(void);
-void draw_quit(void);
-extern int abort_draw;

@@ -17,3 +17,12 @@ worker.wasm
 worker.js.mem
 /bin
 /build
+.idea/**
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/**
+.cmake/**
+.ninja_deps
+.ninja_log
+Testing/**
+build.ninja

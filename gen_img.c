@@ -1,59 +1,40 @@
+#include "handy.h"
+#include "img_float.c"
+
 /* ACID WARP (c)Copyright 1992, 1993 by Noah Spurrier
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
+ * Ported to Android by Matthew Zavislak
  */
 
-#ifdef ENABLE_FLOAT
 void generate_image_float(int imageFuncNum, UCHAR *buf_graf,
                           int _xcenter, int _ycenter,
                           int _width, int _height,
                           int colors, int pitch, int normalize)
-#else
-void generate_image(int imageFuncNum, UCHAR *buf_graf,
-                    int xcenter, int ycenter,
-                    int width, int height,
-                    int colors, int pitch)
-#endif
 {
 
-  /* WARNING!!! Major change from long to int.*/
-  /* ### Changed back to long. Gives lots of warnings. Will fix soon. */
+int x1,x2,x3,x4,y1,y2,y3,y4;
 
-long x1,x2,x3,x4,y1,y2,y3,y4;
-
-#ifndef ENABLE_FLOAT
-  long /* int */ x, y, dx, dy;
-  long dist, angle;
-  long color;
-#define _xcenter xcenter
-#define _ycenter ycenter
-#define _width width
-#define _height height
-#define _x x
-#define _y y
-#define _color color
-#else /* ENABLE_FLOAT */
-  long _x, _y;
+  int _x, _y;
   long _color;
   double x, y;
   double dx, dy;
   double dist, angle;
   double color;
-  double xcenter, ycenter, width, height;
+  double x_center, y_center, width, height;
 
   if (normalize) {
-    xcenter = (double)(_xcenter * 320) / _width;
-    ycenter = (double)(_ycenter * 200) / _height;
+    x_center = (double)(_xcenter * 320) / _width;
+    y_center = (double)(_ycenter * 200) / _height;
     width = (double)320;
     height = (double)200;
   } else {
-    xcenter = _xcenter;
-    ycenter = _ycenter;
+    x_center = _xcenter;
+    y_center = _ycenter;
     width = _width;
     height = _height;
   }
-#endif /* ENABLE_FLOAT */
 
   /* Some general purpose random angles and offsets.
    * Not all functions use them.
@@ -64,33 +45,24 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
   y1 = RANDOM(40)-20;  y2 = RANDOM(40)-20;
   y3 = RANDOM(40)-20;  y4 = RANDOM(40)-20;
 
-  for (_y = 0;
-       _y < _height
-#ifdef ENABLE_THREADS
-       && !abort_draw
-#endif
-       ; ++_y)
+  for (_y = 0; _y < _height; ++_y)
     {
-#ifdef ENABLE_FLOAT
       if (normalize) {
         y = (double)(_y * 200) / _height;
       } else {
         y = _y;
       }
-#endif
 
       for (_x = 0; _x < _width; ++_x)
         {
-#ifdef ENABLE_FLOAT
           if (normalize) {
             x = (double)(_x * 320) / _width;
           } else {
             x = _x;
           }
-#endif
-          dx = x - xcenter;
+          dx = x - x_center;
           /* dy may be altered below, so calculate here */
-          dy = y - ycenter;
+          dy = y - y_center;
 
           dist  = lut_dist (dx, dy);
           angle = lut_angle (dx, dy);
@@ -265,64 +237,64 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
 
             case 28:        /* Random Curtain of Rain (in strong wind) */
               if (y == 0 || x == 0)
-                color = RANDOM (16);
+                color = RANDOMD(16);
               else
                 color = (  *(buf_graf + (pitch *  _y   ) + (_x-1))
-                         + *(buf_graf + (pitch * (_y-1)) +    _x)) / 2
-                  + RANDOM (16) - 8;
+                         + *(buf_graf + (pitch * (_y-1)) +    _x)) / 2.0
+                  + RANDOMD(16) - 8;
               break;
 
             case 29:
               if (y == 0 || x == 0)
-                color = RANDOM (1024);
+                color = RANDOMD(1024);
               else
                 color = dist/6 + (*(buf_graf + (pitch * _y    ) + (_x-1))
-                               +  *(buf_graf + (pitch * (_y-1)) +    _x)) / 2
-                + RANDOM (16) - 8;
+                               +  *(buf_graf + (pitch * (_y-1)) +    _x)) / 2.0
+                + RANDOMD(16) - 8;
               break;
 
             case 30:
-              color = xor(xor(lut_sin (lut_dist(dx,     dy - 20) * 4) / 32,
-                lut_sin (lut_dist(dx + 20,dy + 20) * 4) / 32),
-                lut_sin (lut_dist(dx - 20,dy + 20) * 4) / 32);
+              color = (((int)lut_sin (lut_dist(dx,     dy - 20) * 4) / 32 ^
+                (int)lut_sin (lut_dist(dx + 20,dy + 20) * 4) / 32) ^
+                (int)lut_sin (lut_dist(dx - 20,dy + 20) * 4) / 32);
               break;
 
             case 31:
-              color = xor(mod(angle, (ANGLE_UNIT/4)), dist);
+              color = ((int)fmod(angle, (ANGLE_UNIT/4)) ^ (int)dist);
               break;
 
             case 32:
-              color = xor(dy, dx);
+              color = ((int)dy ^ (int)dx);
               break;
 
             case 33:        /* Variation on Rain */
               if (y == 0 || x == 0)
-                color = RANDOM (16);
+                color = RANDOMD(16);
               else
                 color = (  *(buf_graf + (pitch *  _y   ) + (_x-1))
-                         + *(buf_graf + (pitch * (_y-1)) +  _x   )  ) / 2;
+                         + *(buf_graf + (pitch * (_y-1)) +  _x   )  ) / 2.0;
 
-              color += RANDOM (2) - 1;
+              color += RANDOMD(2) - 1;
 
               if (color < 64)
-                color += RANDOM (16) - 8;
+                color += RANDOMD(16) - 8;
               break;
 
             case 34:        /* Variation on Rain */
               if (y == 0 || x == 0)
-                color = RANDOM (16);
+                color = RANDOMD(16);
               else
                 color = (  *(buf_graf + (pitch *  _y   ) + (_x-1))
-                         + *(buf_graf + (pitch * (_y-1)) +  _x   )  ) / 2;
+                         + *(buf_graf + (pitch * (_y-1)) +  _x   )  ) / 2.0;
 
               if (color < 100)
-                color += RANDOM (16) - 8;
+                color += RANDOMD(16) - 8;
               break;
 
             case 35:
               color = angle + lut_sin(dist * 8)/32;
-              dx = x - xcenter;
-              dy = (y - ycenter)*2;
+              dx = x - x_center;
+              dy = (y - y_center) * 2;
               dist  = lut_dist (dx, dy);
           angle = lut_angle (dx, dy);
           color = (color + angle + lut_sin(dist * 8)/32) / 2;
@@ -332,8 +304,8 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
               color = angle + lut_sin (dist * 10) / 16 +
                 lut_cos (x * ANGLE_UNIT / width * 2) / 8 +
                 lut_cos (y * ANGLE_UNIT / height * 2) / 8;
-              dx = x - xcenter;
-              dy = (y - ycenter)*2;
+              dx = x - x_center;
+              dy = (y - y_center) * 2;
               dist  = lut_dist (dx, dy);
               angle = lut_angle (dx, dy);
               color = (color + angle + lut_sin(dist * 8)/32) / 2;
@@ -343,8 +315,8 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
               color = angle + lut_sin (dist * 10) / 16 +
                 lut_cos (x * ANGLE_UNIT / width * 2) / 8 +
                 lut_cos (y * ANGLE_UNIT / height * 2) / 8;
-              dx = x - xcenter;
-              dy = (y - ycenter)*2;
+              dx = x - x_center;
+              dy = (y - y_center) * 2;
               dist  = lut_dist (dx, dy);
           angle = lut_angle (dx, dy);
           color = (color + angle + lut_sin (dist * 10) / 16 +
@@ -353,12 +325,8 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
           break;
 
             case 38:
-#ifndef ENABLE_FLOAT
-              if (dy%2)
-#else
               /* Intent is to interlace two different screens */
               if (_y % 2)
-#endif
                 {
                   dy *= 2;
                   dist  = lut_dist (dx, dy);
@@ -368,23 +336,23 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
               break;
 
             case 39:
-              color = xor(mod(angle, (ANGLE_UNIT/4)), dist);
-              dx = x - xcenter;
-              dy = (y - ycenter)*2;
+              color = ((int)fmod(angle, (ANGLE_UNIT/4)) ^ (int)dist);
+              dx = x - x_center;
+              dy = (y - y_center) * 2;
               dist = lut_dist (dx, dy);
               angle = lut_angle (dx, dy);
-              color = (color +  (xor(mod(angle, (ANGLE_UNIT/4)), dist))) / 2;
+              color = (color +  (((int)fmod(angle, (ANGLE_UNIT/4)) ^ (int)dist))) / 2;
               break;
 
             case 40:
-              color = xor(dy, dx);
-              dx = x - xcenter;
-              dy = (y - ycenter)*2;
-              color = (color +  xor(dy, dx)) / 2;
+              color = ((int)dy ^ (int)dx);
+              dx = x - x_center;
+              dy = (y - y_center) * 2;
+              color = (color +  ((int)dy ^ (int)dx)) / 2;
               break;
 
             default:
-              color = RANDOM (colors - 1) + 1;
+              color = RANDOMD(colors - 1) + 1;
               break;
             }
 
@@ -402,17 +370,11 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
           * so right here this requires: 0 <= color < colors
           */
           _color = (long)color % (colors-1);
-#ifdef ENABLE_FLOAT
           /* The -1.0 < color < 0 bin is mapped to the last bin,
            * meaning right before the 0 <= color < 1 bin in rotation.
            */
           if (color < 0)
             _color += (colors - 2);
-#else
-          /* This is like in original Acidwarp 4.10. */
-          if (color < 0)
-            color += (colors - 1);
-#endif
 
           ++_color;
           /* color 0 is never used, so all colors are from 1 through 255 */
@@ -435,12 +397,3 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
 #endif
 }
 
-#ifndef ENABLE_FLOAT
-#undef _xcenter
-#undef _ycenter
-#undef _width
-#undef _height
-#undef _x
-#undef _y
-#undef _color
-#endif

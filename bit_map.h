@@ -1,5 +1,5 @@
 #define X_TITLE		80
-#define Y_TITLE		98
+#define Y_TITLE		92
 
 #define NOAHS_FACE	0
 

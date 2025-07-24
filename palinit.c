@@ -55,7 +55,6 @@ void initPalArray (UCHAR *palArray, int pal_type)
 	}
 }
 
-
 static void add_sparkles_to_palette (UCHAR *palArray, int sparkle_amount)
 {
   int palRegNum;
@@ -108,7 +107,6 @@ static void init_rgbw_palArray (UCHAR *palArray)
 		palArray[(palRegNum + 192) * 3 + 2] = (UCHAR)(63 - palRegNum) * 2;
 	}
 }
-
 
 static void init_w_palArray (UCHAR *palArray)
 {

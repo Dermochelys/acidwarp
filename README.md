@@ -1,66 +1,67 @@
-# Acidwarp
+# Acid Warp for Android
 
-## What is Acidwarp?
+## What is Acid Warp?
 
-Acidwarp is an eye candy program which displays various patterns and
+Acid Warp is an eye candy program which displays various patterns and
 animates them by changing the palette. Originally it was an MS-DOS
-program by Noah Spurrier. This is a port by Boris Gjenero using the
-SDL 1.2 library. It is based on the Linux SVGALib port by Steven Wills.
-This port can be built for Windows, Linux and other platforms.
-Using [Emscripten](http://emscripten.org/), it can be built to run in
-web browsers.
+program by Noah Spurrier. This is a port by Matthew Zavislak based on the
+port by Boris Gjenero using the SDL 1.2 / 2 / 3 library. It in turn is 
+based on the Linux SVGALib port by Steven Wills.
+
+This port can be built for Android devices and is currently limited to TV's
+as a conscious decision due to the high CPU usage which would drain a 
+battery powered device quickly.
 
 ## Using the program
 
-Use the following keys to control the program:
+Use the following remote control buttons to control the program:
 
-| Key      | Action |
-|----------|--------|
-| **Up**   | Rotate palette faster |
-| **Down** | Rotate palette slower |
-| **l**    | (L)ock: stay on current pattern, but keep changing palette |
-| **k**    | switch to the next pallette |
-| **p**    | (P)ause: totally stops pallette rotation and pattern changing. |
-| **q**    | (Q)uit: causes Acidwarp to exit |
-| **n**    | (N)ext pattern |
+| Key        | Action                     |
+|------------|----------------------------|
+| **Up**     | Rotate palette faster      |
+| **Down**   | Rotate palette slower      |
+| **Right**  | Switch to the next palette |
+| **Select** | Switch to the next pattern |
+| **Back**   | Exit the app               |
+| **Home**   | Exit the app               |
 
-Double click on the window to toggle full screen mode.
-
-The program takes some optional command line arguments.  To see all of
-these, run: `acidwarp -h`.
-
-Acidwarp originally worked in 320x200 256 colour VGA mode and generated
+Acid Warp originally worked in 320x200 256 colour VGA mode and generated
 patterns using lookup tables to avoid slow floating point calculations.
 This port defaults to using floating point for image generation. This
-allows many patterns to be scaled up to high resolution. If you want
-the original image generator, add the `-o` command line argument.
+allows many patterns to be scaled up to high resolution.
 
 ## Building the program
 
-Build the program by running `make`. Version 1.2.x of the SDL library
-is required, and detected via `sdl-config`. The icon requires
-[ImageMagick](https://www.imagemagick.org) `convert` for resizing and
-`xxd` for incorporating it in the program. Adding the icon to the
-Windows executable also requires `icotool` from
-[icoutils](http://www.nongnu.org/icoutils/) and
-[`windres`](https://sourceware.org/binutils/docs/binutils/windres.html).
+Build the program by running `./gradlew build`. Version 3 of the SDL library
+is required, and is included as an Android AAR in `app/libs`.
 
-You can build for Windows from Cygwin. There `CC` defaults to
-`i686-w64-mingw32-gcc`.
+## Version History
 
-For building with Emscripten, use: `emmake make`
+### 1.0
+The app uses SDL 3 and features a stripped down version targeted at Android
+TV. The reasoning is that due to the high CPU computation use the device must
+be plugged in to a power source, and is also best enjoyed on a large screen.
 
-Acidwarp can now be built with SDL 2 using `make SDL=2`. Experimental hardware
-accelerated palette cycling using SDL 2 and OpenGL ES 2.0 can be built with
-`make GL=1`. This can also be built with Emscripten for use with WebGL 1.0
-using `emmake make GL=1`.
+#### Additions / Enhancements
+- Increase logo size by 4x (thanks to Anthropic Claude for accomplishing that)
+- Smoother "next" handling - simply treat as a timer expiration, which enables
+  the same fadeout/fadein transition as would happen without "next" being issued
+- Add Android TV remote support
+  - Faster / slower via TV remote UP/DOWN
+  - Next            via TV remote SELECT
+- Fix most warnings related to int/long/double handling
+
+#### Removals
+- Lookup table feature
+- Compatibility with SDL before 3
+- Icon generation
+- Web support
 
 ## Further resources
 
-For more information, see the [original README file](README).
+For more information about the SDL port, see: [README_SDL.md](README_SDL.md)
+For more information about the Linux port, see: [README_LINUX_V_1_0](README_LINUX_V_1_0).
+For more information about the original DOS version, see: [README_DOS_V_4_1](README_DOS_V_4_1).
 
-Text for `acidwarp -h` and Warper projector instructions are
-found in [warp_text.c](warp_text.c).
-
-The original author's site about Acidwarp:
-http://www.noah.org/acidwarp/
+*Note*: there is an alternate spelling which is `Acidwarp`.  Based on the original DOS `README`,
+it is believed that `Acid Warp` is the correct spelling.

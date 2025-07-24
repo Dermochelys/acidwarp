@@ -1,0 +1,157 @@
+Acid Warp for Android 1.0 by Matthew Zavislak <matthew@dermochelys.com>
+
+This is an Android port of the excellent update to Acid Warp to SDL by Boris Gjenero
+<boris.gjenero@gmail.com>.
+
+Version History
+
+-- 1.0 -------------------------------------------------------------------------
+
+The app uses SDL 3 and features a stripped down version targeted at Android
+TV. The reasoning is that due to the high CPU computation use the device must
+be plugged in to a power source, and is also best enjoyed on a large screen.
+
+Additions / Enhancements:
+- Increase logo size by 4x (thanks to Anthropic Claude for accomplishing that)
+- Smoother "next" handling - simply treat as a timer expiration, which enables
+  the same fadeout/fadein transition as would happen without "next" being issued
+- Add Android TV remote support
+  - Faster / slower via TV remote UP/DOWN
+  - Next            via TV remote SELECT
+- Fix most warnings related to int/long/double handling
+
+Removals:
+- Lookup table feature
+- Compatibility with SDL before 3
+- Icon generation
+- Web support
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Acidwarp for SDL (https://github.com/dreamlayers/acidwarp)
+
+What is Acidwarp?
+Acidwarp is an eye candy program which displays various patterns and animates
+them by changing the palette. Originally it was an MS-DOS program by Noah
+Spurrier. This is a port by Boris Gjenero using the SDL 1.2 library. It is based
+on the Linux SVGALib port by Steven Wills. This port can be built for Windows,
+Linux and other platforms. Using Emscripten, it can be built to run in web
+browsers.
+
+Using the program
+Use the following keys to control the program:
+
+Key	Action
+Up	Rotate palette faster
+Down	Rotate palette slower
+l	(L)ock: stay on current pattern, but keep changing palette
+k	switch to the next pallette
+p	(P)ause: totally stops pallette rotation and pattern changing.
+q	(Q)uit: causes Acidwarp to exit
+n	(N)ext pattern
+Double click on the window to toggle full screen mode.
+
+The program takes some optional command line arguments. To see all of these,
+run: acidwarp -h.
+
+Acidwarp originally worked in 320x200 256 colour VGA mode and generated patterns
+using lookup tables to avoid slow floating point calculations. This port
+defaults to using floating point for image generation. This allows many patterns
+to be scaled up to high resolution. If you want the original image generator,
+add the -o command line argument.
+
+Building the program
+Build the program by running make. Version 1.2.x of the SDL library is required,
+and detected via sdl-config. The icon requires ImageMagick convert for resizing
+and xxd for incorporating it in the program. Adding the icon to the Windows
+executable also requires icotool from icoutils and windres.
+
+You can build for Windows from Cygwin. There CC defaults to i686-w64-mingw32-gcc.
+
+For building with Emscripten, use: emmake make
+
+Acidwarp can now be built with SDL 2 using make SDL=2. Experimental hardware
+accelerated palette cycling using SDL 2 and OpenGL ES 2.0 can be built with make
+GL=1. This can also be built with Emscripten for use with WebGL 1.0 using
+emmake make GL=1.
+
+Further resources
+For more information, see the original README file.
+
+Text for acidwarp -h and Warper projector instructions are found in warp_text.c.
+
+The original author's site about Acidwarp: http://www.noah.org/acidwarp/
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Acidwarp for Linux 1.0 by Steven Wills <willssl@jmu.edu>
+
+What is this?
+
+This is a linux port of the popular dos program Acidwarp.  Acidwarp is a
+program that makes neat looking pictures and rotates the palette. Its only
+use is for entertainment, but it is neat. I stumbled upon source code for
+Acidwarp on the net one day, and decided that it was high time someone
+ported it to linux. So, here it is. (for more info about Acidwarp, see 
+the README for the dos version, included below)
+
+I used gcc 2.7.2, svgalib 1.2.10 and libc 5.2.18.  I added an option to
+use higher resolution and control the rate of palette rotation. I did not
+impliment the option to select which palette is used.  This port was done 
+on intel hardware, but I suspect that it will work on others. This is 
+the second public release of the linux version, and it has been fairly
+well tested. Still, please let me know if you discover any bugs, or if you
+just want to offer feedback. Thanks. 
+
+In this version I have added a few more features. These are mostly
+keyboard commands. They are:
+
+  Up: causes the pallette to rotate faster.
+Down: causes the pallette to rotate slower.
+   l: (L)ock on the current pattern.
+   k: switch to the next pallette.
+   p: (P)ause. Totally stops pallette rotation and pattern changing.
+   q: (Q)uit. Causes Acidwarp to exit.
+   n: (N)ext pattern.
+
+Acidwarp is distributed under the GPL.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+/* The README for the dos version follows */
+
+Acid Warp V4.2 By Noah Spurrier (https://www.noah.org/acidwarp/)
+
+This is Acid Warp for DOS. It's an eye-candy program. Run it and watch the
+pretty colors. Each picture is the graphic representation of a mathematical
+function. All math is done with integer approximations so Acid Warp should
+be pretty fast even on machines without a math chip. It might take as long
+as 30 to 40 seconds to generate each picture on a slow machine.
+
+I added a few new picture functions (now there are over 40) and I improved
+the color palettes so that they seem more hypnotic. Don't forget to try
+Acid Warp with the "p8" option. This forces all the pictures to be very
+trippy. The default is to mix mellow and trippy pictures. Also don't forget
+the "w" option which displays a document that describes how to turn your
+monitor into a wall projector for Acid Warp.
+
+Sorry this version took so long. I didn't expect people to like Acid Warp
+so much. I had a lot of help from Mark Bilk in fixing this code up. He pretty
+much redid all the interrupt routines so they should be more stable now and
+he figured out how to get rid of the screen flicker that annoyed about 1/3
+of the VGA cards that we tried it on. This was the biggest complaint about
+the old version. It should be fixed now. Hooray!
+
+Sorry, but the make file is in a bit of a mess. The VC++70.MAK file
+should work for older versions of Visual C++, but I have not had the chance
+to test it. This source was written for Turbo C, then for Microsoft C++ 7.0.
+I have not bothered to convert it to VC++ 2.2.
+All the source files should be in a readable condition.
+
+This is free software, but if you happen to have any weird information to
+send me as a token of your appreciation then mail it to "noah@noah.org".
+I'd really like a copy of Amanda Fielding's film on Trepanning called
+"Heartbeat in the Brain". 
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Also see: http://eyecandyarchive.com/Acidwarp/
