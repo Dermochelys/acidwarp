@@ -78,7 +78,7 @@ if(GL)
         target_link_libraries(acidwarp glew32 opengl32)
     else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         find_package(OpenGL REQUIRED)
-        target_link_libraries(acidwarp ${OPENGL_gl_LIBRARY})
+        target_link_libraries(acidwarp OpenGL::OpenGL)
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif(GL)
 
