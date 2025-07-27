@@ -53,12 +53,10 @@ char *Help_string[] =
 	"      the 'd' and the number of seconds. The default delay is 20 seconds.\n",
 	"\n",
 	"'n' - This option tells acidwarp not to display the logo at starup.\n",
-#ifdef HAVE_FULLSCREEN
 	"\n",
 	"'f' - Option for starting in full screen mode.\n",
 	"\n",
 	"'k' - Option for using desktop resolution in full screen mode.\n",
-#endif
 	"\n",
 	"'u' - Option for disabling scaling of images in floating point\n",
 	"      image generator.\n",

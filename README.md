@@ -1,66 +1,69 @@
-# Acidwarp
+# Acid Warp for Android
 
-## What is Acidwarp?
+## What is Acid Warp?
 
-Acidwarp is an eye candy program which displays various patterns and
-animates them by changing the palette. Originally it was an MS-DOS
-program by Noah Spurrier. This is a port by Boris Gjenero using the
-SDL 1.2 library. It is based on the Linux SVGALib port by Steven Wills.
-This port can be built for Windows, Linux and other platforms.
-Using [Emscripten](http://emscripten.org/), it can be built to run in
-web browsers.
+Acid Warp is an eye candy program which displays various patterns and
+animates them by changing the palette. Originally it was an MS-DOS / Windows
+program by Noah Spurrier and Mark Bilk and was made in 1992/1993. 
+
+This is a port by Matthew Zavislak based on the previous port by Boris Gjenero
+to the SDL 1.2 / 2 library. That in turn is based on the Linux SVGALib port 
+by Steven Wills.
+
+This port can be built for Android devices and is currently limited to TV's.
 
 ## Using the program
 
-Use the following keys to control the program:
+Use the following remote control buttons to control the program:
 
-| Key      | Action |
-|----------|--------|
-| **Up**   | Rotate palette faster |
-| **Down** | Rotate palette slower |
-| **l**    | (L)ock: stay on current pattern, but keep changing palette |
-| **k**    | switch to the next pallette |
-| **p**    | (P)ause: totally stops pallette rotation and pattern changing. |
-| **q**    | (Q)uit: causes Acidwarp to exit |
-| **n**    | (N)ext pattern |
+| Key        | Action                            |
+|------------|-----------------------------------|
+| **Up**     | Rotate palette faster             |
+| **Down**   | Rotate palette slower             |
+| **Left**   | Lock/unlock on current pattern    |
+| **Right**  | Switch to the next palette        |
+| **Select** | Switch to the next pattern        |
+| **Back**   | Exit the app                      |
+| **Home**   | Exit the app                      |
 
-Double click on the window to toggle full screen mode.
+## Version History
 
-The program takes some optional command line arguments.  To see all of
-these, run: `acidwarp -h`.
+### 1.0-android
+The library uses SDL 3 and OpenGL ES 2.0, and features a streamlined and enhanced 
+version targeted at Android TV.
 
-Acidwarp originally worked in 320x200 256 colour VGA mode and generated
-patterns using lookup tables to avoid slow floating point calculations.
-This port defaults to using floating point for image generation. This
-allows many patterns to be scaled up to high resolution. If you want
-the original image generator, add the `-o` command line argument.
+#### Additions / Enhancements
+- Increase logo size by 4x
+- Smoother "next" handling - simply treat as a timer expiration, which enables
+  the same fadeout/fadein transition as would happen without "next" being issued
+- Add Android TV remote support (See above)
+- Fix most warnings related to int/long/double handling
 
-## Building the program
-
-Build the program by running `make`. Version 1.2.x of the SDL library
-is required, and detected via `sdl-config`. The icon requires
-[ImageMagick](https://www.imagemagick.org) `convert` for resizing and
-`xxd` for incorporating it in the program. Adding the icon to the
-Windows executable also requires `icotool` from
-[icoutils](http://www.nongnu.org/icoutils/) and
-[`windres`](https://sourceware.org/binutils/docs/binutils/windres.html).
-
-You can build for Windows from Cygwin. There `CC` defaults to
-`i686-w64-mingw32-gcc`.
-
-For building with Emscripten, use: `emmake make`
-
-Acidwarp can now be built with SDL 2 using `make SDL=2`. Experimental hardware
-accelerated palette cycling using SDL 2 and OpenGL ES 2.0 can be built with
-`make GL=1`. This can also be built with Emscripten for use with WebGL 1.0
-using `emmake make GL=1`.
+#### Removals
+- Support for anything but Android
+- Compatibility with SDL before 3
+- OpenGL support other than ES
+- Lookup table usage for pattern layout
+- Single-threaded pattern layout generation
+- CPU-based palette rotation
+- Icon generation
 
 ## Further resources
 
-For more information, see the [original README file](README).
+For more information about the SDL port, see: [README_SDL.md](previous_ports/acidwarp-sdl/README_SDL.md)
+For more information about the Linux port, see: [README_LINUX_V_1_0](README_LINUX_V_1_0).
+For more information about the original DOS version, see: [README_DOS_V_4_1](README_DOS_V_4_1).
 
-Text for `acidwarp -h` and Warper projector instructions are
-found in [warp_text.c](warp_text.c).
+*Note*: there is an alternate spelling which is `Acidwarp`.  Based on the original DOS `README`,
+it is believed that `Acid Warp` is the correct spelling.
 
-The original author's site about Acidwarp:
-http://www.noah.org/acidwarp/
+## License
+
+As this is a descendent of Steven Will's "AcidWarp for Linux" which was GPL licensed, this too
+is and must be also GPL licensed.  See [gpl-3.0.md](gpl-3.0.md)
+
+## Thanks
+
+- Many heartfelt thanks to all previous authors especially Noah.
+- Kudos to the Anthropic team as Claude helped out quite a bit - perhaps most notably 
+  with the SDL 3 support, but also with cleanup, and increasing the logo scaling.

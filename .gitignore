@@ -17,3 +17,9 @@ worker.wasm
 worker.js.mem
 /bin
 /build
+.idea/**
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+libmain.so

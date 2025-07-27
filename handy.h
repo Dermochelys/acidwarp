@@ -23,26 +23,10 @@ typedef enum {FALSE, TRUE} BOOL;
  * good enough when a is much smaller than RAND_MAX.
  */
 #define RANDOM(a) (rand() / (RAND_MAX / (a) + 1))
-
-#if 0
-/* Unused, won't compile on recent gcc due to multiple definitions */
-/* Mini-benchmarking tools. Only one second accuracy */
-time_t __HANDY_BENCH;
-#define START() (__HANDY_BENCH = time (& __HANDY_BENCH))
-#define MARK()  ((long)time ((time_t *)0) - __HANDY_BENCH)
-#endif
+#define RANDOMD(a) (rand() / (RAND_MAX / (a) + 1.0))
 
 /* Stuff that's already there, but is faster as a MACRO */
 #define MIN(a,b)  (((a) < (b)) ?  (a) : (b) )
-#define MAX(a,b)  (((a) > (b)) ?  (a) : (b) )
-
-#define ABS(a)    (((a) < 0  ) ? -(a) : (a) )
-#define FABS(a)   (((a) < F 0) ? -(a) : (a) )
-#define DABS(a)   (((a) < 0.0) ? -(a) : (a) )
-
-#define SIGN(a)   (((a) < 0  ) ?   -1 :   1 )
-#define FSIGN(a)  (((a) < F 0) ? F(-1): F 1 )
-#define DSIGN(a)  (((a) < 0.0) ? -1.0 : 1.0 )
 
 /* This seems nifty to me */
 #define DONE        1
