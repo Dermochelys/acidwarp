@@ -258,8 +258,11 @@ static void mainLoop(void)
   }
 
   if (SKIP) {
-    if (state != STATE_INITIAL) state = STATE_NEXT;
-    show_logo = 0;
+    // In order to keep state management simple, we ignore skip
+    // requests unless they are during STATE_DISPLAY.
+    if (state != STATE_DISPLAY) {
+      SKIP = FALSE;
+    }
   }
 
   if(NP) {
@@ -280,7 +283,6 @@ static void mainLoop(void)
     if (!show_logo && !SKIP) {
       newPalette();
     }
-    SKIP = FALSE;
 
 #if defined(EMSCRIPTEN) && defined(ENABLE_WORKER)
     /* The worker has been called. Main loop is cancelled and will be restarted
@@ -301,12 +303,14 @@ static void mainLoop(void)
       fadeInAndRotate();
     }
 
-    ltime=time(NULL);
-    if(ltime > mtime && !LOCK) {
+    // Treat SKIP as simply a request to override the timer
+    if (SKIP || time(NULL) > mtime) {
+      SKIP = FALSE;
+      
       /* Transition from logo only fades to black,
-       * like the first transition in Acidwarp 4.10.
-       */
+       * like the first transition in Acidwarp 4.10. */
       beginFadeOut(show_logo);
+
       state = STATE_FADEOUT;
     }
     break;
