@@ -30,11 +30,16 @@ void generate_image_float(int imageFuncNum,
   double color;
   double x_center, y_center, width, height;
 
+  // Original DOS version targeted 8:5 display (320x200) but also supported 4:3 displays.
+  // It appears during the SDL port that added floating point conversion, it assumed a 8:5 display ratio.
+  // Apply the necessary correction here:
+  const double aspect_correction = (8.0 / 5.0) / ((double)_width / (double)_height);
+
   if (normalize) {
-    x_center = (double)(_xcenter * 320) / _width;
-    y_center = (double)(_ycenter * 200) / _height;
-    width = (double)320;
-    height = (double)200;
+    x_center = (_xcenter * 320.0) / (double)_width;
+    y_center = (_ycenter * 200.0 * aspect_correction) / (double)_height;
+    width = 320.0;
+    height = 200.0 * aspect_correction;
   } else {
     x_center = _xcenter;
     y_center = _ycenter;
@@ -54,7 +59,7 @@ void generate_image_float(int imageFuncNum,
   for (_y = 0; _y < _height && !abort_draw; ++_y)
   {
     if (normalize) {
-      y = (double)(_y * 200) / _height;
+      y = (double)(_y * 200 * aspect_correction) / _height;
     } else {
       y = _y;
     }
@@ -269,7 +274,7 @@ void generate_image_float(int imageFuncNum,
           color = ((int)fmod(angle, (ANGLE_UNIT/4)) ^ (int)dist);
           break;
 
-        case 32:
+        case 32:        /* Plaid (Useful for aspect ratio verification) */
           color = ((int)dy ^ (int)dx);
           break;
 
