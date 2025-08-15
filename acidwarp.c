@@ -2,6 +2,7 @@
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
+ * Ported to Android by Matthew Zavislak
  */
 
 #include <stdio.h>
@@ -43,7 +44,6 @@ static int image_time = LOGO_TIME;
 static int disp_flags = 0;
 static int draw_flags = DRAW_FLOAT | DRAW_SCALED;
 static int width = 1280, height = 800;
-UCHAR *buf_graf = NULL;
 static int GO = TRUE;
 static int SKIP = FALSE;
 static int NP = FALSE; /* flag indicates new palette */
@@ -53,7 +53,6 @@ static int QUIT_MAIN_LOOP = FALSE;
 
 /* Prototypes for forward referenced functions */
 static void mainLoop(void);
-static void timer_quit(void);
 
 void quit(int retcode)
 {
@@ -130,22 +129,6 @@ static void timer_init(void)
                                      timer_data.cond);
   if (timer_data.timer_id == 0) {
     fatalSDLError("adding timer");
-  }
-}
-
-static void timer_quit(void)
-{
-  if (timer_data.timer_id != 0) {
-    SDL_RemoveTimer(timer_data.timer_id);
-    timer_data.timer_id = 0;
-  }
-  if (timer_data.cond != NULL) {
-    SDL_DestroyCondition(timer_data.cond);
-    timer_data.cond = 0;
-  }
-  if (timer_data.mutex != NULL) {
-    SDL_DestroyMutex(timer_data.mutex);
-    timer_data.mutex = NULL;
   }
 }
 
@@ -272,10 +255,8 @@ void handleinput(enum acidwarp_command cmd)
   switch(cmd)
     {
     case CMD_PAUSE:
-      if(GO)
-	      GO = FALSE;
-      else
-	      GO = TRUE;
+      if (GO) GO = FALSE;
+      else GO = TRUE;
       break;
     case CMD_SKIP:
       SKIP = TRUE;
@@ -287,15 +268,12 @@ void handleinput(enum acidwarp_command cmd)
       NP = TRUE;
       break;
     case CMD_LOCK:
-      if(LOCK)
-	      LOCK = FALSE;
-      else
-	      LOCK = TRUE;
+      if (LOCK) LOCK = FALSE;
+      else LOCK = TRUE;
       break;
     case CMD_PAL_FASTER:
       ROTATION_DELAY = ROTATION_DELAY - 5000;
-      if (ROTATION_DELAY < 0)
-	ROTATION_DELAY = 0;
+      if (ROTATION_DELAY < 0) ROTATION_DELAY = 0;
       break;
     case CMD_PAL_SLOWER:
       ROTATION_DELAY = ROTATION_DELAY + 5000;

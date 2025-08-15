@@ -67,10 +67,6 @@ static UCHAR *draw_buf = NULL;
 
 static int fullscreen = 0;
 static int desktopfs = 0;
-static int winwidth = 0;
-static int winheight;
-
-static int scaling = 1;
 static int width, height;
 
 void disp_setPalette(unsigned char *palette)
@@ -123,8 +119,6 @@ static void disp_toggleFullscreen(void)
     SDL_SetWindowFullscreen(window, 0);
     fullscreen = FALSE;
   } else {
-    winwidth = width;
-    winheight = height;
     SDL_SetWindowFullscreen(window, desktopfs ?
                                     SDL_WINDOW_FULLSCREEN_DESKTOP :
                                     SDL_WINDOW_FULLSCREEN);
@@ -198,18 +192,11 @@ void disp_processInput(void) {
       case SDL_EVENT_KEY_DOWN:
         disp_processKey(event.key.key);
         break;
+      case SDL_EVENT_DISPLAY_ORIENTATION:
       case SDL_EVENT_WINDOW_RESIZED:
-          /* If full screen resolution is at least twice as large as
-           * previous window, then use 2x scaling, else no scaling.
-           */
-          if (width != (event.window.data1 / scaling) ||
-              height != (event.window.data2 / scaling)) {
-            disp_init(event.window.data1 / scaling,
-                      event.window.data2 / scaling,
-                      fullscreen
-                    );
-          }
-          break;
+        disp_init(event.window.data1,event.window.data2,fullscreen);
+        handleinput(CMD_RESIZE);
+        break;
       case SDL_EVENT_WINDOW_EXPOSED:
         display_redraw();
         break;
@@ -399,8 +386,6 @@ void disp_init(int newwidth, int newheight, int flags)
 
     SDL_ShowCursor(!fullscreen);
 
-    scaling = 1;
-
     disp_glinit(width, height, videoflags);
 
 
@@ -419,14 +404,4 @@ void disp_init(int newwidth, int newheight, int flags)
   glViewport(0, 0, width, height);
 
   disp_allocateOffscreen();
-
-  /* This may be unnecessary if switching between windowed
-   * and full screen mode with the same dimensions. */
-  //handleinput(CMD_RESIZE);
-}
-
-void disp_quit(void)
-{
-  disp_freeBuffer(&draw_buf);
-  // FIXME: clean up OpenGL stuff
 }

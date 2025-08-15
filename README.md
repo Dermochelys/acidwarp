@@ -10,7 +10,7 @@ This is a port by Matthew Zavislak based on the previous port by Boris Gjenero
 to the SDL 1.2 / 2 library. That in turn is based on the Linux SVGALib port 
 by Steven Wills.
 
-This port can be built for Android devices and is currently limited to TV's.
+This port can be built for Android devices including phones, tablets, and TVs.
 
 ## Using the program
 
@@ -27,6 +27,10 @@ Use the following remote control buttons to control the program:
 | **Home**   | Exit the app                      |
 
 ## Version History
+
+### 1.1.0-android
+The library adds screen orientation change handling and minor cleanups targeting initial Android 
+phone & tablet support.
 
 ### 1.0-android
 The library uses SDL 3 and OpenGL ES 2.0, and features a streamlined and enhanced 
