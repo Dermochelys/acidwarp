@@ -42,9 +42,13 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
   double color;
   double xcenter, ycenter, width, height;
 
+  // Original DOS version targeted 8:5 display (320x200) but also supported 4:3 displays.
+  // Apply the necessary correction here:
+  const double aspect_correction = (8.0 / 5.0) / ((double)_width / (double)_height);
+
   if (normalize) {
     xcenter = (double)(_xcenter * 320) / _width;
-    ycenter = (double)(_ycenter * 200) / _height;
+    ycenter = (double)(_ycenter * 200 * aspect_correction) / _height;
     width = (double)320;
     height = (double)200;
   } else {
@@ -73,7 +77,7 @@ long x1,x2,x3,x4,y1,y2,y3,y4;
     {
 #ifdef ENABLE_FLOAT
       if (normalize) {
-        y = (double)(_y * 200) / _height;
+        y = (double)(_y * 200 * aspect_correction) / _height;
       } else {
         y = _y;
       }
