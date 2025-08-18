@@ -28,12 +28,15 @@ Use the following remote control buttons to control the program:
 
 ## Version History
 
+### 1.2.0-android
+Add a new pattern created by the Anthropic Claude agent and also some minor code cleanups.
+
 ### 1.1.0-android
-The library adds screen orientation change handling and minor cleanups targeting initial Android 
+Adds screen orientation change handling and minor cleanups targeting initial Android 
 phone & tablet support.
 
 ### 1.0-android
-The library uses SDL 3 and OpenGL ES 2.0, and features a streamlined and enhanced 
+Uses SDL 3 and OpenGL ES 2.0, and features a streamlined and enhanced 
 version targeted at Android TV.
 
 #### Additions / Enhancements

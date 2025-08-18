@@ -32,8 +32,6 @@ static inline int SDL_UnlockMutex_compat(SDL_Mutex *mutex) {
 #include "rolnfade.h"
 #include "display.h"
 
-#include "warp_text.c"
-
 #define LOGO_TIME           10
 #define PATTERN_TIME        60
 

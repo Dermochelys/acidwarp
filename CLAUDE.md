@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Acidwarp is a classic eye candy program that displays animated patterns with palette cycling effects. Originally an MS-DOS program by Noah Spurrier, this is a cross-platform SDL port by Boris Gjenero. The program generates psychedelic visual patterns using lookup tables or floating-point calculations and animates them through palette rotation.
+Acidwarp is a classic eye candy program that displays animated patterns with palette cycling effects. Originally an MS-DOS program by Noah Spurrier, this is a cross-platform SDL port by Boris Gjenero. The program generates psychedelic visual patterns using floating-point calculations and animates them through palette rotation.
 
 ## Build System
 
@@ -35,14 +35,12 @@ This project uses both traditional Makefiles and CMake, with CMake being the pri
 3. **Drawing System** (`draw.c`): Pattern rendering coordination and worker thread management
 4. **Image Generation**:
    - `img_float.c`: High-resolution floating-point pattern generation
-   - `img_int.c`: Original integer-based lookup table generation
    - `bit_map.c`: Bitmap manipulation utilities
 5. **Palette System** (`palinit.c`, `rolnfade.c`): Color palette generation and animation
 6. **Worker System** (`worker.c/h`): Background pattern computation (Emscripten)
 
 ### Key Architecture Patterns
 
-- **Dual Image Generators**: Supports both original integer lookup tables (`-o` flag) and modern floating-point scaling
 - **Worker Threading**: Emscripten builds use web workers for non-blocking pattern generation
 - **Modular Display**: Display layer abstracts SDL operations for cross-platform compatibility
 - **Command System**: Input handling through `acidwarp_command` enum for clean separation

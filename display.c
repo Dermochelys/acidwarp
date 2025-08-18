@@ -10,9 +10,6 @@
 #include <string.h>
 #include <SDL3/SDL.h>
 
-/* SDL 3 compatibility fixes */
-/* SDL 3 removed desktop fullscreen mode, use regular fullscreen */
-#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_WINDOW_FULLSCREEN
 /* SDL 3 changed cursor API */
 static inline void SDL_ShowCursor_compat(int toggle) {
     if (toggle) {
@@ -66,7 +63,6 @@ static UCHAR *draw_buf = NULL;
 
 
 static int fullscreen = 0;
-static int desktopfs = 0;
 static int width, height;
 
 void disp_setPalette(unsigned char *palette)
@@ -104,7 +100,6 @@ void disp_finishUpdate(void)
 {
 }
 
-
 void disp_swapBuffers(void)
 {
   glActiveTexture(GL_TEXTURE1);
@@ -119,9 +114,7 @@ static void disp_toggleFullscreen(void)
     SDL_SetWindowFullscreen(window, 0);
     fullscreen = FALSE;
   } else {
-    SDL_SetWindowFullscreen(window, desktopfs ?
-                                    SDL_WINDOW_FULLSCREEN_DESKTOP :
-                                    SDL_WINDOW_FULLSCREEN);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
     fullscreen = TRUE;
   }
   SDL_ShowCursor(!fullscreen);
@@ -374,21 +367,9 @@ void disp_init(int newwidth, int newheight, int flags)
   fullscreen = (flags & DISP_FULLSCREEN) ? 1 : 0;
 
   if (!inited) {
-    if (flags & DISP_DESKTOP_RES_FS) {
-      /* Need to know later when entering full screen another time */
-      desktopfs = TRUE;
-    }
-
-    videoflags = (fullscreen ?
-                  (desktopfs ? SDL_WINDOW_FULLSCREEN_DESKTOP :
-                   SDL_WINDOW_FULLSCREEN)
-                  : SDL_WINDOW_RESIZABLE);
-
+    videoflags = (fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE);
     SDL_ShowCursor(!fullscreen);
-
     disp_glinit(width, height, videoflags);
-
-
     inited = 1;
   } /* !inited */
 

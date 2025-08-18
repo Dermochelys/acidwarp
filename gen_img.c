@@ -1,4 +1,5 @@
 #pragma ide diagnostic ignored "cert-msc50-cpp"
+#include <math.h>
 #include "handy.h"
 #include "img_float.c"
 
@@ -84,10 +85,6 @@ void generate_image_float(int imageFuncNum,
          separate function.        */
       switch (imageFuncNum)
       {
-        /* case -1:        Eight Arm Star -- produces weird discontinuity
-          color = dist+ lut_sin(angle * (200 - dist)) / 32;
-                                          break;
-                                          */
         case 0: /* Rays plus 2D Waves */
           color = angle + lut_sin (dist * 10) / 64 +
                   lut_cos (x * ANGLE_UNIT / width * 2) / 32 +
@@ -360,6 +357,15 @@ void generate_image_float(int imageFuncNum,
           dx = x - x_center;
           dy = (y - y_center) * 2;
           color = (color +  ((int)dy ^ (int)dx)) / 2;
+          break;
+
+        case 41:        /* 12-fold Mandala Symmetry #claude */
+          {
+            double sym_angle = fmod(angle * 6, ANGLE_UNIT/2);
+            if (sym_angle > ANGLE_UNIT/4) sym_angle = ANGLE_UNIT/2 - sym_angle;
+            color = sym_angle * 4 + lut_sin(dist * 8) / 32 +
+                    lut_cos(dist * 3) / 64;
+          }
           break;
 
         default:

@@ -19,7 +19,7 @@
 #define BLUE                    2
 #define NUM_PALETTE_TYPES       8
 
-#define NUM_IMAGE_FUNCTIONS    40
+#define NUM_IMAGE_FUNCTIONS    41
 
 enum acidwarp_command {
   CMD_PAUSE = 1,
