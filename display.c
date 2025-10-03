@@ -2,7 +2,7 @@
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
- * Ported to Android by Matthew Zavislak
+ * Ported to Android and iOS / iPadOS by Matthew Zavislak
  */
 
 #include <stdlib.h>
@@ -20,7 +20,12 @@ static inline void SDL_ShowCursor_compat(int toggle) {
 }
 #define SDL_ShowCursor SDL_ShowCursor_compat
 /* SDL 3 compatibility - only need what's not provided by oldnames.h */
-#include <GLES2/gl2.h>
+
+#ifdef __APPLE__
+#import <OpenGLES/ES2/gl.h>
+#else
+#import <GLES2/gl2.h>
+#endif
 
 #include "handy.h"
 #include "acidwarp.h"

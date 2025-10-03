@@ -1,5 +1,6 @@
 #pragma ide diagnostic ignored "cert-msc50-cpp"
-/* Bit_Map Image Uncompressor (C)Copyright 1992 by Noah Spurrier	*/
+/* Bit_Map Image Uncompressor (C)Copyright 1992 by Noah Spurrier
+ * Ported to Android and iOS / iPadOS by Matthew Zavislak */
 
 #include <stdlib.h>
 #include "handy.h"
@@ -219,25 +220,27 @@ static void bit_map_uncompress (UCHAR *buf_graf,
                                 UINT xsize)
 {
   UINT x, y, tx, ty;
-
   UINT beg_x, beg_y, end_x, end_y;
-
   UINT bits2;
 
-  beg_x = (xmax - 8 * X_TITLE) / 2;
-  beg_y = (ymax - 8 * Y_TITLE) / 2;
-  end_x = 8 * X_TITLE + beg_x;
-  end_y = 8 * Y_TITLE + beg_y;
+  // Compute the maximum zoom that will ensure LOGO_MIN_MARGIN for
+  // both horizontal and vertical directions.
 
-  if (end_x >= xmax || end_y >= ymax)
-    return;
+  double logo_zoom_x = (double)xmax * (1.0 - 2.0 * LOGO_MIN_MARGIN) / X_TITLE;
+  double logo_zoom_y = (double)ymax * (1.0 - 2.0 * LOGO_MIN_MARGIN) / Y_TITLE;
+  double logo_zoom = MIN(logo_zoom_x, logo_zoom_y);
 
-  for (y = beg_y; y < end_y; y += 8)
+  beg_x = (UINT)((xmax - logo_zoom * X_TITLE) / 2);
+  beg_y = (UINT)((ymax - logo_zoom * Y_TITLE) / 2);
+  end_x = (UINT)(logo_zoom * X_TITLE + beg_x);
+  end_y = (UINT)(logo_zoom * Y_TITLE + beg_y);
+
+  for (y = beg_y; y < end_y; y += logo_zoom)
   {
-    for (x = beg_x; x < end_x; x += 8)
+    for (x = beg_x; x < end_x; x += logo_zoom)
     {
-      tx = (x - beg_x) / 8;
-      ty = (y - beg_y) / 8;
+      tx = (x - beg_x) / logo_zoom;
+      ty = (y - beg_y) / logo_zoom;
 
       bits2 = *(bit_data + ((X_TITLE * ty + tx) / 4) );
 
@@ -266,33 +269,33 @@ static void bit_map_uncompress (UCHAR *buf_graf,
       switch (bits2)
       {
         case 0 :
-          for (int dy = 0; dy < 8; dy++) {
-            for (int dx = 0; dx < 8; dx++) {
-              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(8) + 192 + 0;
+          for (int dy = 0; dy < logo_zoom; dy++) {
+            for (int dx = 0; dx < logo_zoom; dx++) {
+              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(logo_zoom) + 192 + 0;
             }
           }
           break;
 
         case 1 :
-          for (int dy = 0; dy < 8; dy++) {
-            for (int dx = 0; dx < 8; dx++) {
-              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(8) + 192 + 9;
+          for (int dy = 0; dy < logo_zoom; dy++) {
+            for (int dx = 0; dx < logo_zoom; dx++) {
+              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(logo_zoom) + 192 + 9;
             }
           }
           break;
 
         case 2 :
-          for (int dy = 0; dy < 8; dy++) {
-            for (int dx = 0; dx < 8; dx++) {
-              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(8) + 192 + 17;
+          for (int dy = 0; dy < logo_zoom; dy++) {
+            for (int dx = 0; dx < logo_zoom; dx++) {
+              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(logo_zoom) + 192 + 17;
             }
           }
           break;
 
         case 3 :
-          for (int dy = 0; dy < 8; dy++) {
-            for (int dx = 0; dx < 8; dx++) {
-              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(8) + 192 + 25;
+          for (int dy = 0; dy < logo_zoom; dy++) {
+            for (int dx = 0; dx < logo_zoom; dx++) {
+              *(buf_graf + xsize * (y+dy) + (x+dx)) = (UCHAR)RANDOM(logo_zoom) + 192 + 25;
             }
           }
           break;
