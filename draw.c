@@ -2,7 +2,7 @@
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
- * Ported to Android by Matthew Zavislak
+ * Ported to Android, iOS / iPadOS, and macOS by Matthew Zavislak
  */
 
 #include <SDL3/SDL.h>

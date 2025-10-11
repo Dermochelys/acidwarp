@@ -2,7 +2,7 @@
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
- * Ported to Android by Matthew Zavislak
+ * Ported to Android, iOS / iPadOS, and macOS by Matthew Zavislak
  */
 
 #include <stdio.h>
@@ -31,6 +31,7 @@ static inline int SDL_UnlockMutex_compat(SDL_Mutex *mutex) {
 #include "acidwarp.h"
 #include "rolnfade.h"
 #include "display.h"
+#include "AboutMenu.h"
 
 #define LOGO_TIME           10
 #define PATTERN_TIME        60
@@ -51,6 +52,25 @@ static int QUIT_MAIN_LOOP = FALSE;
 
 /* Prototypes for forward referenced functions */
 static void mainLoop(void);
+
+bool HandleAppEvents(void *userdata, SDL_Event *event)
+{
+    switch (event->type)
+    {
+    case SDL_EVENT_TERMINATING:
+        quit(0);
+        return false;
+    case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        handleinput(CMD_PAUSE);
+        return false;
+    case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        handleinput(CMD_PAUSE);
+        return false;
+    default:
+        /* No special processing, add it to the event queue */
+        return true;
+    }
+}
 
 void quit(int retcode)
 {
@@ -142,7 +162,6 @@ static void timer_wait(void)
 
 int main (int argc, char *argv[])
 {
-
   /* Initialize SDL */
   if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0 ) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
@@ -151,9 +170,17 @@ int main (int argc, char *argv[])
     return -1;
   }
 
+#ifdef __ANDROID__
   // Trap the Android back button, only works on API 30 (Android 11) and earlier
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
+#endif
 
+#if defined(TARGET_OS_MAC) || defined(TARGET_OS_WINDOWS)
+  setupCustomAboutMenu();
+#endif
+
+  SDL_SetEventFilter(HandleAppEvents, NULL);
+  
   RANDOMIZE();
 
   disp_init(width, height, disp_flags);

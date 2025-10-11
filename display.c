@@ -2,7 +2,7 @@
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
  * Ported to Linux by Steven Wills
  * Ported to SDL by Boris Gjenero
- * Ported to Android by Matthew Zavislak
+ * Ported to Android, iOS / iPadOS, and macOS by Matthew Zavislak
  */
 
 #include <stdlib.h>
@@ -20,7 +20,19 @@ static inline void SDL_ShowCursor_compat(int toggle) {
 }
 #define SDL_ShowCursor SDL_ShowCursor_compat
 /* SDL 3 compatibility - only need what's not provided by oldnames.h */
+
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if TARGET_OS_IOS
+#include <OpenGLES/ES2/gl.h>
+#else
+#include <OpenGL/gl3.h>
+#endif
+#elif _WIN32
+#include <GL/glew.h>
+#else
 #include <GLES2/gl2.h>
+#endif
 
 #include "handy.h"
 #include "acidwarp.h"
@@ -60,10 +72,36 @@ const GLchar fragment[] =
       "gl_FragColor = texture2D(Palette, vec2(myindex.r, 0.0));\n"
     "}\0";
 static UCHAR *draw_buf = NULL;
-
-
 static int fullscreen = 0;
 static int width, height;
+
+static int getInternalFormat() {
+#ifdef __APPLE__
+#if TARGET_OS_IOS
+return GL_LUMINANCE;
+#else
+return GL_R8;
+#endif
+#elif _WIN32
+return GL_R8;
+#else
+return GL_LUMINANCE;
+#endif
+}
+
+static int getFormat() {
+#ifdef __APPLE__
+#if TARGET_OS_IOS
+return GL_LUMINANCE;
+#else
+return GL_RED;
+#endif
+#elif _WIN32
+return GL_RED;
+#else
+return GL_LUMINANCE;
+#endif
+}
 
 void disp_setPalette(unsigned char *palette)
 {
@@ -104,7 +142,7 @@ void disp_swapBuffers(void)
 {
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, indtex);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE,
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, getFormat(),
                   GL_UNSIGNED_BYTE, draw_buf);
 }
 
@@ -287,9 +325,27 @@ static GLuint loadShader(GLuint program, GLenum type,
     return 0;
 }
 
+static void setAttributesForGLES() {
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+}
+
+static void setAttributesForGL() {
+  // OpenGL 4.1 includes full compatibility with the OpenGL ES 2.0 API
+  // through the GL_ARB_ES2_compatibility extension
+
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+}
+
 static void disp_glinit(int width, int height, Uint32 videoflags)
 {
   GLuint buffer;
+#if !TARGET_OS_IOS
+  GLuint vao;
+#endif
   GLint status;
 
   /* Vertices consist of point x, y, z, w followed by texture x and y */
@@ -300,30 +356,62 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
   };
 
-  /* WebGL 1.0 is based on OpenGL ES 2.0 */
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
- 
+#ifdef __APPLE__
+  if (TARGET_OS_IOS) {
+    setAttributesForGLES();
+  } else {
+    setAttributesForGL();
+  }
+#elif _WIN32
+  setAttributesForGL();
+#else
+  setAttributesForGLES();
+#endif
+
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-  window = SDL_CreateWindow("Acidwarp", width, height, videoflags | SDL_WINDOW_OPENGL);
+  window = SDL_CreateWindow("Acid Warp", width, height, videoflags | SDL_WINDOW_OPENGL);
   if (window == NULL) fatalSDLError("creating SDL OpenGL window");
+
   context = SDL_GL_CreateContext(window);
   if (context == NULL) fatalSDLError("creating OpenGL profile");
 
+#ifdef _WIN32
+  GLenum glew_err = glewInit();
+  if (glew_err != GLEW_OK) {
+    fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
+    quit(-1);
+  }
+#endif
 
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
+
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
+
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
+
   glBindAttribLocation(glprogram, 0, "Position");
   glBindAttribLocation(glprogram, 1, "TexPos");
+
   glLinkProgram(glprogram);
   glGetProgramiv(glprogram, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) disp_glerror("glLinkProgram");
+
   glUseProgram(glprogram);
+
+#if TARGET_OS_IOS
+  // Must set up branch this way for hybrid iOS/iPadOS/macOS build
+#elif TARGET_OS_MAC
+  /* Core Profile requires VAO */
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+#elif _WIN32
+  /* Core Profile requires VAO */
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+#endif
 
   glGenBuffers(1, &buffer);
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -380,8 +468,8 @@ void disp_init(int newwidth, int newheight, int flags)
   /* Create or recreate texture and set viewport, eg. when resizing */
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, indtex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-               GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(), width, height, 0,
+               getFormat(), GL_UNSIGNED_BYTE, NULL);
   glViewport(0, 0, width, height);
 
   disp_allocateOffscreen();

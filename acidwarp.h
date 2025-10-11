@@ -1,6 +1,6 @@
 /* ACIDWARP.H */
 
-#define VERSION "Acid Warp Version 4.10 (C)Copyright 1992, 1993 by Noah Spurrier and Mark Bilk\nAndroid port by Matthew Zavislak based on SDL port by Boris Gjenero, in turn based on Linux port by Steven Wills"
+#define VERSION "Acid Warp Version 4.10 (C)Copyright 1992, 1993 by Noah Spurrier and Mark Bilk\nAndroid, iOS / iPadOS, and macOS ports by Matthew Zavislak based on SDL port by Boris Gjenero, in turn based on Linux port by Steven Wills"
 
 #define DIRECTN_CHANGE_PERIOD_IN_TICKS               256
 
