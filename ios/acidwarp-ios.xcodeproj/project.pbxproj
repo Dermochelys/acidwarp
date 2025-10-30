@@ -1,0 +1,722 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		501D30201E96C10000DE30A6 /* acidwarp.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30121E96C10000DE30A6 /* acidwarp.c */; };
+		501D30211E96C10000DE30A6 /* bit_map.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30131E96C10000DE30A6 /* bit_map.c */; };
+		501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
+		501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
+		501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
+		501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
+		501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
+		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
+		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
+		507701E32E90D72200C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
+		507701E42E90D72200C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
+		507701E62E90D72600C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
+		507701E72E90D72600C75FC6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		502A151A2E70BBC100BA2A0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 502A14F42E70BBC000BA2A0F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 502A14FB2E70BBC000BA2A0F;
+			remoteInfo = acidwarp;
+		};
+		502A15242E70BBC100BA2A0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 502A14F42E70BBC000BA2A0F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 502A14FB2E70BBC000BA2A0F;
+			remoteInfo = acidwarp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		507701E82E90D72600C75FC6 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				507701E72E90D72600C75FC6 /* SDL3.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		501D30121E96C10000DE30A6 /* acidwarp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = acidwarp.c; path = acidwarp/acidwarp/acidwarp.c; sourceTree = "<group>"; };
+		501D30131E96C10000DE30A6 /* bit_map.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bit_map.c; path = acidwarp/acidwarp/bit_map.c; sourceTree = "<group>"; };
+		501D30141E96C10000DE30A6 /* display.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = display.c; path = acidwarp/acidwarp/display.c; sourceTree = "<group>"; };
+		501D30151E96C10000DE30A6 /* draw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = draw.c; path = acidwarp/acidwarp/draw.c; sourceTree = "<group>"; };
+		501D30161E96C10000DE30A6 /* gen_img.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gen_img.c; path = acidwarp/acidwarp/gen_img.c; sourceTree = "<group>"; };
+		501D30171E96C10000DE30A6 /* img_float.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = img_float.c; path = acidwarp/acidwarp/img_float.c; sourceTree = "<group>"; };
+		501D30181E96C10000DE30A6 /* palinit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = palinit.c; path = acidwarp/acidwarp/palinit.c; sourceTree = "<group>"; };
+		501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
+		501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
+		502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		507701E22E90D72200C75FC6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../SDL3.xcframework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		504807AE2E97632900B1C478 /* Exceptions for "acidwarp" folder in "acidwarp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				acidwarp,
+				Info.plist,
+			);
+			target = 502A14FB2E70BBC000BA2A0F /* acidwarp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		502A14FE2E70BBC000BA2A0F /* acidwarp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				504807AE2E97632900B1C478 /* Exceptions for "acidwarp" folder in "acidwarp" target */,
+			);
+			path = acidwarp;
+			sourceTree = "<group>";
+		};
+		502A151C2E70BBC100BA2A0F /* acidwarpTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = acidwarpTests;
+			sourceTree = "<group>";
+		};
+		502A15262E70BBC100BA2A0F /* acidwarpUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = acidwarpUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		502A14F92E70BBC000BA2A0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				507701E62E90D72600C75FC6 /* SDL3.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A15162E70BBC100BA2A0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				507701E32E90D72200C75FC6 /* SDL3.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A15202E70BBC100BA2A0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				507701E42E90D72200C75FC6 /* SDL3.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		500321082E90703700767466 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				507701E22E90D72200C75FC6 /* SDL3.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		502A14F32E70BBC000BA2A0F = {
+			isa = PBXGroup;
+			children = (
+				502A14FE2E70BBC000BA2A0F /* acidwarp */,
+				502A151C2E70BBC100BA2A0F /* acidwarpTests */,
+				502A15262E70BBC100BA2A0F /* acidwarpUITests */,
+				502A14FD2E70BBC000BA2A0F /* Products */,
+				500321082E90703700767466 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		502A14FD2E70BBC000BA2A0F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				502A14FC2E70BBC000BA2A0F /* acidwarp.app */,
+				502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */,
+				502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		502A14FB2E70BBC000BA2A0F /* acidwarp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */;
+			buildPhases = (
+				502A14F82E70BBC000BA2A0F /* Sources */,
+				502A14F92E70BBC000BA2A0F /* Frameworks */,
+				502A14FA2E70BBC000BA2A0F /* Resources */,
+				507701E82E90D72600C75FC6 /* Embed Frameworks */,
+				501D30652E96C53000DE30A6 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				502A14FE2E70BBC000BA2A0F /* acidwarp */,
+			);
+			name = acidwarp;
+			packageProductDependencies = (
+			);
+			productName = acidwarp;
+			productReference = 502A14FC2E70BBC000BA2A0F /* acidwarp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		502A15182E70BBC100BA2A0F /* acidwarpTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 502A15302E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarpTests" */;
+			buildPhases = (
+				502A15152E70BBC100BA2A0F /* Sources */,
+				502A15162E70BBC100BA2A0F /* Frameworks */,
+				502A15172E70BBC100BA2A0F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				502A151B2E70BBC100BA2A0F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				502A151C2E70BBC100BA2A0F /* acidwarpTests */,
+			);
+			name = acidwarpTests;
+			packageProductDependencies = (
+			);
+			productName = acidwarpTests;
+			productReference = 502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		502A15222E70BBC100BA2A0F /* acidwarpUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 502A15332E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarpUITests" */;
+			buildPhases = (
+				502A151F2E70BBC100BA2A0F /* Sources */,
+				502A15202E70BBC100BA2A0F /* Frameworks */,
+				502A15212E70BBC100BA2A0F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				502A15252E70BBC100BA2A0F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				502A15262E70BBC100BA2A0F /* acidwarpUITests */,
+			);
+			name = acidwarpUITests;
+			packageProductDependencies = (
+			);
+			productName = acidwarpUITests;
+			productReference = 502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		502A14F42E70BBC000BA2A0F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					502A14FB2E70BBC000BA2A0F = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					502A15182E70BBC100BA2A0F = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 502A14FB2E70BBC000BA2A0F;
+					};
+					502A15222E70BBC100BA2A0F = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 502A14FB2E70BBC000BA2A0F;
+					};
+				};
+			};
+			buildConfigurationList = 502A14F72E70BBC000BA2A0F /* Build configuration list for PBXProject "acidwarp-ios" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 502A14F32E70BBC000BA2A0F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 502A14FD2E70BBC000BA2A0F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				502A14FB2E70BBC000BA2A0F /* acidwarp */,
+				502A15182E70BBC100BA2A0F /* acidwarpTests */,
+				502A15222E70BBC100BA2A0F /* acidwarpUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		502A14FA2E70BBC000BA2A0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A15172E70BBC100BA2A0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A15212E70BBC100BA2A0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		501D30652E96C53000DE30A6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		502A14F82E70BBC000BA2A0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
+				501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
+				501D30221E96C10000DE30A6 /* display.c in Sources */,
+				501D30231E96C10000DE30A6 /* draw.c in Sources */,
+				501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
+				501D30251E96C10000DE30A6 /* img_float.c in Sources */,
+				501D30261E96C10000DE30A6 /* palinit.c in Sources */,
+				501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
+				501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A15152E70BBC100BA2A0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		502A151F2E70BBC100BA2A0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		502A151B2E70BBC100BA2A0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 502A14FB2E70BBC000BA2A0F /* acidwarp */;
+			targetProxy = 502A151A2E70BBC100BA2A0F /* PBXContainerItemProxy */;
+		};
+		502A15252E70BBC100BA2A0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 502A14FB2E70BBC000BA2A0F /* acidwarp */;
+			targetProxy = 502A15242E70BBC100BA2A0F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		502A152B2E70BBC100BA2A0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = V4H3G6CSTR;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Debug;
+		};
+		502A152C2E70BBC100BA2A0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = V4H3G6CSTR;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		502A152E2E70BBC100BA2A0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = V4H3G6CSTR;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					GLES_SILENCE_DEPRECATION,
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/acidwarp/acidwarp",
+				);
+				INFOPLIST_FILE = acidwarp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Acid Warp";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app does not use Bluetooth.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app does not use the camera.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 5.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		502A152F2E70BBC100BA2A0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V4H3G6CSTR;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/acidwarp/acidwarp",
+				);
+				INFOPLIST_FILE = acidwarp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Acid Warp";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app does not use Bluetooth.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app does not use the camera.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 5.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		502A15312E70BBC100BA2A0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 358R8L3SF8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarpTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/acidwarp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/acidwarp";
+			};
+			name = Debug;
+		};
+		502A15322E70BBC100BA2A0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 358R8L3SF8;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarpTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/acidwarp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/acidwarp";
+			};
+			name = Release;
+		};
+		502A15342E70BBC100BA2A0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 358R8L3SF8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarpUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = acidwarp;
+			};
+			name = Debug;
+		};
+		502A15352E70BBC100BA2A0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 358R8L3SF8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarpUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = acidwarp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		502A14F72E70BBC000BA2A0F /* Build configuration list for PBXProject "acidwarp-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				502A152B2E70BBC100BA2A0F /* Debug */,
+				502A152C2E70BBC100BA2A0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				502A152E2E70BBC100BA2A0F /* Debug */,
+				502A152F2E70BBC100BA2A0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		502A15302E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarpTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				502A15312E70BBC100BA2A0F /* Debug */,
+				502A15322E70BBC100BA2A0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		502A15332E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarpUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				502A15342E70BBC100BA2A0F /* Debug */,
+				502A15352E70BBC100BA2A0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 502A14F42E70BBC000BA2A0F /* Project object */;
+}

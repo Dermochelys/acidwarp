@@ -27,6 +27,27 @@ Use the following keys or remote control buttons to control the program:
 | **Back**            | Exit the app                   |
 | **Home**            | Exit the app                   |
 
+## Updating SDL3
+
+To update the SDL3 library across all platforms:
+
+1. **Android**: Replace the `.aar` file in `android/app/libs/` with the correct version downloaded from [SDL Releases](https://github.com/libsdl-org/SDL/releases). Look for the file ending in `-android.zip`.
+
+2. **iOS/macOS**: Replace `SDL3.xcframework` in the repository root with the correct version downloaded from [SDL Releases](https://github.com/libsdl-org/SDL/releases). Look for the file ending in `.dmg`.
+
+3. **Linux**: Update the `source-tag` version in `linux/snap/snapcraft.yaml`.
+
+4. **GitHub Actions**: Update the `SDL3_VERSION` environment variable in `.github/workflows/build-all-platforms.yml`.
+
+Note: Steps 3 and 4 have comments in their respective files pointing to each other as a reminder to keep them in sync.
+
+### Checking Installed SDL3 Version (Local Development)
+
+To check which SDL3 version is currently installed on your system:
+
+- **Linux**: `pkg-config --modversion sdl3`
+- **Windows (MSYS2)**: `pacman -Q mingw-w64-x86_64-sdl3`
+
 ## Version History (see commit history for full details)
 
 ### 1.3.0

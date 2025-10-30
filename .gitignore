@@ -1,5 +1,5 @@
 *.o
-acidwarp
+./acidwarp
 acidwarp.exe
 acidwarp.js
 acidwarp.wasm
@@ -43,3 +43,6 @@ x64
 /ninja.bootstrap
 .ninja_deps
 .ninja_log
+
+CLAUDE.md
+.claude/**
