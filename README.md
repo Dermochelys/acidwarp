@@ -17,11 +17,13 @@ This fork can be built for:
 
 For detailed build instructions for each platform, see:
 
-- [Android](android/README.md)
-- [iOS / iPadOS](ios/README.md)
-- [Linux](linux/README.md)
-- [macOS](macos/README.md)
-- [Windows](windows/README.md)
+| Platform | Status / Download Link                                                                                                                                                                                                                                                                                                                                                                                           |
+| :--- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[Android](android/README.md)** | <a href="https://play.google.com/store/apps/details?id=com.dermochelys.acidwarp"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height="55" alt="Get it on Google Play"></a>                                                                                                                                                                                       |
+| **[iOS / iPadOS](ios/README.md)** | Not in iOS App Store yet, stay tuned!                                                                                                                                                                                                                                                                                                                                                                            |
+| **[Linux](linux/README.md)** | <a href="https://snapcraft.io/acidwarp"><img src="https://snapcraft.io/en/dark/install.svg" height="41" alt="Get it from the Snap Store"></a>                                                                                                                                                                                                                                                                    |
+| **[macOS](macos/README.md)** | <a href="https://apps.apple.com/us/app/acid-warp/id6753610977?mt=12&itscg=30200&itsct=apps_box_badge&mttnsubad=6753610977" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1760486400" alt="Download on the App Store" style="width: 123px; height: 41px; vertical-align: middle; object-fit: contain;" /></a> |
+| **[Windows](windows/README.md)** | <a href="https://apps.microsoft.com/detail/9N7W8XK7GGHC?referrer=appbadge&mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" height="41" alt="Get it from Microsoft"></a>                                                                                                                                                                                                                 |
 
 ## Using the program (Android TV or devices with keyboards)
 
@@ -111,7 +113,7 @@ version targeted at Android TV.
 - As this is a descendent of Steven Will's "AcidWarp for Linux" which was GPL licensed, this too
   is and must be also GPL licensed.  See [gpl-3.0.md](gpl-3.0.md)
 
-- Note that the original project predated modern open-source licensing and was described as
+- Note that the original project predated modern open-source licensing and was described as "All Rights reserved. Private Proprietary Source Code", and:
   - v. 3.22: `This program is free and public domain. It may not be used for profit.` (1992)
   - v. 4.2 : `This is free software`. (1993)
 

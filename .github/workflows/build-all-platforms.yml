@@ -89,12 +89,7 @@ jobs:
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
 
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: android/app/build/outputs/apk/debug/*.apk
-          retention-days: 7
+
 
   # ============================================================================
   # LINUX BUILD
@@ -151,12 +146,7 @@ jobs:
         working-directory: linux
         run: cmake --build build --config Release
 
-      - name: Upload Linux binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-binary
-          path: linux/build/acidwarp-linux
-          retention-days: 7
+
 
   # ============================================================================
   # WINDOWS BUILD
@@ -193,12 +183,7 @@ jobs:
         working-directory: windows
         run: cmake --build build --config Release
 
-      - name: Upload Windows executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-exe
-          path: windows/build/acidwarp-windows.exe
-          retention-days: 7
+
 
   # ============================================================================
   # macOS BUILD
@@ -231,12 +216,7 @@ jobs:
           cd build/Build/Products/Release
           zip -r ../../../../acidwarp-macos.zip "Acid Warp.app"
 
-      - name: Upload macOS app
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-app
-          path: macos/acidwarp-macos.zip
-          retention-days: 7
+
 
   # ============================================================================
   # iOS / iPadOS BUILD
@@ -270,12 +250,7 @@ jobs:
           cd build/Build/Products/Release-iphoneos
           zip -r ../../../../acidwarp-ios.zip acidwarp.app
 
-      - name: Upload iOS app
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-app
-          path: ios/acidwarp-ios.zip
-          retention-days: 7
+
 
   # ============================================================================
   # BUILD SUMMARY
