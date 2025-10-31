@@ -135,7 +135,9 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
           cmake --build build --config Release
           cd build
-          cpack -G DEB
+          cpack -G DEB \
+            -D CPACK_PACKAGE_CONTACT="github-actions@github.com" \
+            -D CPACK_DEBIAN_PACKAGE_MAINTAINER="GitHub Actions"
           mv *.deb ../../sdl3.deb
 
       - name: Install SDL3 from .deb

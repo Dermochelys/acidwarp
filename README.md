@@ -61,6 +61,9 @@ To check which SDL3 version is currently installed on your system:
 
 ## Version History (see commit history for full details)
 
+### 5.0.0
+Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). Update to SDL 3.2.26.
+
 ### 1.3.0
 Add iOS / iPadOS / macOS / Windows / Linux support; support logo display on smaller screen sizes; other minor enhancements.
 
