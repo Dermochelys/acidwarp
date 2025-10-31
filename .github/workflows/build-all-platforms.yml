@@ -239,10 +239,10 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # iOS BUILD
+  # iOS / iPadOS BUILD
   # ============================================================================
   ios:
-    name: iOS
+    name: iOS / iPadOS
     runs-on: macos-latest
 
     steps:
