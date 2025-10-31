@@ -82,3 +82,66 @@ dependencies {
     androidTestImplementation libs.rules
     androidTestImplementation libs.uiautomator
 }
+
+// Task to download SDL3 .aar if not present
+tasks.register('downloadSDL3') {
+    doLast {
+        def sdlVersionFile = file('../../SDL_VERSION')
+        if (!sdlVersionFile.exists()) {
+            throw new GradleException("SDL_VERSION file not found at ${sdlVersionFile.absolutePath}")
+        }
+
+        def sdlVersion = sdlVersionFile.text.trim()
+        def expectedAar = "SDL3-${sdlVersion}.aar"
+        def libsDir = file('libs')
+
+        // Check for existing SDL3 .aar files
+        def existingAars = libsDir.listFiles { dir, name ->
+            name.startsWith('SDL3-') && name.endsWith('.aar')
+        }
+
+        // If the correct version exists, we're done
+        def correctAarExists = existingAars?.any { it.name == expectedAar }
+        if (correctAarExists) {
+            println "SDL3 ${sdlVersion} already present"
+            return
+        }
+
+        // Clean up old SDL3 versions
+        existingAars?.each { oldAar ->
+            println "Removing old SDL3 version: ${oldAar.name}"
+            oldAar.delete()
+        }
+
+        // Download the new version
+        println "Downloading SDL3 ${sdlVersion} for Android..."
+        def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
+        def zipFile = file("${libsDir}/${expectedAar}.zip")
+
+        // Download zip file
+        new URL(zipUrl).withInputStream { input ->
+            zipFile.withOutputStream { output ->
+                output << input
+            }
+        }
+
+        println "Extracting SDL3 .aar..."
+        // Extract the .aar from the zip
+        ant.unzip(src: zipFile, dest: libsDir) {
+            patternset {
+                include(name: "**/${expectedAar}")
+            }
+            mapper(type: 'flatten')
+        }
+
+        // Clean up zip file
+        zipFile.delete()
+
+        println "SDL3 ${sdlVersion} downloaded successfully"
+    }
+}
+
+// Make sure SDL3 is downloaded before building
+tasks.named('preBuild').configure {
+    dependsOn 'downloadSDL3'
+}

@@ -156,6 +156,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 506E5C732E91B90800F39B20 /* Build configuration list for PBXNativeTarget "acidwarp-macos" */;
 			buildPhases = (
+				501D302A2E96BF9700DE30A6 /* Download SDL3 */,
 				506E5C4A2E91B90700F39B20 /* Sources */,
 				506E5C4B2E91B90700F39B20 /* Frameworks */,
 				506E5C4C2E91B90700F39B20 /* Resources */,
@@ -291,6 +292,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		501D302A2E96BF9700DE30A6 /* Download SDL3 */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download SDL3";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
+		};
 		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

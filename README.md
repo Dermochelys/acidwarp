@@ -42,17 +42,20 @@ Use the following keys or remote control buttons to control the program:
 
 ## Updating SDL3
 
-To update the SDL3 library across all platforms:
+SDL3 version is centrally managed in the `SDL_VERSION` file at the repository root. SDL3 artifacts are automatically downloaded during builds and are not checked into version control.
 
-1. **Android**: Replace the `.aar` file in `android/app/libs/` with the correct version downloaded from [SDL Releases](https://github.com/libsdl-org/SDL/releases). Look for the file ending in `-android.zip`.
+To update SDL3 across all platforms:
 
-2. **iOS/macOS**: Replace `SDL3.xcframework` in the repository root with the correct version downloaded from [SDL Releases](https://github.com/libsdl-org/SDL/releases). Look for the file ending in `.dmg`.
+1. Update the version in `SDL_VERSION` (e.g., `3.2.26`)
+2. Update `source-tag` in `linux/snap/snapcraft.yaml` to match
+3. Update `SDL3_VERSION` in `.github/workflows/build-all-platforms.yml` to match
 
-3. **Linux**: Update the `source-tag` version in `linux/snap/snapcraft.yaml`.
+Build systems will automatically download the new version:
+- **Android**: Gradle downloads SDL3-{version}.aar automatically before build, removing old versions
+- **iOS/macOS**: Xcode Run Script build phase checks the installed SDL3.xcframework version and automatically downloads/updates if needed
+- **Linux/Windows**: Installed via package managers
 
-4. **GitHub Actions**: Update the `SDL3_VERSION` environment variable in `.github/workflows/build-all-platforms.yml`.
-
-Note: Steps 3 and 4 have comments in their respective files pointing to each other as a reminder to keep them in sync.
+Note: Steps 2 and 3 have comments in their respective files pointing to each other as a reminder to keep them in sync.
 
 ### Checking Installed SDL3 Version (Local Development)
 

@@ -9,8 +9,8 @@
 
 ## Building
 
-- Version 3 of the [SDL library](https://github.com/libsdl-org/SDL/releases) is required, and is included as an `.aar` file in [app/libs](app/libs).
-- Build the app by running `./gradlew build`. 
+- SDL3 is automatically downloaded during the build process based on the version specified in `SDL_VERSION` at the repo root. The Gradle build will download the correct `.aar` file from [SDL releases](https://github.com/libsdl-org/SDL/releases) to [app/libs](app/libs) if it's not already present.
+- Build the app by running `./gradlew build`.
 
 Most build dependencies are dynamically loaded, however, you must also ensure that some dependencies are preloaded via `Tools > SDK Manager` in Android Studio, or using [sdkmanager](https://developer.android.com/tools/sdkmanager):
 - `cmake` with version matching that inside of [build.gradle](app/build.gradle)

@@ -10,10 +10,8 @@
 ## Building
 
 Xcode 26+ has been used to develop the app.  It may be possible to use older Xcode versions, but that is left as an exercise to those interested.
-Version 3 of SDL is required.  
 
-- Download the latest release `.dmg` in [SDL releases](https://github.com/libsdl-org/SDL/releases)
-- Follow the SDL instructions in the [macOS README](https://wiki.libsdl.org/SDL3/README-macos) for how to add SDL as a framework to the Xcode project.
+SDL3 is automatically downloaded during the build via a Run Script build phase. The script checks if `SDL3.xcframework` exists in the repo root and downloads it if needed based on the version in `SDL_VERSION`.
 
 ## Previous ports
 - See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.

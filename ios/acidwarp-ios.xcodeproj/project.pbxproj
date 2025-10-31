@@ -165,6 +165,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */;
 			buildPhases = (
+				501D30642E96C52F00DE30A6 /* Download SDL3 */,
 				502A14F82E70BBC000BA2A0F /* Sources */,
 				502A14F92E70BBC000BA2A0F /* Frameworks */,
 				502A14FA2E70BBC000BA2A0F /* Resources */,
@@ -299,6 +300,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		501D30642E96C52F00DE30A6 /* Download SDL3 */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download SDL3";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
+		};
 		501D30652E96C53000DE30A6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
