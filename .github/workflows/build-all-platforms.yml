@@ -120,21 +120,26 @@ jobs:
             libpulse-dev libasound2-dev libudev-dev libdbus-1-dev \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev
 
-      - name: Cache SDL3
+      - name: Cache SDL3 .deb package
         id: cache-sdl3
         uses: actions/cache@v4
         with:
-          path: /usr/local
-          key: sdl3-linux-${{ env.SDL3_VERSION }}
+          path: sdl3.deb
+          key: sdl3-deb-${{ env.SDL3_VERSION }}
 
-      - name: Build SDL3 from source
+      - name: Build SDL3 .deb package
         if: steps.cache-sdl3.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch ${{ env.SDL3_VERSION }} https://github.com/libsdl-org/SDL.git SDL3-source
           cd SDL3-source
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
           cmake --build build --config Release
-          sudo cmake --install build
+          cd build
+          cpack -G DEB
+          mv *.deb ../../sdl3.deb
+
+      - name: Install SDL3 from .deb
+        run: sudo dpkg -i sdl3.deb
 
       - name: Configure CMake
         working-directory: linux

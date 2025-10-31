@@ -2,15 +2,26 @@
 
 ## What is Acid Warp?
 
-Acid Warp is an eye candy program which displays various patterns and
-animates them by changing the palette. Originally it was an MS-DOS / Windows
-program by Noah Spurrier and Mark Bilk and was made in 1992/1993.
+Acid Warp is an eye candy program which displays various patterns and animates them by changing the palette. Originally it was an MS-DOS / Windows program by Noah Spurrier and Mark Bilk and was made in 1992/1993.
 
-This is a port by [Matthew Zavislak](https://github.com/elevenfive) based on the previous [port](https://github.com/dreamlayers/acidwarp) by [Boris Gjenero](https://github.com/dreamlayers)
-to the SDL 1.2 / 2 library. That, in turn, is based on the Linux SVGALib port
-by Steven Wills.
+This is a fork by [Matthew Zavislak](https://github.com/elevenfive) based on the previous [SDL2-based port](https://github.com/dreamlayers/acidwarp) by [Boris Gjenero](https://github.com/dreamlayers) to the SDL 1.2 / 2 library. That, in turn, is based on the Linux SVGALib port by Steven Wills.
 
-This port can be built for Android phones, tablets, and TVs, as well as for iOS phones and iPadOS tablets.
+This fork can be built for:
+ - Android phones, tablets, and TVs
+ - iOS phones and iPadOS tablets
+ - macOS devices
+ - Linux devices (Confirmed working on Ubuntu 22.04+)
+ - Windows devices (requires DirectX 11+)
+
+## Platform-Specific Build Instructions
+
+For detailed build instructions for each platform, see:
+
+- [Android](android/README.md)
+- [iOS / iPadOS](ios/README.md)
+- [Linux](linux/README.md)
+- [macOS](macos/README.md)
+- [Windows](windows/README.md)
 
 ## Using the program (Android TV or devices with keyboards)
 
