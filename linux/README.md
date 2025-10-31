@@ -13,10 +13,22 @@
 ## Building Locally
 
 ### Dependencies
-- See [CMakeLists.txt](CMakeLists.txt) for dependency information.
 
-### Build steps
-- Build the app with Cmake by running `cmake --fresh && cmake --build .`
+See [CMakeLists.txt](CMakeLists.txt) for dependency information.
+
+If your distribution doesn't provide SDL3 packages, see the [SDL3 build instructions for Unix](https://wiki.libsdl.org/SDL3/README-cmake#building-sdl-on-unix). Check your installed version with `pkg-config --modversion sdl3`.
+
+### Build Steps
+
+Build the app with CMake:
+```bash
+cmake --fresh && cmake --build .
+```
+
+If SDL3 is installed in a non-standard location, specify it with `CMAKE_PREFIX_PATH`:
+```bash
+cmake --fresh -DCMAKE_PREFIX_PATH=/path/to/sdl3/install && cmake --build .
+```
 
 ## Previous ports
 - See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).
