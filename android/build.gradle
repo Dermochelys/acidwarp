@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+
+    dependencies {
+        classpath libs.gradle
+        classpath libs.kotlin.gradle.plugin
+    }
+}
+
+plugins {
+    alias(libs.plugins.gradle.versions.plugin)
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+    }
+}
+
+// https://github.com/ben-manes/gradle-versions-plugin
+tasks.named("dependencyUpdates").configure {
+    checkForGradleUpdate = true
+    outputFormatter = "plain"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
+    gradleReleaseChannel = "current"
+    checkConstraints = false
+
+    rejectVersionIf {
+        def unstableKeywords = ['alpha', 'beta', 'rc', 'cr', 'm', 'preview', 'dev', 'eap', 'snapshot']
+
+        def isUnstable = { String version ->
+            unstableKeywords.any { keyword -> version.toLowerCase().contains(keyword) }
+        }
+
+        def currentIsStable = !isUnstable(it.currentVersion)
+        def candidateIsUnstable = isUnstable(it.candidate.version)
+
+        // Reject unstable candidates only if we're currently on a stable version
+        return currentIsStable && candidateIsUnstable
+    }
+}

@@ -1,0 +1,84 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace = "com.dermochelys.acidwarp"
+    compileSdkVersion = 36
+    buildToolsVersion = "36.1.0"
+    ndkVersion = "29.0.14206865"
+
+    defaultConfig {
+        minSdkVersion 29
+        targetSdkVersion 36
+
+        // No need to have a sophisticated versionCode scheme for this app, as without
+        // a formal release schedule there is no need to support hotfix versioning.
+        // Thus, we just monotonically increase with every release.
+        versionCode 18
+
+        versionName "5.0.0+18"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+    }
+
+    externalNativeBuild {
+        cmake {
+            // Hold this back due to Github actions failing on 4.0.2+.
+            // Note: Ubuntu 25.04 bundles 3.31.6
+            // See: https://github.com/actions/runner-images/blob/main/images/ubuntu/toolsets/toolset-2404.json
+            version = "3.31.6"
+            path 'jni/CMakeLists.txt'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs.add("-Werror")
+    }
+
+    kotlin {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    }
+
+    buildFeatures {
+        prefab = true
+    }
+
+    lint {
+        warningsAsErrors = true
+
+        // This is needed when a new Kotlin version is out but the corresponding KSP version is not
+        disable += "NewerVersionAvailable"
+        disable += "GradleDependency"
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.aar'], dir: 'libs')
+
+    androidTestImplementation libs.junit
+    androidTestImplementation libs.junit.ktx
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.runner
+    androidTestImplementation libs.rules
+    androidTestImplementation libs.uiautomator
+}

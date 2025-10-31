@@ -1,0 +1,285 @@
+name: Build All Platforms
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ============================================================================
+  # ANDROID BUILD
+  # ============================================================================
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        working-directory: android
+        run: chmod +x gradlew
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-36
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: assemble, lint, run unit tests, run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: cd android && ./gradlew build connectedCheck
+
+      - name: Check Android ELF Alignment
+        uses: Dermochelys/check-android-elf-alignment@v2
+
+
+
+  # ============================================================================
+  # LINUX BUILD
+  # ============================================================================
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+
+    env:
+      # Also update source-tag in linux/snap/snapcraft.yaml when changing this
+      SDL3_VERSION: release-3.2.26
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential \
+            libgles2-mesa-dev libgl1-mesa-dev \
+            libwayland-dev libxkbcommon-dev wayland-protocols \
+            libpulse-dev libasound2-dev libudev-dev libdbus-1-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev
+
+      - name: Cache SDL3 .deb package
+        id: cache-sdl3
+        uses: actions/cache@v4
+        with:
+          path: sdl3.deb
+          key: sdl3-deb-${{ env.SDL3_VERSION }}
+
+      - name: Build SDL3 .deb package
+        if: steps.cache-sdl3.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch ${{ env.SDL3_VERSION }} https://github.com/libsdl-org/SDL.git SDL3-source
+          cd SDL3-source
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build --config Release
+          cd build
+          cpack -G DEB \
+            -D CPACK_PACKAGE_CONTACT="github-actions@github.com" \
+            -D CPACK_DEBIAN_PACKAGE_MAINTAINER="GitHub Actions"
+          mv dist/*.deb ../../sdl3.deb
+
+      - name: Install SDL3 from .deb
+        run: sudo dpkg -i sdl3.deb
+
+      - name: Configure CMake
+        working-directory: linux
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: linux
+        run: cmake --build build --config Release
+
+
+
+  # ============================================================================
+  # WINDOWS BUILD
+  # ============================================================================
+  windows:
+    name: Windows
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-sdl3
+            mingw-w64-x86_64-glew
+
+      - name: Configure CMake
+        working-directory: windows
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: windows
+        run: cmake --build build --config Release
+
+
+
+  # ============================================================================
+  # macOS BUILD
+  # ============================================================================
+  macos:
+    name: macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build macOS app
+        working-directory: macos
+        run: |
+          xcodebuild -project acidwarp-macos.xcodeproj \
+            -scheme acidwarp-macos \
+            -configuration Release \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create macOS app archive
+        working-directory: macos
+        run: |
+          cd build/Build/Products/Release
+          zip -r ../../../../acidwarp-macos.zip "Acid Warp.app"
+
+
+
+  # ============================================================================
+  # iOS / iPadOS BUILD
+  # ============================================================================
+  ios:
+    name: iOS / iPadOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build iOS app
+        working-directory: ios
+        run: |
+          xcodebuild -project acidwarp-ios.xcodeproj \
+            -scheme acidwarp \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create iOS app archive
+        working-directory: ios
+        run: |
+          cd build/Build/Products/Release-iphoneos
+          zip -r ../../../../acidwarp-ios.zip acidwarp.app
+
+
+
+  # ============================================================================
+  # BUILD SUMMARY
+  # ============================================================================
+  build-summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [android, linux, windows, macos, ios]
+    if: always()
+
+    steps:
+      - name: Check build results
+        run: |
+          echo "Build Summary:"
+          echo "============================================"
+          echo "Android: ${{ needs.android.result }}"
+          echo "Linux:   ${{ needs.linux.result }}"
+          echo "Windows: ${{ needs.windows.result }}"
+          echo "macOS:   ${{ needs.macos.result }}"
+          echo "iOS:     ${{ needs.ios.result }}"
+          echo "============================================"
+
+          if [[ "${{ needs.android.result }}" == "failure" ]] || \
+             [[ "${{ needs.linux.result }}" == "failure" ]] || \
+             [[ "${{ needs.windows.result }}" == "failure" ]] || \
+             [[ "${{ needs.macos.result }}" == "failure" ]] || \
+             [[ "${{ needs.ios.result }}" == "failure" ]]; then
+            echo "❌ One or more builds failed"
+            exit 1
+          else
+            echo "✅ All builds completed successfully"
+          fi

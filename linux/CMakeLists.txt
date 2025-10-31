@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.28.3)
+
+project(acidwarp-linux)
+
+# Linux-specific build configuration
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "This CMakeLists.txt is designed for Linux builds only")
+endif()
+
+# Find SDL3 - required dependency
+find_package(SDL3 CONFIG)
+if(NOT TARGET SDL3::SDL3)
+    find_library(SDL3_LIBRARY NAMES "SDL3")
+    find_path(SDL3_INCLUDE_DIR NAMES "SDL3/SDL.h")
+    if(SDL3_LIBRARY AND SDL3_INCLUDE_DIR)
+        add_library(SDL3::SDL3 UNKNOWN IMPORTED)
+        set_property(TARGET SDL3::SDL3 PROPERTY IMPORTED_LOCATION "${SDL3_LIBRARY}")
+        set_property(TARGET SDL3::SDL3 PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL3_INCLUDE_DIR}")
+    endif()
+endif()
+
+if(NOT TARGET SDL3::SDL3)
+    message(FATAL_ERROR "SDL3 is required for this build. Please install SDL3 development libraries.")
+endif()
+
+# Find OpenGL for desktop Linux
+find_package(OpenGL REQUIRED)
+if(NOT OPENGL_FOUND)
+    message(FATAL_ERROR "OpenGL 4.1+ is required for Linux desktop builds")
+endif()
+
+# Add the acidwarp submodule as a subdirectory
+add_subdirectory(acidwarp)
+
+# Create an executable that links to the main library from the submodule
+add_executable(acidwarp-linux acidwarp/acidwarp.c)
+
+# Link against the library and OpenGL for desktop
+target_link_libraries(acidwarp-linux PRIVATE main ${OPENGL_LIBRARIES} SDL3::SDL3 m)
+
+# Install targets
+install(TARGETS acidwarp-linux DESTINATION bin)
+install(FILES acidwarp.desktop DESTINATION share/applications)
