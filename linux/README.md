@@ -16,7 +16,13 @@
 
 See [CMakeLists.txt](CMakeLists.txt) for dependency information.
 
-If your distribution doesn't provide SDL3 packages, see the [SDL3 build instructions for Unix](https://wiki.libsdl.org/SDL3/README-cmake#building-sdl-on-unix). Check your installed version with `pkg-config --modversion sdl3`.
+If your distribution doesn't provide SDL3 and SDL3_image packages, see the build instructions:
+- [SDL3 build instructions for Unix](https://wiki.libsdl.org/SDL3/README-cmake#building-sdl-on-unix)
+- [SDL3_image build instructions](https://github.com/libsdl-org/SDL_image)
+
+Check your installed versions with:
+- `pkg-config --modversion sdl3`
+- `pkg-config --modversion SDL3_image`
 
 ### Build Steps
 

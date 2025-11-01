@@ -40,31 +40,36 @@ Use the following keys or remote control buttons to control the program:
 | **Back**            | Exit the app                   |
 | **Home**            | Exit the app                   |
 
-## Updating SDL3
+## Updating SDL3 and SDL3_image
 
-SDL3 version is centrally managed in the `SDL_VERSION` file at the repository root. SDL3 artifacts are automatically downloaded during builds and are not checked into version control.
+SDL3 and SDL3_image versions are centrally managed in the `SDL_VERSION` and `SDL3_IMAGE_VERSION` files at the repository root. SDL3 and SDL3_image artifacts are automatically downloaded during builds and are not checked into version control.
 
-To update SDL3 across all platforms:
+To update SDL3 and SDL3_image across all platforms:
 - Update the version in `SDL_VERSION` (e.g., `3.2.26`)
+- Update the version in `SDL3_IMAGE_VERSION` (e.g., `3.2.4`)
 
-Build systems will automatically download the new version:
-- **Android**: Gradle downloads SDL3-{version}.aar automatically before build, removing old versions
-- **iOS/macOS**: Xcode Run Script build phase checks the installed SDL3.xcframework version and automatically downloads/updates if needed
+Build systems will automatically download the new versions:
+- **Android**: Gradle downloads SDL3-{version}.aar and SDL3_image-{version}.aar automatically before build, removing old versions
+- **iOS/macOS**: Xcode Run Script build phase checks the installed SDL3.xcframework and SDL3_image.xcframework versions and automatically downloads/updates if needed
 - **Linux/Windows**: Installed via package managers
 
 Note: Steps 2 and 3 have comments in their respective files pointing to each other as a reminder to keep them in sync.
 
-### Checking Installed SDL3 Version (Local Development)
+### Checking Installed SDL3 and SDL3_image Versions (Local Development)
 
-To check which SDL3 version is currently installed on your system:
+To check which SDL3 and SDL3_image versions are currently installed on your system:
 
-- **Linux**: `pkg-config --modversion sdl3`
-- **Windows (MSYS2)**: `pacman -Q mingw-w64-x86_64-sdl3`
+- **Linux**: 
+  - `pkg-config --modversion sdl3`
+  - `pkg-config --modversion SDL3_image`
+- **Windows (MSYS2)**: 
+  - `pacman -Q mingw-w64-x86_64-sdl3`
+  - `pacman -Q mingw-w64-x86_64-sdl3-image`
 
 ## Version History (see commit history for full details)
 
 ### 5.0.0
-Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). Update to SDL 3.2.26.
+Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). Update to SDL 3.2.26 and SDL3_image 3.2.4.
 
 ### 1.3.0
 Add iOS / iPadOS / macOS / Windows / Linux support; support logo display on smaller screen sizes; other minor enhancements.

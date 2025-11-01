@@ -138,6 +138,33 @@ jobs:
       - name: Install SDL3 from .deb
         run: sudo dpkg -i sdl3.deb
 
+      - name: Read SDL3_image version
+        id: sdl-image-version
+        run: echo "SDL3_IMAGE_VERSION=release-$(cat SDL3_IMAGE_VERSION)" >> $GITHUB_ENV
+
+      - name: Cache SDL3_image .deb package
+        id: cache-sdl3-image
+        uses: actions/cache@v4
+        with:
+          path: sdl3-image.deb
+          key: sdl3-image-deb-${{ env.SDL3_IMAGE_VERSION }}
+
+      - name: Build SDL3_image .deb package
+        if: steps.cache-sdl3-image.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch ${{ env.SDL3_IMAGE_VERSION }} https://github.com/libsdl-org/SDL_image.git SDL3_image-source
+          cd SDL3_image-source
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build --config Release
+          cd build
+          cpack -G DEB \
+            -D CPACK_PACKAGE_CONTACT="github-actions@github.com" \
+            -D CPACK_DEBIAN_PACKAGE_MAINTAINER="GitHub Actions"
+          mv dist/*.deb ../../sdl3-image.deb
+
+      - name: Install SDL3_image from .deb
+        run: sudo dpkg -i sdl3-image.deb
+
       - name: Configure CMake
         working-directory: linux
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -173,6 +200,7 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-sdl3
+            mingw-w64-x86_64-sdl3-image
             mingw-w64-x86_64-glew
 
       - name: Configure CMake
@@ -278,8 +306,8 @@ jobs:
              [[ "${{ needs.windows.result }}" == "failure" ]] || \
              [[ "${{ needs.macos.result }}" == "failure" ]] || \
              [[ "${{ needs.ios.result }}" == "failure" ]]; then
-            echo "❌ One or more builds failed"
+            echo "? One or more builds failed"
             exit 1
           else
-            echo "✅ All builds completed successfully"
+            echo "? All builds completed successfully"
           fi

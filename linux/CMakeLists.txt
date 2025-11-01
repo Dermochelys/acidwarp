@@ -23,6 +23,22 @@ if(NOT TARGET SDL3::SDL3)
     message(FATAL_ERROR "SDL3 is required for this build. Please install SDL3 development libraries.")
 endif()
 
+# Find SDL3_image - required dependency
+find_package(SDL3_image CONFIG)
+if(NOT TARGET SDL3_image::SDL3_image)
+    find_library(SDL3_IMAGE_LIBRARY NAMES "SDL3_image")
+    find_path(SDL3_IMAGE_INCLUDE_DIR NAMES "SDL3/SDL_image.h")
+    if(SDL3_IMAGE_LIBRARY AND SDL3_IMAGE_INCLUDE_DIR)
+        add_library(SDL3_image::SDL3_image UNKNOWN IMPORTED)
+        set_property(TARGET SDL3_image::SDL3_image PROPERTY IMPORTED_LOCATION "${SDL3_IMAGE_LIBRARY}")
+        set_property(TARGET SDL3_image::SDL3_image PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL3_IMAGE_INCLUDE_DIR}")
+    endif()
+endif()
+
+if(NOT TARGET SDL3_image::SDL3_image)
+    message(FATAL_ERROR "SDL3_image is required for this build. Please install SDL3_image development libraries.")
+endif()
+
 # Find OpenGL for desktop Linux
 find_package(OpenGL REQUIRED)
 if(NOT OPENGL_FOUND)
@@ -36,7 +52,7 @@ add_subdirectory(acidwarp)
 add_executable(acidwarp-linux acidwarp/acidwarp.c)
 
 # Link against the library and OpenGL for desktop
-target_link_libraries(acidwarp-linux PRIVATE main ${OPENGL_LIBRARIES} SDL3::SDL3 m)
+target_link_libraries(acidwarp-linux PRIVATE main ${OPENGL_LIBRARIES} SDL3::SDL3 SDL3_image::SDL3_image m)
 
 # Install targets
 install(TARGETS acidwarp-linux DESTINATION bin)

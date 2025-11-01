@@ -12,7 +12,8 @@ endif()
 
 include(FindPkgConfig)
 pkg_search_module(SDL REQUIRED sdl3)
-include_directories(${SDL_INCLUDE_DIRS})
+pkg_search_module(SDL_IMAGE REQUIRED SDL3_image)
+include_directories(${SDL_INCLUDE_DIRS} ${SDL_IMAGE_INCLUDE_DIRS})
 
 # Find OpenGL for desktop Linux
 find_package(OpenGL REQUIRED)
@@ -30,4 +31,4 @@ add_definitions(-DGLEW_STATIC)
 add_executable(acidwarp-windows acidwarp/acidwarp.c acidwarp.rc)
 
 # Link against the library and OpenGL for desktop
-target_link_libraries(acidwarp-windows PRIVATE main ${SDL_STATIC_LDFLAGS} glew32 opengl32)
+target_link_libraries(acidwarp-windows PRIVATE main ${SDL_STATIC_LDFLAGS} ${SDL_IMAGE_STATIC_LDFLAGS} glew32 opengl32)

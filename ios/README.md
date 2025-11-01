@@ -10,7 +10,7 @@
 ## Building
 
 - Use Xcode 26 or later.
-- SDL3 is automatically downloaded during the build via a Run Script build phase. The script checks if `SDL3.xcframework` exists in the repo root and downloads it if needed based on the version in `SDL_VERSION`.
+- SDL3 and SDL3_image are automatically downloaded during the build via Run Script build phases. The scripts check if `SDL3.xcframework` and `SDL3_image.xcframework` exist in the repo root and download them if needed based on the versions in `SDL_VERSION` and `SDL3_IMAGE_VERSION`.
 
 ## Previous ports
 - See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).
