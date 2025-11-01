@@ -1,0 +1,158 @@
+
+acidwarp-1.0-1
+----------------
+
+---
+
+This is an Amiga port(based on Linux port by Steven Wills) of the old
+school DOS proggy 'AcidWarp' by Noah Spurrier. Basically this is superb
+90's eye candy i saw long time ago on my friend's PC. I was amazed how
+nice this thing is and i felt like i want it really bad! Unfortunately
+it didnt work very well under the 'PC-Task' emulator. Happily few weeks
+ago i found the src. code on the net, overlooked it and decided to port
+this little thingie to Miggy. This weekend i finally found some spare
+time and so 'AcidWarp' can now Warp yer Amigish brain too!
+
+---
+
+NEWS:
+      [06-Jun-2010]   1.0-1   Thanks to Sotiris who reported that there
+                              is no palette rotation on RGB screens!
+                              Indeed 'LoadRGBx()' cant make any changes
+                              to RGB(15+ bit screens) palette... I have
+                              added a workaround that tries to guess
+                              nearest 6/8 bit screen mode upon RGB one.
+                              ---
+                              Made some major changes to rendition: ECS
+                              looks better now plus added mode switch,
+                              removed per line drawing scheme, shielded
+                              drawing with locks.
+                              ---
+                              Improved sub-task synchronisation a bit.
+
+---
+
+NOTES:
+
+[*]
+Requires 68000+(no FPU)(68030+ strongly recommended), OS 2.04+, 256+ k
+of free memory, ECS(EHB)/AGA/CGX/P96/...(CMAP - 6/8bit screens only!)
+
+[*]
+Proggy works very smooth even on a plain A1200, but image generation is
+slow. To fully enjoy the visuals you should have some fast mem. and set
+the resolution to something like 320x200(NTSC == '-r 0x11000'), this is
+the native 'AcidWarp' resoultion anyway.
+
+[*]
+Initial image generation is being done in the main task, so you will
+have to wait for a few seconds or longer depending on the CPU you have.
+Image generation time depends also on the resolution!
+
+[*]
+Although there is ECS support, that requires EHB screen mode i did not
+test it on a real ECS machine! You can use '-e' option on non-ECS Amiga
+as well - certain effects look very different in 64 colors, which does
+not necessarily mean ugly, but mostly yes :-) - .
+
+[*]
+To control the 'AcidWarp' use these keys(feedback provided by a simple
+OSD):
+                 8 = Causes the pallette to rotate faster.
+                 2 = Causes the pallette to rotate slower.
+                 l = Lock on the current picture.
+                 k = Switch to the next pallette.
+                 p = Totally stops pallette rotation.
+                 q = Causes Acidwarp to exit.
+                 n = Next picture.
+                 m = ECS mode switch(there are 3 modes).
+
+[*]
+Palette rotation speed('-s') below 5000us has no effect on wait routine
+which means full speed! If you want to go at full speed on a slow CPU
+then use '-l' option.
+
+[*]
+All the 15+ bit wide screen modes will be seek for 8 bit equivalents!
+There may be errors if none of the 8 bit screens is present on the mon.
+list.
+
+[*]
+I did observe strange behavior of Mortens C2P routine under 68020 with
+fast memory under V39 of the OS which is not remapped and with no gfx
+patches and an interlaced, bandwidth hungry screen resolution(640x480).
+There is an effect of stroboscope between each frame when the pallete
+is being rotated.
+
+[*]
+Warning, 'WriteChunkyPixels()' as mapped by 'gfxpatch' under V39 of the
+OS may cause troubles! Also, 'WritePixelArray8()' in V39 is broken, so
+use 'systempatch'.
+
+---
+
+TODO:
+
+[*]
+Do major code cleanup, because now it looks like a puzzle and is very
+bloated.
+
+[*]
+The default randomisation routine is very bad, so this really needs to
+be improved.
+
+[*]
+Map 'mathieeedoubbas' routines. Would that speedup image generation?
+And what about the internal compatiblity?
+
+[*]
+More control over the palette rotation and more palette definitions.
+
+[*]
+Find a person who will do that.
+
+---
+
+USAGE:
+
+  -d <n> - Delay between pictures in seconds, the default value is 20.
+  -r <n> - Amiga ModeID(hexadecimal or decimal), by default Workbench 
+           ModeID will be used or if it is not opened then 0.
+  -e     - ECS setup(this is a switch).
+  -l     - Lower the priority of the effect generation sub-task(main-1)
+           (this is also a switch).
+  -f <n> - Which effect(0-40) should be displayed as the first one?
+  -p <n> - Which palette(0-8) should be new default one, by default it
+           will be randomised per picture.
+  -m     - Use Morten Eriksen C2P(images rendition will be much faster 
+           on ECS/AGA, this switch will do nothing under gfx card)
+  -n     - Dont display title picture.
+  -s <n> - Palette rotation speed in us, the default value is 30000.
+  -w     - Prints "The Warper" text file(also a switch).
+
+---
+
+EXAMPLES:
+
+   ; start with some brain washing
+   ; (may not warp too fast on 68020)
+   acidwarp -n -f 34 -e -l -s 0
+
+   ; let the laser beam do scary things
+   acidwarp -n -f 23 -p 6
+
+   ; pick some other modeid 
+   ; (thru: util/moni/GetModeID.lha)
+   set acidwarpmid `getmodeid 0x`
+   acidwarp -n -r $acidwarpmid -l -p 0
+
+   ; speedy slideshow
+   ; (requires rather fast cpu, on a slow
+   ;  one there will be just darkness)
+   acidwarp -n -l -p 1 -d 5 -s 5000
+
+   ; let the tiny purple creatures decide
+   acidwarp
+
+---
+megacz@usa.com

@@ -82,3 +82,109 @@ dependencies {
     androidTestImplementation libs.rules
     androidTestImplementation libs.uiautomator
 }
+
+// Task to download SDL3 .aar if not present
+abstract class DownloadSDL3Task extends DefaultTask {
+    @InputFile
+    abstract RegularFileProperty getSdlVersionFile()
+
+    @OutputDirectory
+    abstract DirectoryProperty getLibsDir()
+
+    @Inject
+    abstract FileSystemOperations getFileSystemOperations()
+
+    @Inject
+    abstract ArchiveOperations getArchiveOperations()
+
+    @TaskAction
+    void downloadSDL3() {
+        def versionFile = sdlVersionFile.get().asFile
+        if (!versionFile.exists()) {
+            throw new GradleException("SDL_VERSION file not found at ${versionFile.absolutePath}")
+        }
+
+        def sdlVersion = versionFile.text.trim()
+        def expectedAar = "SDL3-${sdlVersion}.aar"
+        def libsDirectory = libsDir.get().asFile
+
+        // Check for existing SDL3 .aar files (avoid closures for config cache)
+        def allFiles = libsDirectory.listFiles()
+        def existingAars = []
+        if (allFiles != null) {
+            for (def file : allFiles) {
+                if (file.name.startsWith('SDL3-') && file.name.endsWith('.aar')) {
+                    existingAars.add(file)
+                }
+            }
+        }
+
+        // If the correct version exists, we're done
+        def correctAarExists = false
+        for (def aar : existingAars) {
+            if (aar.name == expectedAar) {
+                correctAarExists = true
+                break
+            }
+        }
+
+        if (correctAarExists) {
+            println "SDL3 ${sdlVersion} already present"
+            return
+        }
+
+        // Clean up old SDL3 versions
+        for (def oldAar : existingAars) {
+            println "Removing old SDL3 version: ${oldAar.name}"
+            oldAar.delete()
+        }
+
+        // Download the new version
+        println "Downloading SDL3 ${sdlVersion} for Android..."
+        def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
+        def zipFile = new File(libsDirectory, "${expectedAar}.zip")
+
+        // Download zip file without closures
+        def inputStream = new URL(zipUrl).openStream()
+        def outputStream = new FileOutputStream(zipFile)
+        try {
+            byte[] buffer = new byte[8192]
+            int bytesRead
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+        } finally {
+            inputStream.close()
+            outputStream.close()
+        }
+
+        println "Extracting SDL3 .aar..."
+        // Extract the .aar from the zip using ArchiveOperations (config cache compatible)
+        def zipTree = archiveOperations.zipTree(zipFile)
+        fileSystemOperations.copy {
+            from(zipTree) {
+                include "**/${expectedAar}"
+                eachFile {
+                    it.path = it.name  // Flatten directory structure
+                }
+            }
+            into libsDirectory
+            includeEmptyDirs = false
+        }
+
+        // Clean up zip file
+        zipFile.delete()
+
+        println "SDL3 ${sdlVersion} downloaded successfully"
+    }
+}
+
+tasks.register('downloadSDL3', DownloadSDL3Task) {
+    sdlVersionFile = layout.projectDirectory.file('../../SDL_VERSION')
+    libsDir = layout.projectDirectory.dir('libs')
+}
+
+// Make sure SDL3 is downloaded before building
+tasks.named('preBuild').configure {
+    dependsOn 'downloadSDL3'
+}

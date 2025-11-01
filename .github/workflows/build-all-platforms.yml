@@ -98,13 +98,13 @@ jobs:
     name: Linux
     runs-on: ubuntu-latest
 
-    env:
-      # Also update source-tag in linux/snap/snapcraft.yaml when changing this
-      SDL3_VERSION: release-3.2.26
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Read SDL3 version
+        id: sdl-version
+        run: echo "SDL3_VERSION=release-$(cat SDL_VERSION)" >> $GITHUB_ENV
 
       - name: Install build dependencies
         run: |

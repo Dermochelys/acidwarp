@@ -44,5 +44,12 @@ x64
 .ninja_deps
 .ninja_log
 
+# SDL3 downloaded artifacts (managed by build scripts)
+SDL3.xcframework/
+android/app/libs/SDL3-*.aar
+
 CLAUDE.md
 .claude/**
+
+.DS_Store
+**/.DS_Store

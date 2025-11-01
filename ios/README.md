@@ -10,7 +10,7 @@
 ## Building
 
 - Use Xcode 26 or later.
-- Follow the SDL framework [installation instructions](https://wiki.libsdl.org/SDL3/README-ios).
+- SDL3 is automatically downloaded during the build via a Run Script build phase. The script checks if `SDL3.xcframework` exists in the repo root and downloads it if needed based on the version in `SDL_VERSION`.
 
 ## Previous ports
 - See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).

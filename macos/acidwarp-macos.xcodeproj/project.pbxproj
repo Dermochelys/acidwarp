@@ -16,8 +16,6 @@
 		501D30161E96C00000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30081E96C00000DE30A6 /* palinit.c */; };
 		501D30171E96C00000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30091E96C00000DE30A6 /* rolnfade.c */; };
 		501D30181E96C00000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D300A1E96C00000DE30A6 /* warp_text.c */; };
-		506E5CAB2E91BAD300F39B20 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 506E5CAA2E91BAD300F39B20 /* SDL3.xcframework */; };
-		506E5CAC2E91BAD300F39B20 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 506E5CAA2E91BAD300F39B20 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,16 +45,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		506E5CAD2E91BAD300F39B20 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
+		506E5CAD2E91BAD300F39B20 /* Copy SDL3 Framework */ = {
+			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
 			files = (
-				506E5CAC2E91BAD300F39B20 /* SDL3.xcframework in Embed Frameworks */,
 			);
-			name = "Embed Frameworks";
+		inputFileListPaths = (
+		);
+		inputPaths = (
+			"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework",
+		);
+		outputFileListPaths = (
+		);
+		outputPaths = (
+			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
+		);
+			name = "Copy SDL3 Framework";
 			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework\"\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n\n# Re-sign the framework with the same identity as the app\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ] && [ \"$EXPANDED_CODE_SIGN_IDENTITY\" != \"-\" ]; then\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\nelse\n  # Use ad-hoc signing if no identity is set\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\nfi\n";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -73,7 +80,6 @@
 		506E5C4E2E91B90700F39B20 /* Acid Warp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Acid Warp.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		506E5C5F2E91B90800F39B20 /* acidwarp-macosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "acidwarp-macosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		506E5C692E91B90800F39B20 /* acidwarp-macosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "acidwarp-macosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		506E5CAA2E91BAD300F39B20 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../SDL3.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -99,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				506E5CAB2E91BAD300F39B20 /* SDL3.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +133,7 @@
 				506E5C6C2E91B90800F39B20 /* acidwarpUITests */,
 				506E5CA92E91BAD300F39B20 /* Frameworks */,
 				506E5C4F2E91B90700F39B20 /* Products */,
+				508DE7F22EB59A1000C79955 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -144,9 +150,24 @@
 		506E5CA92E91BAD300F39B20 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				506E5CAA2E91BAD300F39B20 /* SDL3.xcframework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		508DE7F22EB59A1000C79955 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				501D30021E96C00000DE30A6 /* acidwarp.c */,
+				501D30031E96C00000DE30A6 /* bit_map.c */,
+				501D30041E96C00000DE30A6 /* display.c */,
+				501D30051E96C00000DE30A6 /* draw.c */,
+				501D30061E96C00000DE30A6 /* gen_img.c */,
+				501D30071E96C00000DE30A6 /* img_float.c */,
+				501D30081E96C00000DE30A6 /* palinit.c */,
+				501D30091E96C00000DE30A6 /* rolnfade.c */,
+				501D300A1E96C00000DE30A6 /* warp_text.c */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -156,6 +177,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 506E5C732E91B90800F39B20 /* Build configuration list for PBXNativeTarget "acidwarp-macos" */;
 			buildPhases = (
+				501D302A2E96BF9700DE30A6 /* Download SDL3 */,
 				506E5C4A2E91B90700F39B20 /* Sources */,
 				506E5C4B2E91B90700F39B20 /* Frameworks */,
 				506E5C4C2E91B90700F39B20 /* Resources */,
@@ -291,7 +313,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
+		501D302A2E96BF9700DE30A6 /* Download SDL3 */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -299,10 +321,32 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/../SDL_VERSION",
 			);
+			name = "Download SDL3";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(SRCROOT)/../SDL3.xcframework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
+		};
+		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+		inputPaths = (
+			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3",
+			);
+			outputFileListPaths = (
+			);
+		outputPaths = (
+			"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -493,11 +537,20 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "(c) Copyright 1992, 1993 by Noah Spurrier.  macOS port by Matthew Zavislak.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+				);
 				MARKETING_VERSION = 5.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "Acid Warp";
@@ -533,11 +586,20 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "(c) Copyright 1992, 1993 by Noah Spurrier.  macOS port by Matthew Zavislak.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+				);
 				MARKETING_VERSION = 5.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "Acid Warp";
