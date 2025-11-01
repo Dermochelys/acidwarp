@@ -50,3 +50,6 @@ android/app/libs/SDL3-*.aar
 
 CLAUDE.md
 .claude/**
+
+.DS_Store
+**/.DS_Store

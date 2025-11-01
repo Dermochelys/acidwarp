@@ -16,10 +16,6 @@
 		501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
 		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
 		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
-		507701E32E90D72200C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
-		507701E42E90D72200C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
-		507701E62E90D72600C75FC6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; };
-		507701E72E90D72600C75FC6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 507701E22E90D72200C75FC6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,16 +36,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		507701E82E90D72600C75FC6 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
+		507701E82E90D72600C75FC6 /* Copy SDL3 Framework */ = {
+			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
 			files = (
-				507701E72E90D72600C75FC6 /* SDL3.xcframework in Embed Frameworks */,
 			);
-			name = "Embed Frameworks";
+		inputPaths = (
+			"$(SRCROOT)/../SDL3.xcframework",
+			);
+		outputPaths = (
+			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
+			);
 			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\nelse\n  FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -66,7 +66,6 @@
 		502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		507701E22E90D72200C75FC6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../SDL3.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -106,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				507701E62E90D72600C75FC6 /* SDL3.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,7 +112,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				507701E32E90D72200C75FC6 /* SDL3.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,21 +119,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				507701E42E90D72200C75FC6 /* SDL3.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		500321082E90703700767466 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				507701E22E90D72200C75FC6 /* SDL3.xcframework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		502A14F32E70BBC000BA2A0F = {
 			isa = PBXGroup;
 			children = (
@@ -144,7 +132,6 @@
 				502A151C2E70BBC100BA2A0F /* acidwarpTests */,
 				502A15262E70BBC100BA2A0F /* acidwarpUITests */,
 				502A14FD2E70BBC000BA2A0F /* Products */,
-				500321082E90703700767466 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -169,7 +156,7 @@
 				502A14F82E70BBC000BA2A0F /* Sources */,
 				502A14F92E70BBC000BA2A0F /* Frameworks */,
 				502A14FA2E70BBC000BA2A0F /* Resources */,
-				507701E82E90D72600C75FC6 /* Embed Frameworks */,
+				507701E82E90D72600C75FC6 /* Copy SDL3 Framework */,
 				501D30652E96C53000DE30A6 /* ShellScript */,
 			);
 			buildRules = (
@@ -302,21 +289,21 @@
 /* Begin PBXShellScriptBuildPhase section */
 		501D30642E96C52F00DE30A6 /* Download SDL3 */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/../SDL_VERSION",
 			);
 			name = "Download SDL3";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(SRCROOT)/../SDL3.xcframework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			sandboxingOverride = 0;
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
 		};
@@ -533,6 +520,11 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -559,6 +551,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 5.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -595,6 +592,11 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -617,6 +619,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 5.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
