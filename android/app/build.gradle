@@ -94,6 +94,9 @@ abstract class DownloadSDL3Task extends DefaultTask {
     @Inject
     abstract FileSystemOperations getFileSystemOperations()
 
+    @Inject
+    abstract ArchiveOperations getArchiveOperations()
+
     @TaskAction
     void downloadSDL3() {
         def versionFile = sdlVersionFile.get().asFile
@@ -156,8 +159,8 @@ abstract class DownloadSDL3Task extends DefaultTask {
         }
 
         println "Extracting SDL3 .aar..."
-        // Extract the .aar from the zip using FileSystemOperations
-        def zipTree = project.zipTree(zipFile)
+        // Extract the .aar from the zip using ArchiveOperations (config cache compatible)
+        def zipTree = archiveOperations.zipTree(zipFile)
         fileSystemOperations.copy {
             from(zipTree) {
                 include "**/${expectedAar}"
