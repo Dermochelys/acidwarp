@@ -91,6 +91,9 @@ abstract class DownloadSDL3Task extends DefaultTask {
     @OutputDirectory
     abstract DirectoryProperty getLibsDir()
 
+    @Inject
+    abstract FileSystemOperations getFileSystemOperations()
+
     @TaskAction
     void downloadSDL3() {
         def versionFile = sdlVersionFile.get().asFile
@@ -102,20 +105,33 @@ abstract class DownloadSDL3Task extends DefaultTask {
         def expectedAar = "SDL3-${sdlVersion}.aar"
         def libsDirectory = libsDir.get().asFile
 
-        // Check for existing SDL3 .aar files
-        def existingAars = libsDirectory.listFiles { dir, name ->
-            name.startsWith('SDL3-') && name.endsWith('.aar')
+        // Check for existing SDL3 .aar files (avoid closures for config cache)
+        def allFiles = libsDirectory.listFiles()
+        def existingAars = []
+        if (allFiles != null) {
+            for (def file : allFiles) {
+                if (file.name.startsWith('SDL3-') && file.name.endsWith('.aar')) {
+                    existingAars.add(file)
+                }
+            }
         }
 
         // If the correct version exists, we're done
-        def correctAarExists = existingAars?.any { it.name == expectedAar }
+        def correctAarExists = false
+        for (def aar : existingAars) {
+            if (aar.name == expectedAar) {
+                correctAarExists = true
+                break
+            }
+        }
+
         if (correctAarExists) {
             println "SDL3 ${sdlVersion} already present"
             return
         }
 
         // Clean up old SDL3 versions
-        existingAars?.each { oldAar ->
+        for (def oldAar : existingAars) {
             println "Removing old SDL3 version: ${oldAar.name}"
             oldAar.delete()
         }
@@ -125,20 +141,28 @@ abstract class DownloadSDL3Task extends DefaultTask {
         def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
         def zipFile = new File(libsDirectory, "${expectedAar}.zip")
 
-        // Download zip file
-        new URL(zipUrl).withInputStream { input ->
-            zipFile.withOutputStream { output ->
-                output << input
+        // Download zip file without closures
+        def inputStream = new URL(zipUrl).openStream()
+        def outputStream = new FileOutputStream(zipFile)
+        try {
+            byte[] buffer = new byte[8192]
+            int bytesRead
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead)
             }
+        } finally {
+            inputStream.close()
+            outputStream.close()
         }
 
         println "Extracting SDL3 .aar..."
-        // Extract the .aar from the zip using modern Gradle API
-        project.copy {
-            from(project.zipTree(zipFile)) {
+        // Extract the .aar from the zip using FileSystemOperations
+        def zipTree = project.zipTree(zipFile)
+        fileSystemOperations.copy {
+            from(zipTree) {
                 include "**/${expectedAar}"
-                eachFile { fcd ->
-                    fcd.path = fcd.name  // Flatten directory structure
+                eachFile {
+                    it.path = it.name  // Flatten directory structure
                 }
             }
             into libsDirectory
