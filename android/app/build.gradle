@@ -83,10 +83,13 @@ dependencies {
     androidTestImplementation libs.uiautomator
 }
 
-// Task to download SDL3 .aar if not present
+// Task to download SDL3 and SDL3_image .aar files if not present
 abstract class DownloadSDL3Task extends DefaultTask {
     @InputFile
     abstract RegularFileProperty getSdlVersionFile()
+
+    @InputFile
+    abstract RegularFileProperty getSdlImageVersionFile()
 
     @OutputDirectory
     abstract DirectoryProperty getLibsDir()
@@ -99,88 +102,157 @@ abstract class DownloadSDL3Task extends DefaultTask {
 
     @TaskAction
     void downloadSDL3() {
-        def versionFile = sdlVersionFile.get().asFile
-        if (!versionFile.exists()) {
-            throw new GradleException("SDL_VERSION file not found at ${versionFile.absolutePath}")
+        def sdlVersionFile = this.sdlVersionFile.get().asFile
+        def sdlImageVersionFile = this.sdlImageVersionFile.get().asFile
+        
+        if (!sdlVersionFile.exists()) {
+            throw new GradleException("SDL_VERSION file not found at ${sdlVersionFile.absolutePath}")
+        }
+        if (!sdlImageVersionFile.exists()) {
+            throw new GradleException("SDL3_IMAGE_VERSION file not found at ${sdlImageVersionFile.absolutePath}")
         }
 
-        def sdlVersion = versionFile.text.trim()
-        def expectedAar = "SDL3-${sdlVersion}.aar"
+        def sdlVersion = sdlVersionFile.text.trim()
+        def sdlImageVersion = sdlImageVersionFile.text.trim()
+        def expectedSdlAar = "SDL3-${sdlVersion}.aar"
+        def expectedSdlImageAar = "SDL3_image-${sdlImageVersion}.aar"
         def libsDirectory = libsDir.get().asFile
 
         // Check for existing SDL3 .aar files (avoid closures for config cache)
         def allFiles = libsDirectory.listFiles()
-        def existingAars = []
+        def existingSdlAars = []
+        def existingSdlImageAars = []
         if (allFiles != null) {
             for (def file : allFiles) {
-                if (file.name.startsWith('SDL3-') && file.name.endsWith('.aar')) {
-                    existingAars.add(file)
+                if (file.name.startsWith('SDL3-') && file.name.endsWith('.aar') && !file.name.startsWith('SDL3_image-')) {
+                    existingSdlAars.add(file)
+                } else if (file.name.startsWith('SDL3_image-') && file.name.endsWith('.aar')) {
+                    existingSdlImageAars.add(file)
                 }
             }
         }
 
-        // If the correct version exists, we're done
-        def correctAarExists = false
-        for (def aar : existingAars) {
-            if (aar.name == expectedAar) {
-                correctAarExists = true
+        // Check if correct SDL3 version exists
+        def correctSdlAarExists = false
+        for (def aar : existingSdlAars) {
+            if (aar.name == expectedSdlAar) {
+                correctSdlAarExists = true
                 break
             }
         }
 
-        if (correctAarExists) {
-            println "SDL3 ${sdlVersion} already present"
-            return
-        }
-
-        // Clean up old SDL3 versions
-        for (def oldAar : existingAars) {
-            println "Removing old SDL3 version: ${oldAar.name}"
-            oldAar.delete()
-        }
-
-        // Download the new version
-        println "Downloading SDL3 ${sdlVersion} for Android..."
-        def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
-        def zipFile = new File(libsDirectory, "${expectedAar}.zip")
-
-        // Download zip file without closures
-        def inputStream = new URL(zipUrl).openStream()
-        def outputStream = new FileOutputStream(zipFile)
-        try {
-            byte[] buffer = new byte[8192]
-            int bytesRead
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead)
+        // Check if correct SDL3_image version exists
+        def correctSdlImageAarExists = false
+        for (def aar : existingSdlImageAars) {
+            if (aar.name == expectedSdlImageAar) {
+                correctSdlImageAarExists = true
+                break
             }
-        } finally {
-            inputStream.close()
-            outputStream.close()
         }
 
-        println "Extracting SDL3 .aar..."
-        // Extract the .aar from the zip using ArchiveOperations (config cache compatible)
-        def zipTree = archiveOperations.zipTree(zipFile)
-        fileSystemOperations.copy {
-            from(zipTree) {
-                include "**/${expectedAar}"
-                eachFile {
-                    it.path = it.name  // Flatten directory structure
+        // Download SDL3 if needed
+        if (!correctSdlAarExists) {
+            // Clean up old SDL3 versions
+            for (def oldAar : existingSdlAars) {
+                println "Removing old SDL3 version: ${oldAar.name}"
+                oldAar.delete()
+            }
+
+            // Download the new version
+            println "Downloading SDL3 ${sdlVersion} for Android..."
+            def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
+            def zipFile = new File(libsDirectory, "${expectedSdlAar}.zip")
+
+            // Download zip file without closures
+            def inputStream = new URL(zipUrl).openStream()
+            def outputStream = new FileOutputStream(zipFile)
+            try {
+                byte[] buffer = new byte[8192]
+                int bytesRead
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
                 }
+            } finally {
+                inputStream.close()
+                outputStream.close()
             }
-            into libsDirectory
-            includeEmptyDirs = false
+
+            println "Extracting SDL3 .aar..."
+            // Extract the .aar from the zip using ArchiveOperations (config cache compatible)
+            def zipTree = archiveOperations.zipTree(zipFile)
+            fileSystemOperations.copy {
+                from(zipTree) {
+                    include "**/${expectedSdlAar}"
+                    eachFile {
+                        it.path = it.name  // Flatten directory structure
+                    }
+                }
+                into libsDirectory
+                includeEmptyDirs = false
+            }
+
+            // Clean up zip file
+            zipFile.delete()
+
+            println "SDL3 ${sdlVersion} downloaded successfully"
+        } else {
+            println "SDL3 ${sdlVersion} already present"
         }
 
-        // Clean up zip file
-        zipFile.delete()
+        // Download SDL3_image if needed
+        if (!correctSdlImageAarExists) {
+            // Clean up old SDL3_image versions
+            for (def oldAar : existingSdlImageAars) {
+                println "Removing old SDL3_image version: ${oldAar.name}"
+                oldAar.delete()
+            }
 
-        println "SDL3 ${sdlVersion} downloaded successfully"
+            // Download the new version
+            println "Downloading SDL3_image ${sdlImageVersion} for Android..."
+            def zipUrl = "https://github.com/libsdl-org/SDL_image/releases/download/release-${sdlImageVersion}/SDL3_image-devel-${sdlImageVersion}-android.zip"
+            def zipFile = new File(libsDirectory, "${expectedSdlImageAar}.zip")
+
+            // Download zip file without closures
+            def inputStream = new URL(zipUrl).openStream()
+            def outputStream = new FileOutputStream(zipFile)
+            try {
+                byte[] buffer = new byte[8192]
+                int bytesRead
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+            } finally {
+                inputStream.close()
+                outputStream.close()
+            }
+
+            println "Extracting SDL3_image .aar..."
+            // Extract the .aar from the zip using ArchiveOperations (config cache compatible)
+            def zipTree = archiveOperations.zipTree(zipFile)
+            fileSystemOperations.copy {
+                from(zipTree) {
+                    include "**/${expectedSdlImageAar}"
+                    eachFile {
+                        it.path = it.name  // Flatten directory structure
+                    }
+                }
+                into libsDirectory
+                includeEmptyDirs = false
+            }
+
+            // Clean up zip file
+            zipFile.delete()
+
+            println "SDL3_image ${sdlImageVersion} downloaded successfully"
+        } else {
+            println "SDL3_image ${sdlImageVersion} already present"
+        }
     }
 }
 
 tasks.register('downloadSDL3', DownloadSDL3Task) {
     sdlVersionFile = layout.projectDirectory.file('../../SDL_VERSION')
+    sdlImageVersionFile = layout.projectDirectory.file('../../SDL3_IMAGE_VERSION')
     libsDir = layout.projectDirectory.dir('libs')
 }
 

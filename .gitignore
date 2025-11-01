@@ -46,10 +46,13 @@ x64
 
 # SDL3 downloaded artifacts (managed by build scripts)
 SDL3.xcframework/
-android/app/libs/SDL3-*.aar
+SDL3_image.xcframework/
+android/app/libs/SDL3*.aar
 
 CLAUDE.md
 .claude/**
+
+GEMINI.md
 
 .DS_Store
 **/.DS_Store
