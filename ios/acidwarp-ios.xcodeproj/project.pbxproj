@@ -153,10 +153,10 @@
 			buildConfigurationList = 502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */;
 			buildPhases = (
 				501D30642E96C52F00DE30A6 /* Download SDL3 */,
+				507701E82E90D72600C75FC6 /* Copy SDL3 Framework */,
 				502A14F82E70BBC000BA2A0F /* Sources */,
 				502A14F92E70BBC000BA2A0F /* Frameworks */,
 				502A14FA2E70BBC000BA2A0F /* Resources */,
-				507701E82E90D72600C75FC6 /* Copy SDL3 Framework */,
 				501D30652E96C53000DE30A6 /* ShellScript */,
 			);
 			buildRules = (
@@ -522,7 +522,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
+					"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -593,7 +593,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
+					"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				GENERATE_INFOPLIST_FILE = YES;
