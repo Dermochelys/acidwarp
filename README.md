@@ -45,10 +45,7 @@ Use the following keys or remote control buttons to control the program:
 SDL3 version is centrally managed in the `SDL_VERSION` file at the repository root. SDL3 artifacts are automatically downloaded during builds and are not checked into version control.
 
 To update SDL3 across all platforms:
-
-1. Update the version in `SDL_VERSION` (e.g., `3.2.26`)
-2. Update `source-tag` in `linux/snap/snapcraft.yaml` to match
-3. Update `SDL3_VERSION` in `.github/workflows/build-all-platforms.yml` to match
+- Update the version in `SDL_VERSION` (e.g., `3.2.26`)
 
 Build systems will automatically download the new version:
 - **Android**: Gradle downloads SDL3-{version}.aar automatically before build, removing old versions

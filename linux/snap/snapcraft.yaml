@@ -40,7 +40,7 @@ parts:
   sdl3:
     plugin: cmake
     source: https://github.com/libsdl-org/SDL.git
-    # Keep in sync with SDL3_VERSION in .github/workflows/build-all-platforms.yml
+    # Auto-updated from SDL_VERSION file by snap_pack.sh
     source-tag: release-3.2.26
     cmake-parameters:
       - -DCMAKE_BUILD_TYPE=Release
