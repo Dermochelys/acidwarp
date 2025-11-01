@@ -308,6 +308,7 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+			sandboxingOverride = 0;
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
 		};
