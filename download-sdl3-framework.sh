@@ -41,14 +41,24 @@ echo "URL: $SDL_URL"
 
 # Create temp directory
 TEMP_DIR=$(mktemp -d)
-trap "rm -rf $TEMP_DIR" EXIT
+MOUNT_POINT=""
+
+# Cleanup function
+cleanup() {
+    if [ -n "$MOUNT_POINT" ]; then
+        echo "Unmounting DMG..."
+        hdiutil detach "$MOUNT_POINT" 2>/dev/null || true
+    fi
+    rm -rf "$TEMP_DIR"
+}
+trap cleanup EXIT
 
 # Download DMG
 curl -L -o "$TEMP_DIR/$SDL_DMG" "$SDL_URL"
 
 echo "Mounting DMG..."
-# Mount the DMG
-MOUNT_POINT=$(hdiutil attach "$TEMP_DIR/$SDL_DMG" -nobrowse -mountpoint "$TEMP_DIR/sdl_mount" | grep "/Volumes/" | awk '{print $3}')
+# Mount the DMG (let hdiutil choose the mount point)
+MOUNT_POINT=$(hdiutil attach "$TEMP_DIR/$SDL_DMG" -nobrowse | grep "/Volumes/" | awk '{print $3}')
 
 if [ -z "$MOUNT_POINT" ]; then
     echo "Failed to mount DMG"
@@ -62,14 +72,7 @@ if [ -d "$MOUNT_POINT/SDL3.xcframework" ]; then
     echo "SDL3.xcframework extracted successfully to $TARGET_FRAMEWORK"
 else
     echo "Error: SDL3.xcframework not found in DMG"
-    hdiutil detach "$MOUNT_POINT"
     exit 1
 fi
-
-# Unmount the DMG
-hdiutil detach "$MOUNT_POINT"
-
-echo "Cleaning up DMG..."
-rm -f "$TEMP_DIR/$SDL_DMG"
 
 echo "SDL3 setup complete!"

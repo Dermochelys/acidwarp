@@ -84,19 +84,26 @@ dependencies {
 }
 
 // Task to download SDL3 .aar if not present
-tasks.register('downloadSDL3') {
-    doLast {
-        def sdlVersionFile = file('../../SDL_VERSION')
-        if (!sdlVersionFile.exists()) {
-            throw new GradleException("SDL_VERSION file not found at ${sdlVersionFile.absolutePath}")
+abstract class DownloadSDL3Task extends DefaultTask {
+    @InputFile
+    abstract RegularFileProperty getSdlVersionFile()
+
+    @OutputDirectory
+    abstract DirectoryProperty getLibsDir()
+
+    @TaskAction
+    void downloadSDL3() {
+        def versionFile = sdlVersionFile.get().asFile
+        if (!versionFile.exists()) {
+            throw new GradleException("SDL_VERSION file not found at ${versionFile.absolutePath}")
         }
 
-        def sdlVersion = sdlVersionFile.text.trim()
+        def sdlVersion = versionFile.text.trim()
         def expectedAar = "SDL3-${sdlVersion}.aar"
-        def libsDir = file('libs')
+        def libsDirectory = libsDir.get().asFile
 
         // Check for existing SDL3 .aar files
-        def existingAars = libsDir.listFiles { dir, name ->
+        def existingAars = libsDirectory.listFiles { dir, name ->
             name.startsWith('SDL3-') && name.endsWith('.aar')
         }
 
@@ -116,7 +123,7 @@ tasks.register('downloadSDL3') {
         // Download the new version
         println "Downloading SDL3 ${sdlVersion} for Android..."
         def zipUrl = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL3-devel-${sdlVersion}-android.zip"
-        def zipFile = file("${libsDir}/${expectedAar}.zip")
+        def zipFile = new File(libsDirectory, "${expectedAar}.zip")
 
         // Download zip file
         new URL(zipUrl).withInputStream { input ->
@@ -126,12 +133,16 @@ tasks.register('downloadSDL3') {
         }
 
         println "Extracting SDL3 .aar..."
-        // Extract the .aar from the zip
-        ant.unzip(src: zipFile, dest: libsDir) {
-            patternset {
-                include(name: "**/${expectedAar}")
+        // Extract the .aar from the zip using modern Gradle API
+        project.copy {
+            from(project.zipTree(zipFile)) {
+                include "**/${expectedAar}"
+                eachFile { fcd ->
+                    fcd.path = fcd.name  // Flatten directory structure
+                }
             }
-            mapper(type: 'flatten')
+            into libsDirectory
+            includeEmptyDirs = false
         }
 
         // Clean up zip file
@@ -139,6 +150,11 @@ tasks.register('downloadSDL3') {
 
         println "SDL3 ${sdlVersion} downloaded successfully"
     }
+}
+
+tasks.register('downloadSDL3', DownloadSDL3Task) {
+    sdlVersionFile = layout.projectDirectory.file('../../SDL_VERSION')
+    libsDir = layout.projectDirectory.dir('libs')
 }
 
 // Make sure SDL3 is downloaded before building
