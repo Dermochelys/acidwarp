@@ -152,11 +152,18 @@ void remote_overlay_init(void)
 #ifdef __APPLE__
     const char *basePath = SDL_GetBasePath();
     if (basePath) {
+#if TARGET_OS_IOS
+        /* iOS: Resources are in the app bundle root */
+        snprintf(path, sizeof(path), "%sremote.png", basePath);
+        surface = IMG_Load(path);
+#else
+        /* macOS: Resources are in Contents/Resources/, executable is in Contents/MacOS/ */
         snprintf(path, sizeof(path), "%s../Resources/remote.png", basePath);
+        surface = IMG_Load(path);
+#endif
     } else {
-        snprintf(path, sizeof(path), "remote.png");
+        surface = IMG_Load("remote.png");
     }
-    surface = IMG_Load(path);
 #elif defined(__ANDROID__)
     /* Android: Load from assets folder using SDL_IOFromFile */
     /* SDL3 can load from Android assets using a path like "remote.png" */
@@ -172,8 +179,7 @@ void remote_overlay_init(void)
         return;
     }
 #else
-    snprintf(path, sizeof(path), "remote.png");
-    surface = IMG_Load(path);
+    surface = IMG_Load("remote.png");
 #endif
 
     if (surface == NULL) {
@@ -328,7 +334,6 @@ void remote_overlay_render_if_visible(int window_width, int window_height)
 {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
-    printf("remote_overlay_render_if_visible: before: window_width=%d, window_height=%d, viewport=%d,%d,%d,%d\n", window_width, window_height, viewport[0], viewport[1], viewport[2], viewport[3]);
 
     if (!overlay_visible || overlay_texture == 0 || overlay_program == 0) {
         return;
@@ -445,9 +450,6 @@ void remote_overlay_render_if_visible(int window_width, int window_height)
     
     /* Restore viewport */
     glViewport(current_viewport[0], current_viewport[1], current_viewport[2], current_viewport[3]);
-
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    printf("remote_overlay_render_if_visible: after: window_width=%d, window_height=%d, viewport=%d,%d,%d,%d\n", window_width, window_height, viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void remote_overlay_render_dim(int window_width, int window_height)

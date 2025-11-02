@@ -114,10 +114,8 @@ void disp_setPalette(unsigned char *palette)
 {
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
-  printf("disp_setPalette: before: width=%d, height=%d, viewport=%d,%d,%d,%d\n", width, height, viewport[0], viewport[1], viewport[2], viewport[3]);
   glViewport(0, 0, width, height);
   glGetIntegerv(GL_VIEWPORT, viewport);
-  printf("disp_setPalette: after: width=%d, height=%d, viewport=%d,%d,%d,%d\n", width, height, viewport[0], viewport[1], viewport[2], viewport[3]);
 
   static GLubyte glcolors[256 * 4];
   int i;

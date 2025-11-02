@@ -17,6 +17,7 @@
 	501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
 	501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
 	501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301B1E96C10000DE30A6 /* remote_overlay.c */; };
+	501D302A1E96C10000DE30A7 /* remote.png in Resources */ = {isa = PBXBuildFile; fileRef = 501D301C1E96C10000DE30A6 /* remote.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,7 @@
 	501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
 	501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
 	501D301B1E96C10000DE30A6 /* remote_overlay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = remote_overlay.c; path = acidwarp/acidwarp/remote_overlay.c; sourceTree = "<group>"; };
+	501D301C1E96C10000DE30A6 /* remote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = remote.png; path = acidwarp/acidwarp/remote.png; sourceTree = "<group>"; };
 	502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -272,6 +274,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				501D302A1E96C10000DE30A7 /* remote.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
