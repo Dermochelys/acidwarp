@@ -12,7 +12,21 @@ endif()
 
 include(FindPkgConfig)
 pkg_search_module(SDL REQUIRED sdl3)
-pkg_search_module(SDL_IMAGE REQUIRED SDL3_image)
+pkg_search_module(SDL_IMAGE sdl3_image SDL3_image)
+if(NOT SDL_IMAGE_FOUND)
+    # Fallback: try to find SDL3_image manually
+    find_library(SDL3_IMAGE_LIBRARY NAMES SDL3_image libSDL3_image)
+    find_path(SDL3_IMAGE_INCLUDE_DIR NAMES SDL3/SDL_image.h)
+    if(SDL3_IMAGE_LIBRARY AND SDL3_IMAGE_INCLUDE_DIR)
+        set(SDL_IMAGE_FOUND TRUE)
+        set(SDL_IMAGE_LIBRARIES ${SDL3_IMAGE_LIBRARY})
+        set(SDL_IMAGE_INCLUDE_DIRS ${SDL3_IMAGE_INCLUDE_DIR})
+        set(SDL_IMAGE_STATIC_LDFLAGS ${SDL3_IMAGE_LIBRARY})
+        message(STATUS "Found SDL3_image manually: ${SDL3_IMAGE_LIBRARY}")
+    else()
+        message(FATAL_ERROR "SDL3_image not found via pkg-config or manual search")
+    endif()
+endif()
 include_directories(${SDL_INCLUDE_DIRS} ${SDL_IMAGE_INCLUDE_DIRS})
 
 # Find OpenGL for desktop Linux

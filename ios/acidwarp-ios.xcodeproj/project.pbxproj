@@ -7,15 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		501D30201E96C10000DE30A6 /* acidwarp.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30121E96C10000DE30A6 /* acidwarp.c */; };
-		501D30211E96C10000DE30A6 /* bit_map.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30131E96C10000DE30A6 /* bit_map.c */; };
-		501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
-		501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
-		501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
-		501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
-		501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
-		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
-		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
+	501D30201E96C10000DE30A6 /* acidwarp.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30121E96C10000DE30A6 /* acidwarp.c */; };
+	501D30211E96C10000DE30A6 /* bit_map.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30131E96C10000DE30A6 /* bit_map.c */; };
+	501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
+	501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
+	501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
+	501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
+	501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
+	501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
+	501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
+	501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301B1E96C10000DE30A6 /* remote_overlay.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,9 +62,10 @@
 		501D30161E96C10000DE30A6 /* gen_img.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gen_img.c; path = acidwarp/acidwarp/gen_img.c; sourceTree = "<group>"; };
 		501D30171E96C10000DE30A6 /* img_float.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = img_float.c; path = acidwarp/acidwarp/img_float.c; sourceTree = "<group>"; };
 		501D30181E96C10000DE30A6 /* palinit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = palinit.c; path = acidwarp/acidwarp/palinit.c; sourceTree = "<group>"; };
-		501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
-		501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
-		502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+	501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
+	501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
+	501D301B1E96C10000DE30A6 /* remote_overlay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = remote_overlay.c; path = acidwarp/acidwarp/remote_overlay.c; sourceTree = "<group>"; };
+	502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -328,22 +330,23 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		502A14F82E70BBC000BA2A0F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
-				501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
-				501D30221E96C10000DE30A6 /* display.c in Sources */,
-				501D30231E96C10000DE30A6 /* draw.c in Sources */,
-				501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
-				501D30251E96C10000DE30A6 /* img_float.c in Sources */,
-				501D30261E96C10000DE30A6 /* palinit.c in Sources */,
-				501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
-				501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+	502A14F82E70BBC000BA2A0F /* Sources */ = {
+		isa = PBXSourcesBuildPhase;
+		buildActionMask = 2147483647;
+		files = (
+			501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
+			501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
+			501D30221E96C10000DE30A6 /* display.c in Sources */,
+			501D30231E96C10000DE30A6 /* draw.c in Sources */,
+			501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
+			501D30251E96C10000DE30A6 /* img_float.c in Sources */,
+			501D30261E96C10000DE30A6 /* palinit.c in Sources */,
+			501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
+			501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
+			501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */,
+		);
+		runOnlyForDeploymentPostprocessing = 0;
+	};
 		502A15152E70BBC100BA2A0F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
