@@ -12,7 +12,19 @@
 typedef unsigned char   UCHAR;
 typedef unsigned int    UINT;
 typedef unsigned long   ULONG;
+/* BOOL, FALSE, and TRUE - check if already defined (e.g., by windows.h) */
+#ifndef FALSE
+/* Neither windows.h nor BOOL have been defined yet - define our own */
 typedef enum {FALSE, TRUE} BOOL;
+#else
+/* FALSE is already defined (likely from windows.h), ensure BOOL and TRUE exist */
+#ifndef BOOL
+typedef int BOOL;
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+#endif
 
 /* Random number stuff that SHOULD have been there */
 #include <time.h>

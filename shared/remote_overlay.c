@@ -15,6 +15,7 @@
 #include <OpenGL/gl3.h>
 #endif
 #elif _WIN32
+#include <windows.h>
 #include <GL/glew.h>
 #else
 #include <GLES2/gl2.h>
@@ -178,12 +179,36 @@ void remote_overlay_init(void)
         fprintf(stderr, "Failed to open remote.png from Android assets: %s\n", SDL_GetError());
         return;
     }
+#elif _WIN32
+    /* Windows: Load from embedded resource */
+    HRSRC hRes = FindResource(NULL, MAKEINTRESOURCE(101), RT_RCDATA);
+    if (hRes == NULL) {
+        surface = NULL;
+    } else {
+        HGLOBAL hData = LoadResource(NULL, hRes);
+        if (hData == NULL) {
+            surface = NULL;
+        } else {
+            DWORD size = SizeofResource(NULL, hRes);
+            const void *data = LockResource(hData);
+            if (data == NULL) {
+                surface = NULL;
+            } else {
+                /* Create SDL IO stream from memory */
+                SDL_IOStream *io = SDL_IOFromConstMem(data, (int)size);
+                if (io != NULL) {
+                    surface = IMG_Load_IO(io, 1); /* 1 = SDL will close the IO stream automatically */
+                } else {
+                    surface = NULL;
+                }
+            }
+        }
+    }
 #else
     surface = IMG_Load("remote.png");
 #endif
 
     if (surface == NULL) {
-        fprintf(stderr, "Failed to load remote.png: %s\n", SDL_GetError());
         return;
     }
 
@@ -213,6 +238,7 @@ void remote_overlay_init(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rgba_surface->w, rgba_surface->h,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_surface->pixels);
 
+    /* Destroy converted surface */
     SDL_DestroySurface(rgba_surface);
 
     /* Create shader program for overlay */
@@ -260,7 +286,6 @@ void remote_overlay_init(void)
     /* Create VBO for dim quad */
     glGenBuffers(1, &dim_vbo);
 
-    printf("Remote overlay initialized: %dx%d\n", remote_width, remote_height);
 }
 
 void remote_overlay_cleanup(void)

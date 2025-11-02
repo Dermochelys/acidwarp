@@ -16,6 +16,10 @@
 - See the [SDL3 Wiki](https://wiki.libsdl.org/SDL3/README-windows) for more information about the build environment setup.
 - SDL3 and SDL3_image are installed via MSYS2 pacman packages: `mingw-w64-x86_64-sdl3` and `mingw-w64-x86_64-sdl3-image`
 
+### Runtime Dependencies
+
+While most libraries are statically linked, SDL3_image dynamically loads PNG support at runtime. The executable requires `libpng16-16.dll` to be present in the same directory. This DLL is available at `/mingw64/bin/libpng16-16.dll` in the MSYS2 environment and should be distributed with the application.
+
 ## Previous ports
 - See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
 

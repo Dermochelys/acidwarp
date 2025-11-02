@@ -24,6 +24,8 @@ cmake_install.cmake
 libmain.so
 libmain.dylib
 Makefile
+
+.claude/**
 CLAUDE.md
 
 .vscode

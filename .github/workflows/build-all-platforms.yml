@@ -189,6 +189,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          symlinks: true
 
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
