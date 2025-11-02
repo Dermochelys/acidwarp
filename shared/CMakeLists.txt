@@ -51,6 +51,32 @@ endif()
 
 set(SOURCES acidwarp.c bit_map.c display.c draw.c gen_img.c img_float.c palinit.c rolnfade.c remote_overlay.c)
 
+# Embed remote.png as a binary resource for Linux
+if(UNIX AND NOT ANDROID)
+    set(REMOTE_PNG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/remote.png")
+    set(REMOTE_PNG_OBJ "${CMAKE_CURRENT_BINARY_DIR}/remote_png.o")
+
+    add_custom_command(
+        OUTPUT ${REMOTE_PNG_OBJ}
+        COMMAND ${CMAKE_COMMAND} -E copy "${REMOTE_PNG_PATH}" remote.png
+        COMMAND ${CMAKE_OBJCOPY} --input binary --output elf64-x86-64
+                --binary-architecture i386:x86-64
+                remote.png remote_png.o
+        COMMAND ${CMAKE_OBJCOPY}
+                --redefine-sym _binary_remote_png_start=_binary_remote_png_start
+                --redefine-sym _binary_remote_png_end=_binary_remote_png_end
+                --redefine-sym _binary_remote_png_size=_binary_remote_png_size
+                remote_png.o
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${REMOTE_PNG_PATH}
+        COMMENT "Embedding remote.png as binary resource"
+        VERBATIM
+    )
+
+    # Add the object file to sources
+    list(APPEND SOURCES ${REMOTE_PNG_OBJ})
+endif()
+
 if(ANDROID)
     add_library(main SHARED ${SOURCES})
 else() # Windows, Linux

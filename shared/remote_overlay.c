@@ -143,6 +143,12 @@ static GLuint load_overlay_shader(GLuint program, GLenum type, const GLchar *sha
     return shader;
 }
 
+/* Symbols for embedded remote.png on Linux (created by objcopy) */
+#if defined(__linux__) && !defined(__ANDROID__)
+extern unsigned char _binary_remote_png_start[];
+extern unsigned char _binary_remote_png_end[];
+#endif
+
 void remote_overlay_init(void)
 {
     SDL_Surface *surface = NULL;
@@ -203,6 +209,20 @@ void remote_overlay_init(void)
                 }
             }
         }
+    }
+#elif defined(__linux__)
+    /* Linux: Load from embedded resource */
+    size_t png_size = (size_t)(_binary_remote_png_end - _binary_remote_png_start);
+    SDL_IOStream *io = SDL_IOFromConstMem(_binary_remote_png_start, (int)png_size);
+    if (io != NULL) {
+        surface = IMG_Load_IO(io, 1); /* 1 = SDL will close the IO stream automatically */
+        if (surface == NULL) {
+            fprintf(stderr, "Failed to load remote.png from embedded resource: %s\n", SDL_GetError());
+            return;
+        }
+    } else {
+        fprintf(stderr, "Failed to create IO stream from embedded remote.png: %s\n", SDL_GetError());
+        return;
     }
 #else
     surface = IMG_Load("remote.png");
