@@ -24,6 +24,6 @@ Most build dependencies are dynamically loaded, however, you must also ensure th
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too
-is and must also be GPL licensed.  See [gpl-3.0.md](gpl-3.0.md)
+is and must also be GPL licensed.  See [gpl-3.0.md](../gpl-3.0.md)
 
-![Acid Warp logo](release/images/logo.png)
+![Acid Warp logo](../logo.png)

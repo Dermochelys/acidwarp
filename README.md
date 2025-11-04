@@ -137,3 +137,5 @@ version targeted at Android TV.
 - Many heartfelt thanks to all previous authors especially (of course) Noah.
 - Kudos to the Anthropic team as Claude was quite useful during the porting process.
 - Additional thanks to [Scott Ostler](https://github.com/scottostler), for his mentoring with the iOS / iPadOS / macOS ports.
+
+![Acid Warp logo](logo.png)

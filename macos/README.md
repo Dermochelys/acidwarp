@@ -20,6 +20,6 @@ SDL3 and SDL3_image are automatically downloaded during the build via Run Script
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too
-is and must also be GPL licensed.  See [gpl-3.0.md](gpl-3.0.md)
+is and must also be GPL licensed.  See [gpl-3.0.md](../gpl-3.0.md)
 
-![Acid Warp logo](acidwarp/Assets.xcassets/AppIcon.appiconset/icon-512.png)
+![Acid Warp logo](../logo.png)

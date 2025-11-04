@@ -19,6 +19,6 @@ Supports devices running iOS / iPadOS 15.6 or later.
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too
-is and must also be GPL licensed.  See [gpl-3.0.md](gpl-3.0.md)
+is and must also be GPL licensed.  See [gpl-3.0.md](../gpl-3.0.md)
 
-![Acid Warp logo](./acidwarp/Assets.xcassets/AppIcon.appiconset/icon.png)
+![Acid Warp logo](../logo.png)
