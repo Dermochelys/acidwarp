@@ -1,5 +1,7 @@
 # Acid Warp for Android / iOS / iPadOS / macOS / Windows
 
+[![Build All Platforms](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml/badge.svg)](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml)
+
 ## What is Acid Warp?
 
 Acid Warp is an eye candy program which displays various patterns and animates them by changing the palette. Originally it was an MS-DOS / Windows program by Noah Spurrier and Mark Bilk and was made in 1992/1993.
@@ -25,14 +27,22 @@ For detailed build instructions for each platform, see:
 | **[macOS](macos/README.md)** | <a href="https://apps.apple.com/us/app/acid-warp/id6753610977?mt=12&itscg=30200&itsct=apps_box_badge&mttnsubad=6753610977" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1760486400" alt="Download on the App Store" style="width: 123px; height: 41px; vertical-align: middle; object-fit: contain;" /></a> |
 | **[Windows](windows/README.md)** | <a href="https://apps.microsoft.com/detail/9N7W8XK7GGHC?referrer=appbadge&mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" height="41" alt="Get it from Microsoft"></a>                                                                                                                                                                                                                 |
 
-## Using the program (Android TV or devices with keyboards)
+## Using the program
+
+### On-Screen GUI Controls (All Platforms)
+
+Click or tap anywhere on the screen to show/hide the on-screen control overlay:
+
+![GUI Controls](shared/remote.png)
+
+### Keyboard Controls (Android TV or devices with keyboards)
 
 Use the following keys or remote control buttons to control the program:
 
 | Key                 | Action                         |
 |---------------------|--------------------------------|
-| **Up**              | Rotate palette faster          |
-| **Down**            | Rotate palette slower          |
+| **Up**              | Animate faster                 |
+| **Down**            | Animate slower                 |
 | **Left**            | Lock/unlock on current pattern |
 | **Right**           | Switch to the next palette     |
 | **Select** or **N** | Switch to the next pattern     |

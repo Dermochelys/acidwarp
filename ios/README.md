@@ -1,7 +1,8 @@
 # Acid Warp for iOS / iPadOS
 
-- App Store Link TBD
-- Supports devices running iOS / iPadOS 15.6 or later.
+Not in iOS App Store yet, stay tuned!
+
+Supports devices running iOS / iPadOS 15.6 or later.
 
 ## Technical Details
 - Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](app/jni).

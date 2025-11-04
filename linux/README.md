@@ -1,10 +1,10 @@
 # Acid Warp for Linux
 
-## Snap
+<a href="https://snapcraft.io/acidwarp"><img src="https://snapcraft.io/en/dark/install.svg" height="41" alt="Get it from the Snap Store"></a>
 
-- [![acidwarp](https://snapcraft.io/acidwarp/badge.svg)](https://snapcraft.io/acidwarp)
-- Supports devices running Ubuntu 24+ and OpenGL 4.1+.
-- SDL3 is statically linked (for now) as latest Ubuntu LTS (24.04) [does not include SDL3](https://launchpad.net/ubuntu/+source/libsdl3).
+Supports devices running Ubuntu 24+ and OpenGL 4.1+.
+
+SDL3 is statically linked (for now) as latest Ubuntu LTS (24.04) [does not include SDL3](https://launchpad.net/ubuntu/+source/libsdl3).
 
 ## Technical Details
 - Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](acidwarp).

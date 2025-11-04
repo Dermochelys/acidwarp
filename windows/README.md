@@ -1,8 +1,10 @@
 # Acid Warp for Windows
 
-- [App Store Link](https://apps.microsoft.com/detail/9N7W8XK7GGHC)
-- Supports devices running Windows 10 or later.
-- Does not require any runtime dependencies as required libs are statically linked in the executable file.
+<a href="https://apps.microsoft.com/detail/9N7W8XK7GGHC?referrer=appbadge&mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" height="41" alt="Get it from Microsoft"></a>
+
+Supports devices running Windows 10 or later.
+
+Does not require any runtime dependencies as required libs are statically linked in the executable file.
 
 ## Technical Details
 

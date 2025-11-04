@@ -1,7 +1,8 @@
 # Acid Warp for Android
 
-- [Google Play Store Link](https://play.google.com/store/apps/details?id=com.dermochelys.acidwarp)
-- Supports phones, tablets, and [Android TV](https://www.android.com/tv/) / [Google TV](https://tv.google/) devices running Android 10+.
+<a href="https://play.google.com/store/apps/details?id=com.dermochelys.acidwarp"><img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height="55" alt="Get it on Google Play"></a>
+
+Supports phones, tablets, and [Android TV](https://www.android.com/tv/) / [Google TV](https://tv.google/) devices running Android 10+.
 
 ## Technical Details
 - Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](app/jni).
