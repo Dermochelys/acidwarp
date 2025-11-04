@@ -37,6 +37,7 @@ static inline void SDL_ShowCursor_compat(int toggle) {
 #include "handy.h"
 #include "acidwarp.h"
 #include "display.h"
+#include "remote_overlay.h"
 
 static SDL_Window *window = NULL;
 
@@ -75,6 +76,12 @@ static UCHAR *draw_buf = NULL;
 static int fullscreen = 0;
 static int width, height;
 
+/* Single click debouncing - delay processing until double-click window expires */
+static Uint64 pending_click_time = 0;
+static int pending_click_x = 0;
+static int pending_click_y = 0;
+static const Uint64 DOUBLE_CLICK_DELAY_MS = 300; /* Wait 300ms to see if double-click occurs */
+
 static int getInternalFormat() {
 #ifdef __APPLE__
 #if TARGET_OS_IOS
@@ -105,6 +112,11 @@ return GL_LUMINANCE;
 
 void disp_setPalette(unsigned char *palette)
 {
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glViewport(0, 0, width, height);
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
   static GLubyte glcolors[256 * 4];
   int i;
 
@@ -122,6 +134,13 @@ void disp_setPalette(unsigned char *palette)
 
   glClear(GL_COLOR_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+  /* Render remote overlay on top if visible */
+  remote_overlay_render_if_visible(width, height);
+  
+  /* Render dim feedback if active */
+  remote_overlay_render_dim(width, height);
+
   SDL_GL_SwapWindow(window);
 }
 
@@ -204,6 +223,8 @@ static void display_redraw(void)
 {
   glClear(GL_COLOR_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  remote_overlay_render_if_visible(width, height);
+  remote_overlay_render_dim(width, height);
   SDL_GL_SwapWindow(window);
 }
 
@@ -211,12 +232,44 @@ static void display_redraw(void)
 void disp_processInput(void) {
   SDL_Event event;
 
+  /* Check if pending single click should be processed */
+  if (pending_click_time != 0) {
+    Uint64 current_time = SDL_GetTicks();
+    if (current_time - pending_click_time >= DOUBLE_CLICK_DELAY_MS) {
+      /* Enough time has passed - process as single click */
+      if (remote_overlay_is_visible()) {
+        int result = remote_overlay_handle_click(pending_click_x, pending_click_y, width, height);
+        if (result == -1) {
+          /* Click was outside remote bounds - hide it */
+          remote_overlay_hide();
+        }
+        /* result == 0: click on remote but not button, keep showing */
+        /* result == 1: button clicked, keep showing */
+      } else {
+        /* Overlay not visible - show it on click */
+        remote_overlay_show();
+      }
+      pending_click_time = 0; /* Clear pending click */
+    }
+  }
+
   while ( SDL_PollEvent(&event) > 0 ) {
     switch (event.type) {
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (event.button.button == SDL_BUTTON_LEFT) {
           if (event.button.clicks == 2) {
-            disp_toggleFullscreen();
+            /* Double click detected - cancel pending single click and toggle fullscreen */
+            pending_click_time = 0; /* Cancel pending single click */
+            /* Prevent fullscreen toggle if clicking within remote overlay bounds */
+            if (!remote_overlay_is_visible() || 
+                !remote_overlay_is_point_inside(event.button.x, event.button.y, width, height)) {
+              disp_toggleFullscreen();
+            }
+          } else if (event.button.clicks == 1) {
+            /* Single click - store in pending state and wait for potential double-click */
+            pending_click_time = SDL_GetTicks();
+            pending_click_x = event.button.x;
+            pending_click_y = event.button.y;
           }
         }
         break;
@@ -458,6 +511,7 @@ void disp_init(int newwidth, int newheight, int flags)
     videoflags = (fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE);
     SDL_ShowCursor(!fullscreen);
     disp_glinit(width, height, videoflags);
+    remote_overlay_init();
     inited = 1;
   } /* !inited */
 

@@ -66,9 +66,44 @@ parts:
       - libxss-dev
       - wayland-protocols
 
-  acidwarp:
+  sdl3-image:
     after: [sdl3]
     plugin: cmake
+    source: https://github.com/libsdl-org/SDL_image.git
+    # Auto-updated from SDL3_IMAGE_VERSION file by snap_pack.sh
+    source-tag: release-3.2.4
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DSDL3IMAGE_AVIF=OFF
+      - -DSDL3IMAGE_BMP=OFF
+      - -DSDL3IMAGE_GIF=OFF
+      - -DSDL3IMAGE_JPG=OFF
+      - -DSDL3IMAGE_JXL=OFF
+      - -DSDL3IMAGE_LBM=OFF
+      - -DSDL3IMAGE_PCX=OFF
+      - -DSDL3IMAGE_PNG=ON
+      - -DSDL3IMAGE_PNM=OFF
+      - -DSDL3IMAGE_QOI=OFF
+      - -DSDL3IMAGE_SVG=OFF
+      - -DSDL3IMAGE_TGA=OFF
+      - -DSDL3IMAGE_TIF=OFF
+      - -DSDL3IMAGE_WEBP=OFF
+      - -DSDL3IMAGE_XCF=OFF
+      - -DSDL3IMAGE_XPM=OFF
+      - -DSDL3IMAGE_XV=OFF
+      - -DSDL3IMAGE_VENDORED=ON
+      - -DBUILD_SHARED_LIBS=OFF
+      - -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_PREFIX_PATH=$CRAFT_STAGE/usr
+
+  acidwarp:
+    after: [sdl3, sdl3-image]
+    plugin: cmake
+    # For local development/testing - build from local code:
+    # source: ../..
+    # source-type: local
+    # For release builds - build from remote repository:
     source: https://github.com/Dermochelys/acidwarp-linux.git
     source-type: git
     build-packages:

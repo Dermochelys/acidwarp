@@ -1,5 +1,7 @@
 # Acid Warp for Android / iOS / iPadOS / macOS / Windows
 
+[![Build All Platforms](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml/badge.svg)](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml)
+
 ## What is Acid Warp?
 
 Acid Warp is an eye candy program which displays various patterns and animates them by changing the palette. Originally it was an MS-DOS / Windows program by Noah Spurrier and Mark Bilk and was made in 1992/1993.
@@ -25,14 +27,22 @@ For detailed build instructions for each platform, see:
 | **[macOS](macos/README.md)** | <a href="https://apps.apple.com/us/app/acid-warp/id6753610977?mt=12&itscg=30200&itsct=apps_box_badge&mttnsubad=6753610977" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1760486400" alt="Download on the App Store" style="width: 123px; height: 41px; vertical-align: middle; object-fit: contain;" /></a> |
 | **[Windows](windows/README.md)** | <a href="https://apps.microsoft.com/detail/9N7W8XK7GGHC?referrer=appbadge&mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" height="41" alt="Get it from Microsoft"></a>                                                                                                                                                                                                                 |
 
-## Using the program (Android TV or devices with keyboards)
+## Using the program
+
+### On-Screen GUI Controls (All Platforms)
+
+Click or tap anywhere on the screen to show/hide the on-screen control overlay:
+
+![GUI Controls](shared/remote.png)
+
+### Keyboard Controls (Android TV or devices with keyboards)
 
 Use the following keys or remote control buttons to control the program:
 
 | Key                 | Action                         |
 |---------------------|--------------------------------|
-| **Up**              | Rotate palette faster          |
-| **Down**            | Rotate palette slower          |
+| **Up**              | Animate faster                 |
+| **Down**            | Animate slower                 |
 | **Left**            | Lock/unlock on current pattern |
 | **Right**           | Switch to the next palette     |
 | **Select** or **N** | Switch to the next pattern     |
@@ -40,31 +50,36 @@ Use the following keys or remote control buttons to control the program:
 | **Back**            | Exit the app                   |
 | **Home**            | Exit the app                   |
 
-## Updating SDL3
+## Updating SDL3 and SDL3_image
 
-SDL3 version is centrally managed in the `SDL_VERSION` file at the repository root. SDL3 artifacts are automatically downloaded during builds and are not checked into version control.
+SDL3 and SDL3_image versions are centrally managed in the `SDL_VERSION` and `SDL3_IMAGE_VERSION` files at the repository root. SDL3 and SDL3_image artifacts are automatically downloaded during builds and are not checked into version control.
 
-To update SDL3 across all platforms:
+To update SDL3 and SDL3_image across all platforms:
 - Update the version in `SDL_VERSION` (e.g., `3.2.26`)
+- Update the version in `SDL3_IMAGE_VERSION` (e.g., `3.2.4`)
 
-Build systems will automatically download the new version:
-- **Android**: Gradle downloads SDL3-{version}.aar automatically before build, removing old versions
-- **iOS/macOS**: Xcode Run Script build phase checks the installed SDL3.xcframework version and automatically downloads/updates if needed
+Build systems will automatically download the new versions:
+- **Android**: Gradle downloads SDL3-{version}.aar and SDL3_image-{version}.aar automatically before build, removing old versions
+- **iOS/macOS**: Xcode Run Script build phase checks the installed SDL3.xcframework and SDL3_image.xcframework versions and automatically downloads/updates if needed
 - **Linux/Windows**: Installed via package managers
 
 Note: Steps 2 and 3 have comments in their respective files pointing to each other as a reminder to keep them in sync.
 
-### Checking Installed SDL3 Version (Local Development)
+### Checking Installed SDL3 and SDL3_image Versions (Local Development)
 
-To check which SDL3 version is currently installed on your system:
+To check which SDL3 and SDL3_image versions are currently installed on your system:
 
-- **Linux**: `pkg-config --modversion sdl3`
-- **Windows (MSYS2)**: `pacman -Q mingw-w64-x86_64-sdl3`
+- **Linux**: 
+  - `pkg-config --modversion sdl3`
+  - `pkg-config --modversion SDL3_image`
+- **Windows (MSYS2)**: 
+  - `pacman -Q mingw-w64-x86_64-sdl3`
+  - `pacman -Q mingw-w64-x86_64-sdl3-image`
 
 ## Version History (see commit history for full details)
 
 ### 5.0.0
-Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). Update to SDL 3.2.26.
+Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). Update to SDL 3.2.26 and SDL3_image 3.2.4.
 
 ### 1.3.0
 Add iOS / iPadOS / macOS / Windows / Linux support; support logo display on smaller screen sizes; other minor enhancements.
@@ -122,3 +137,5 @@ version targeted at Android TV.
 - Many heartfelt thanks to all previous authors especially (of course) Noah.
 - Kudos to the Anthropic team as Claude was quite useful during the porting process.
 - Additional thanks to [Scott Ostler](https://github.com/scottostler), for his mentoring with the iOS / iPadOS / macOS ports.
+
+![Acid Warp logo](logo.png)
