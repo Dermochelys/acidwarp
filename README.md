@@ -33,7 +33,7 @@ For detailed build instructions for each platform, see:
 
 Click or tap anywhere on the screen to show/hide the on-screen control overlay:
 
-![GUI Controls](shared/remote.png)
+<img src="shared/remote.png" alt="GUI Controls" width="400">
 
 ### Keyboard Controls (Android TV or devices with keyboards)
 
@@ -138,4 +138,4 @@ version targeted at Android TV.
 - Kudos to the Anthropic team as Claude was quite useful during the porting process.
 - Additional thanks to [Scott Ostler](https://github.com/scottostler), for his mentoring with the iOS / iPadOS / macOS ports.
 
-![Acid Warp logo](logo.png)
+<img src="logo.png" alt="Acid Warp logo" width="400">
