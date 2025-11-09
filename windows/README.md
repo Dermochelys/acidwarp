@@ -20,7 +20,34 @@ Does not require any runtime dependencies as required libs are statically linked
 
 ### Runtime Dependencies
 
-While most libraries are statically linked, SDL3_image dynamically loads PNG support at runtime. The executable requires `libpng16-16.dll` to be present in the same directory. This DLL is available at `/mingw64/bin/libpng16-16.dll` in the MSYS2 environment and should be distributed with the application.
+While most libraries are statically linked, SDL3_image dynamically loads PNG support at runtime. The executable requires the following DLLs to be present in the same directory:
+
+- `libpng16-16.dll` - PNG image support
+- `zlib1.dll` - Compression library (required by libpng)
+
+These DLLs are available in the MSYS2 environment at `/mingw64/bin/` and should be distributed with the application.
+
+### Code Signing
+
+The `signexe.bat` script is used to sign the `acidwarp-windows.exe` file using Microsoft's Azure Code Signing service. The script uses `signtool.exe` with SHA256 hashing and timestamping to ensure the executable is properly signed for distribution.
+
+## Release Process
+
+Follow these steps to create a new release:
+
+1. **Update Version**: Bump the version number in the resource file
+2. **Build**: Run the following commands to perform a clean build:
+   ```
+   cmake --fresh .
+   cmake --build .
+   ```
+3. **Sign Executable**: Run `signexe.bat` to sign the generated `acidwarp-windows.exe` file
+4. **Create Release Folder**: Create a new folder in the release directory for the new version
+5. **Generate MSIX Package**: Ask Claude to create a new MSIX package based on the last version
+6. **Create Upgrade Test Script**: Ask Claude to create a PowerShell script to verify the upgrade flow. This will require signing with a temporary certificate
+7. **Manual Testing**: Manually test that the app works correctly and the upgrade process functions as expected
+8. **Cleanup Test Artifacts**: Uninstall the app and remove the temporary certificate used for testing
+9. **Cleanup Project Files**: Remove any temporary files created during steps 5-8 from the project folder
 
 ## Previous ports
 - See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
