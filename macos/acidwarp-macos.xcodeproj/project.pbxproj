@@ -190,6 +190,7 @@
 				506E5C4C2E91B90700F39B20 /* Resources */,
 				506E5CAD2E91BAD300F39B20 /* Embed Frameworks */,
 				501D302A2E96BF9800DE30A6 /* CopyFiles */,
+				501D302D2E96BFA600DE30A7 /* Clean Build Artifacts */,
 				501D302B2E96BFA500DE30A6 /* ShellScript */,
 			);
 			buildRules = (
@@ -361,24 +362,42 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-image-framework.sh\n";
 		};
-		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
+		501D302D2E96BFA600DE30A7 /* Clean Build Artifacts */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
-		inputPaths = (
-			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3",
+			inputPaths = (
 			);
+			name = "Clean Build Artifacts";
 			outputFileListPaths = (
 			);
-		outputPaths = (
-			"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM",
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\n";
+			shellScript = "# Remove CMake build artifacts from app bundle\n# Remove cmake-build-debug directory if it exists in Resources\nif [ -d \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/acidwarp/cmake-build-debug\" ]; then\n  rm -rf \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/acidwarp/cmake-build-debug\"\nfi\n# Also check for CMakeFiles directories\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type d -name \"CMakeFiles\" -exec rm -rf {} + 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"CMakeCache.txt\" -delete 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"cmake_install.cmake\" -delete 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"Makefile\" -delete 2>/dev/null || true\n";
+		};
+		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = dsymutil;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\ndsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework/SDL3_image\" -o \"${BUILT_PRODUCTS_DIR}/SDL3_image.framework.dSYM\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -555,7 +574,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -605,7 +624,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -653,6 +672,8 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				STRIP_STYLE = "non-global";
+				DEPLOYMENT_POSTPROCESSING = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
