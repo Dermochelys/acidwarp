@@ -7,17 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-	501D30201E96C10000DE30A6 /* acidwarp.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30121E96C10000DE30A6 /* acidwarp.c */; };
-	501D30211E96C10000DE30A6 /* bit_map.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30131E96C10000DE30A6 /* bit_map.c */; };
-	501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
-	501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
-	501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
-	501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
-	501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
-	501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
-	501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
-	501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301B1E96C10000DE30A6 /* remote_overlay.c */; };
-	501D302A1E96C10000DE30A7 /* remote.png in Resources */ = {isa = PBXBuildFile; fileRef = 501D301C1E96C10000DE30A6 /* remote.png */; };
+		501D30201E96C10000DE30A6 /* acidwarp.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30121E96C10000DE30A6 /* acidwarp.c */; };
+		501D30211E96C10000DE30A6 /* bit_map.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30131E96C10000DE30A6 /* bit_map.c */; };
+		501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
+		501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
+		501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
+		501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
+		501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
+		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
+		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
+		501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301B1E96C10000DE30A6 /* remote_overlay.c */; };
+		501D302A1E96C10000DE30A7 /* remote.png in Resources */ = {isa = PBXBuildFile; fileRef = 501D301C1E96C10000DE30A6 /* remote.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,26 +37,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		507701E82E90D72600C75FC6 /* Copy SDL3 Framework */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-		inputPaths = (
-			"$(SRCROOT)/../SDL3.xcframework",
-			"$(SRCROOT)/../SDL3_image.xcframework",
-		);
-		outputPaths = (
-			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
-			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework",
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-		shellPath = /bin/sh;
-		shellScript = "if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n";
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		501D30121E96C10000DE30A6 /* acidwarp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = acidwarp.c; path = acidwarp/acidwarp/acidwarp.c; sourceTree = "<group>"; };
 		501D30131E96C10000DE30A6 /* bit_map.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bit_map.c; path = acidwarp/acidwarp/bit_map.c; sourceTree = "<group>"; };
@@ -65,11 +45,11 @@
 		501D30161E96C10000DE30A6 /* gen_img.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gen_img.c; path = acidwarp/acidwarp/gen_img.c; sourceTree = "<group>"; };
 		501D30171E96C10000DE30A6 /* img_float.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = img_float.c; path = acidwarp/acidwarp/img_float.c; sourceTree = "<group>"; };
 		501D30181E96C10000DE30A6 /* palinit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = palinit.c; path = acidwarp/acidwarp/palinit.c; sourceTree = "<group>"; };
-	501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
-	501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
-	501D301B1E96C10000DE30A6 /* remote_overlay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = remote_overlay.c; path = acidwarp/acidwarp/remote_overlay.c; sourceTree = "<group>"; };
-	501D301C1E96C10000DE30A6 /* remote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = remote.png; path = acidwarp/acidwarp/remote.png; sourceTree = "<group>"; };
-	502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		501D30191E96C10000DE30A6 /* rolnfade.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rolnfade.c; path = acidwarp/acidwarp/rolnfade.c; sourceTree = "<group>"; };
+		501D301A1E96C10000DE30A6 /* warp_text.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = warp_text.c; path = acidwarp/acidwarp/warp_text.c; sourceTree = "<group>"; };
+		501D301B1E96C10000DE30A6 /* remote_overlay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = remote_overlay.c; path = acidwarp/acidwarp/remote_overlay.c; sourceTree = "<group>"; };
+		501D301C1E96C10000DE30A6 /* remote.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = remote.png; path = acidwarp/acidwarp/remote.png; sourceTree = "<group>"; };
+		502A14FC2E70BBC000BA2A0F /* acidwarp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = acidwarp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15192E70BBC100BA2A0F /* acidwarpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = acidwarpUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -138,6 +118,7 @@
 				502A151C2E70BBC100BA2A0F /* acidwarpTests */,
 				502A15262E70BBC100BA2A0F /* acidwarpUITests */,
 				502A14FD2E70BBC000BA2A0F /* Products */,
+				50B9AB9A2EC01E1000A028A5 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -151,21 +132,39 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		50B9AB9A2EC01E1000A028A5 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				501D30121E96C10000DE30A6 /* acidwarp.c */,
+				501D30131E96C10000DE30A6 /* bit_map.c */,
+				501D30141E96C10000DE30A6 /* display.c */,
+				501D30151E96C10000DE30A6 /* draw.c */,
+				501D30161E96C10000DE30A6 /* gen_img.c */,
+				501D30171E96C10000DE30A6 /* img_float.c */,
+				501D30181E96C10000DE30A6 /* palinit.c */,
+				501D30191E96C10000DE30A6 /* rolnfade.c */,
+				501D301A1E96C10000DE30A6 /* warp_text.c */,
+				501D301B1E96C10000DE30A6 /* remote_overlay.c */,
+				501D301C1E96C10000DE30A6 /* remote.png */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		502A14FB2E70BBC000BA2A0F /* acidwarp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */;
-		buildPhases = (
-			501D30642E96C52F00DE30A6 /* Download SDL3 */,
-			501D30662E96C52F00DE30A7 /* Download SDL3_image */,
-			507701E82E90D72600C75FC6 /* Copy SDL3 Framework */,
-			502A14F82E70BBC000BA2A0F /* Sources */,
-			502A14F92E70BBC000BA2A0F /* Frameworks */,
-			502A14FA2E70BBC000BA2A0F /* Resources */,
-			501D30652E96C53000DE30A6 /* ShellScript */,
-		);
+			buildPhases = (
+				501D30642E96C52F00DE30A6 /* Download SDL3 */,
+				501D30662E96C52F00DE30A7 /* Download SDL3_image */,
+				507701E82E90D72600C75FC6 /* ShellScript */,
+				502A14F82E70BBC000BA2A0F /* Sources */,
+				502A14F92E70BBC000BA2A0F /* Frameworks */,
+				502A14FA2E70BBC000BA2A0F /* Resources */,
+				501D30652E96C53000DE30A6 /* dsymutil */,
+			);
 			buildRules = (
 			);
 			dependencies = (
@@ -315,6 +314,25 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
 		};
+		501D30652E96C53000DE30A6 /* dsymutil */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = dsymutil;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\ndsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework/SDL3_image\" -o \"${BUILT_PRODUCTS_DIR}/SDL3_image.framework.dSYM\"\n";
+		};
 		501D30662E96C52F00DE30A7 /* Download SDL3_image */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -325,7 +343,7 @@
 			inputPaths = (
 				"$(SRCROOT)/../SDL3_IMAGE_VERSION",
 			);
-			name = "Download SDL3_image";
+			name = "Build SDL3_image";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -333,46 +351,45 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-image-framework.sh\n";
+			shellScript = "cd \"$SRCROOT/..\" && ./build-sdl3-image-xcode.sh\n";
 		};
-		501D30652E96C53000DE30A6 /* ShellScript */ = {
+		507701E82E90D72600C75FC6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
-			);
-			outputFileListPaths = (
+				"$(SRCROOT)/../SDL3.xcframework",
+				"$(SRCROOT)/../SDL3_image.xcframework",
 			);
 			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
+				"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\n";
+			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-	502A14F82E70BBC000BA2A0F /* Sources */ = {
-		isa = PBXSourcesBuildPhase;
-		buildActionMask = 2147483647;
-		files = (
-			501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
-			501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
-			501D30221E96C10000DE30A6 /* display.c in Sources */,
-			501D30231E96C10000DE30A6 /* draw.c in Sources */,
-			501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
-			501D30251E96C10000DE30A6 /* img_float.c in Sources */,
-			501D30261E96C10000DE30A6 /* palinit.c in Sources */,
-			501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
-			501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
-			501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */,
-		);
-		runOnlyForDeploymentPostprocessing = 0;
-	};
+		502A14F82E70BBC000BA2A0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
+				501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
+				501D30221E96C10000DE30A6 /* display.c in Sources */,
+				501D30231E96C10000DE30A6 /* draw.c in Sources */,
+				501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
+				501D30251E96C10000DE30A6 /* img_float.c in Sources */,
+				501D30261E96C10000DE30A6 /* palinit.c in Sources */,
+				501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
+				501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
+				501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		502A15152E70BBC100BA2A0F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -559,14 +576,14 @@
 					GLES_SILENCE_DEPRECATION,
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-			HEADER_SEARCH_PATHS = (
-				"$(inherited)",
-				"$(PROJECT_DIR)/acidwarp/acidwarp",
-				"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
-				"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
-				"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
-				"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework/Headers",
-			);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/acidwarp/acidwarp",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
+					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
+					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework/Headers",
+				);
 				INFOPLIST_FILE = acidwarp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Acid Warp";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
@@ -583,13 +600,13 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 5.0.0;
-			OTHER_LDFLAGS = (
-				"$(inherited)",
-				"-framework",
-				SDL3,
-				"-framework",
-				SDL3_image,
-			);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+					"-framework",
+					SDL3_image,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -632,14 +649,14 @@
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				GENERATE_INFOPLIST_FILE = YES;
-			HEADER_SEARCH_PATHS = (
-				"$(inherited)",
-				"$(PROJECT_DIR)/acidwarp/acidwarp",
-				"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
-				"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
-				"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
-				"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework/Headers",
-			);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/acidwarp/acidwarp",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
+					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
+					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
+					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework/Headers",
+				);
 				INFOPLIST_FILE = acidwarp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Acid Warp";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
@@ -656,13 +673,13 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 5.0.0;
-			OTHER_LDFLAGS = (
-				"$(inherited)",
-				"-framework",
-				SDL3,
-				"-framework",
-				SDL3_image,
-			);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					SDL3,
+					"-framework",
+					SDL3_image,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
