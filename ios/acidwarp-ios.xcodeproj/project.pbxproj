@@ -158,7 +158,7 @@
 			buildConfigurationList = 502A152D2E70BBC100BA2A0F /* Build configuration list for PBXNativeTarget "acidwarp" */;
 			buildPhases = (
 				501D30642E96C52F00DE30A6 /* Download SDL3 */,
-				501D30662E96C52F00DE30A7 /* Download SDL3_image */,
+				501D30662E96C52F00DE30A7 /* Build SDL3_image */,
 				507701E82E90D72600C75FC6 /* ShellScript */,
 				502A14F82E70BBC000BA2A0F /* Sources */,
 				502A14F92E70BBC000BA2A0F /* Frameworks */,
@@ -333,7 +333,7 @@
 			shellPath = /bin/sh;
 			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\ndsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework/SDL3_image\" -o \"${BUILT_PRODUCTS_DIR}/SDL3_image.framework.dSYM\"\n";
 		};
-		501D30662E96C52F00DE30A7 /* Download SDL3_image */ = {
+		501D30662E96C52F00DE30A7 /* Build SDL3_image */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -368,7 +368,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n";
+			shellScript = "set -e\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\nif [ \"$PLATFORM_NAME\" != \"iphonesimulator\" ]; then\n  SIGNING_IDENTITY=\"${EXPANDED_CODE_SIGN_IDENTITY}\"\n  if [ -z \"$SIGNING_IDENTITY\" ] || [ \"$SIGNING_IDENTITY\" = \"-\" ]; then\n    SIGNING_IDENTITY=\"${CODE_SIGN_IDENTITY}\"\n  fi\n  if [ -n \"$SIGNING_IDENTITY\" ] && [ \"$SIGNING_IDENTITY\" != \"-\" ]; then\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\n  fi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

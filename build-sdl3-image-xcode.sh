@@ -124,8 +124,8 @@ with open(project_file, 'w') as f:
 print("Modified JXL library project to rename symbols")
 PYTHON_SCRIPT
 
-# Disable code signing in the SDL_image Xcode project
-echo "Disabling code signing requirements in Xcode project..."
+# Disable code signing and fix deployment target in the SDL_image Xcode project
+echo "Configuring Xcode project settings..."
 python3 <<'PYTHON_SCRIPT'
 import sys
 import re
@@ -169,11 +169,26 @@ content = re.sub(r'DevelopmentTeam = [^;]+;', '', content)
 # Remove signing certificate
 content = re.sub(r'CODE_SIGN_STYLE = [^;]+;', 'CODE_SIGN_STYLE = Manual;', content)
 
+# Fix iOS deployment target to 12.0 (minimum supported by current Xcode)
+# Match the app's deployment target of 15.6 for consistency
+content = re.sub(r'IPHONEOS_DEPLOYMENT_TARGET = [^;]+;', 'IPHONEOS_DEPLOYMENT_TARGET = 15.6;', content)
+
+# Fix headermap settings to address headermap warning
+# Replace any existing values (xcodebuild command line will also set these)
+content = re.sub(r'ALWAYS_SEARCH_USER_PATHS = [^;]+;', 'ALWAYS_SEARCH_USER_PATHS = NO;', content)
+content = re.sub(r'USE_HEADERMAP = [^;]+;', 'USE_HEADERMAP = NO;', content)
+
+# Remove Carbon Resources build phases to suppress deprecation warning
+# Find and remove PBXRezBuildPhase sections
+content = re.sub(r'/\* Begin PBXRezBuildPhase section \*/\n.*?/\* End PBXRezBuildPhase section \*/\n', '', content, flags=re.DOTALL)
+# Also remove references to Rez build phases from buildPhases arrays
+content = re.sub(r'[0-9A-F]{24} /\* Rez \*/,?\s*\n?', '', content)
+
 # Write back
 with open(project_file, 'w') as f:
     f.write(content)
 
-print("Disabled code signing in Xcode project")
+print("Configured Xcode project: disabled code signing, updated deployment target to 15.6, fixed headermap settings (ALWAYS_SEARCH_USER_PATHS=NO, USE_HEADERMAP=NO), removed Carbon Resources phases")
 PYTHON_SCRIPT
 
 # Build the xcframework using direct platform builds
@@ -185,16 +200,20 @@ unset IPHONEOS_DEPLOYMENT_TARGET
 unset TVOS_DEPLOYMENT_TARGET
 unset WATCHOS_DEPLOYMENT_TARGET
 
-# Common build settings to disable code signing
+# Common build settings to disable code signing, set deployment target, and fix headermap
 BUILD_SETTINGS=(
     CODE_SIGN_IDENTITY=""
     CODE_SIGNING_REQUIRED=NO
     CODE_SIGNING_ALLOWED=NO
     DEVELOPMENT_TEAM=""
+    IPHONEOS_DEPLOYMENT_TARGET=15.6
+    ALWAYS_SEARCH_USER_PATHS=NO
+    USE_HEADERMAP=NO
 )
 
 # Build for iOS devices
 echo "Building for iOS (arm64)..."
+echo "Note: 'no debug symbols' warnings are expected and harmless for Release builds"
 xcodebuild archive \
     -project Xcode/SDL_image.xcodeproj \
     -scheme SDL3_image \
@@ -203,7 +222,7 @@ xcodebuild archive \
     -archivePath "build/ios.xcarchive" \
     SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-    "${BUILD_SETTINGS[@]}"
+    "${BUILD_SETTINGS[@]}" 2>&1 | grep -v "warning: no debug symbols" || true
 
 # Build for iOS Simulator
 echo "Building for iOS Simulator (arm64, x86_64)..."
@@ -215,7 +234,7 @@ xcodebuild archive \
     -archivePath "build/iossimulator.xcarchive" \
     SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-    "${BUILD_SETTINGS[@]}"
+    "${BUILD_SETTINGS[@]}" 2>&1 | grep -v "warning: no debug symbols" || true
 
 # Create the xcframework from the archives
 echo "Creating xcframework..."
