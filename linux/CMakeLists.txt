@@ -54,6 +54,9 @@ add_executable(acidwarp-linux acidwarp/acidwarp.c)
 # Link against the library and OpenGL for desktop
 target_link_libraries(acidwarp-linux PRIVATE main ${OPENGL_LIBRARIES} SDL3::SDL3 SDL3_image::SDL3_image m)
 
+# Security: Disable executable stack
+target_link_options(acidwarp-linux PRIVATE "-Wl,-z,noexecstack")
+
 # Install targets
 install(TARGETS acidwarp-linux DESTINATION bin)
 install(FILES acidwarp.desktop DESTINATION share/applications)

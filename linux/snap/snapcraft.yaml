@@ -1,6 +1,6 @@
 name: acidwarp # you probably want to 'snapcraft register <name>'
 base: core24 # the base snap is the execution environment for this snap
-version: '5.0.0+3' # just for humans, typically '1.2+git' or '1.3.2'
+version: '5.0.0+4' # just for humans, typically '1.2+git' or '1.3.2'
 summary: It's eye-candy — watch the pretty colors! # 79 char long summary
 description: |
   Acid Warp is software that falls into the category of "eye-candy". It
@@ -23,7 +23,7 @@ platforms:
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
-icon: snap/icon.png
+icon: icon.png
 
 apps:
   acidwarp:
@@ -104,8 +104,9 @@ parts:
     # source: ../..
     # source-type: local
     # For release builds - build from remote repository:
-    source: https://github.com/Dermochelys/acidwarp-linux.git
+    source: https://github.com/Dermochelys/acidwarp.git
     source-type: git
+    source-subdir: linux
     build-packages:
       - libgl1-mesa-dev
       - cmake

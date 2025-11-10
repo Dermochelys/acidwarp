@@ -13,6 +13,26 @@ Supports devices running iOS / iPadOS 15.6 or later.
 - Use Xcode 26 or later.
 - SDL3 and SDL3_image are automatically downloaded during the build via Run Script build phases. The scripts check if `SDL3.xcframework` and `SDL3_image.xcframework` exist in the repo root and download them if needed based on the versions in `SDL_VERSION` and `SDL3_IMAGE_VERSION`.
 
+## Workaround for SDL_image issue with libjxl
+
+- Starting with iOS 18 and Xcode 16, Apple bundled libjxl (JPEG XL decoder library) into iOS as an internal/private API. When apps are submitted to the App Store, Apple's automated review
+  process scans for symbols matching these private APIs and rejects apps that appear to use them - even if the app is using its own bundled version of libjxl rather than calling Apple's
+  private APIs.
+
+- The workaround (implemented in build-sdl3-image-xcode.sh:56-125) renames JXL symbols by prefixing them with SDL_ to avoid App Store rejection. Specifically, it renames 8 JXL decoder
+  functions:
+
+  - JxlDecoderCreate → SDL_JxlDecoderCreate
+  - JxlDecoderDestroy → SDL_JxlDecoderDestroy
+  - JxlDecoderGetBasicInfo → SDL_JxlDecoderGetBasicInfo
+  - JxlDecoderImageOutBufferSize → SDL_JxlDecoderImageOutBufferSize
+  - JxlDecoderProcessInput → SDL_JxlDecoderProcessInput
+  - JxlDecoderSetImageOutBuffer → SDL_JxlDecoderSetImageOutBuffer
+  - JxlDecoderSetInput → SDL_JxlDecoderSetInput
+  - JxlDecoderSubscribeEvents → SDL_JxlDecoderSubscribeEvents
+
+- This is done via C preprocessor macros added during SDL3_image's build process.
+
 ## Previous ports
 - See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).
 

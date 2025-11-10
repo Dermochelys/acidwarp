@@ -16,9 +16,9 @@ android {
         // No need to have a sophisticated versionCode scheme for this app, as without
         // a formal release schedule there is no need to support hotfix versioning.
         // Thus, we just monotonically increase with every release.
-        versionCode 18
+        versionCode 20
 
-        versionName "5.0.0+18"
+        versionName "5.0.0+20"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
