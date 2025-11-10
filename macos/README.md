@@ -4,18 +4,31 @@
 
 Supports devices running macOS 11.5 or later.
 
-## Technical Details
-- Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](acidwarp/acidwarp).
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
-
 ## Building
 
 Xcode 26+ has been used to develop the app.  It may be possible to use older Xcode versions, but that is left as an exercise to those interested.
 
 SDL3 and SDL3_image are automatically downloaded during the build via Run Script build phases. The scripts check if `SDL3.xcframework` and `SDL3_image.xcframework` exist in the repo root and download them if needed based on the versions in `SDL_VERSION` and `SDL3_IMAGE_VERSION`.
 
-## Previous ports
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
+## Workaround for SDL_image issue with libjxl
+
+- Starting with iOS 18 and Xcode 16, Apple bundled libjxl (JPEG XL decoder library) into iOS as an internal/private API. When apps are submitted to the App Store, Apple's automated review
+  process scans for symbols matching these private APIs and rejects apps that appear to use them - even if the app is using its own bundled version of libjxl rather than calling Apple's
+  private APIs.
+
+- The workaround (implemented in build-sdl3-image-xcode.sh:56-125) renames JXL symbols by prefixing them with SDL_ to avoid App Store rejection. Specifically, it renames 8 JXL decoder
+  functions:
+
+  - JxlDecoderCreate → SDL_JxlDecoderCreate
+  - JxlDecoderDestroy → SDL_JxlDecoderDestroy
+  - JxlDecoderGetBasicInfo → SDL_JxlDecoderGetBasicInfo
+  - JxlDecoderImageOutBufferSize → SDL_JxlDecoderImageOutBufferSize
+  - JxlDecoderProcessInput → SDL_JxlDecoderProcessInput
+  - JxlDecoderSetImageOutBuffer → SDL_JxlDecoderSetImageOutBuffer
+  - JxlDecoderSetInput → SDL_JxlDecoderSetInput
+  - JxlDecoderSubscribeEvents → SDL_JxlDecoderSubscribeEvents
+
+- This is done via C preprocessor macros added during SDL3_image's build process.
 
 ## License
 

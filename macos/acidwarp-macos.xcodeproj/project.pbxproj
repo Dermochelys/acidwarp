@@ -12,7 +12,6 @@
 		501D30121E96C00000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30041E96C00000DE30A6 /* display.c */; };
 		501D30131E96C00000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30051E96C00000DE30A6 /* draw.c */; };
 		501D30141E96C00000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30061E96C00000DE30A6 /* gen_img.c */; };
-		501D30151E96C00000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30071E96C00000DE30A6 /* img_float.c */; };
 		501D30161E96C00000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30081E96C00000DE30A6 /* palinit.c */; };
 		501D30171E96C00000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30091E96C00000DE30A6 /* rolnfade.c */; };
 		501D30181E96C00000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D300A1E96C00000DE30A6 /* warp_text.c */; };
@@ -46,28 +45,6 @@
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-		};
-		506E5CAD2E91BAD300F39B20 /* Copy SDL3 Framework */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-		inputFileListPaths = (
-		);
-		inputPaths = (
-			"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework",
-			"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64/SDL3_image.framework",
-		);
-		outputFileListPaths = (
-		);
-		outputPaths = (
-			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
-			"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework",
-		);
-			name = "Copy SDL3 Framework";
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework\"\nSDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/macos-arm64_x86_64/SDL3_image.framework\"\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n\n# Re-sign the frameworks with the same identity as the app\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ] && [ \"$EXPANDED_CODE_SIGN_IDENTITY\" != \"-\" ]; then\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\nelse\n  # Use ad-hoc signing if no identity is set\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\nfi\n";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -172,6 +149,8 @@
 				501D30081E96C00000DE30A6 /* palinit.c */,
 				501D30091E96C00000DE30A6 /* rolnfade.c */,
 				501D300A1E96C00000DE30A6 /* warp_text.c */,
+				501D300B1E96C00000DE30A6 /* remote_overlay.c */,
+				501D300C1E96C00000DE30A8 /* remote.png */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -188,10 +167,9 @@
 				506E5C4A2E91B90700F39B20 /* Sources */,
 				506E5C4B2E91B90700F39B20 /* Frameworks */,
 				506E5C4C2E91B90700F39B20 /* Resources */,
-				506E5CAD2E91BAD300F39B20 /* Embed Frameworks */,
+				506E5CAD2E91BAD300F39B20 /* Copy SDL3 Framework */,
 				501D302A2E96BF9800DE30A6 /* CopyFiles */,
-				501D302D2E96BFA600DE30A7 /* Clean Build Artifacts */,
-				501D302B2E96BFA500DE30A6 /* ShellScript */,
+				501D302B2E96BFA500DE30A6 /* dsymutil */,
 			);
 			buildRules = (
 			);
@@ -260,7 +238,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					506E5C4D2E91B90700F39B20 = {
 						CreatedOnToolsVersion = 26.0;
@@ -342,45 +320,7 @@
 			shellPath = /bin/sh;
 			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
 		};
-		501D302C2E96BF9700DE30A7 /* Download SDL3_image */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/../SDL3_IMAGE_VERSION",
-			);
-			name = "Download SDL3_image";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/../SDL3_image.xcframework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-image-framework.sh\n";
-		};
-		501D302D2E96BFA600DE30A7 /* Clean Build Artifacts */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Clean Build Artifacts";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Remove CMake build artifacts from app bundle\n# Remove cmake-build-debug directory if it exists in Resources\nif [ -d \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/acidwarp/cmake-build-debug\" ]; then\n  rm -rf \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources/acidwarp/cmake-build-debug\"\nfi\n# Also check for CMakeFiles directories\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type d -name \"CMakeFiles\" -exec rm -rf {} + 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"CMakeCache.txt\" -delete 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"cmake_install.cmake\" -delete 2>/dev/null || true\nfind \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources\" -type f -name \"Makefile\" -delete 2>/dev/null || true\n";
-		};
-		501D302B2E96BFA500DE30A6 /* ShellScript */ = {
+		501D302B2E96BFA500DE30A6 /* dsymutil */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -399,6 +339,48 @@
 			shellPath = /bin/sh;
 			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\ndsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework/SDL3_image\" -o \"${BUILT_PRODUCTS_DIR}/SDL3_image.framework.dSYM\"\n";
 		};
+		501D302C2E96BF9700DE30A7 /* Download SDL3_image */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../SDL3_IMAGE_VERSION",
+			);
+			name = "Download SDL3_image";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/../SDL3_image.xcframework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/..\" && ./build-sdl3-image-xcode.sh\n";
+		};
+		506E5CAD2E91BAD300F39B20 /* Copy SDL3 Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework",
+				"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64/SDL3_image.framework",
+			);
+			name = "Copy SDL3 Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework",
+				"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/macos-arm64_x86_64/SDL3.framework\"\nSDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/macos-arm64_x86_64/SDL3_image.framework\"\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n\n# Re-sign the frameworks with the same identity as the app\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ] && [ \"$EXPANDED_CODE_SIGN_IDENTITY\" != \"-\" ]; then\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\nelse\n  # Use ad-hoc signing if no identity is set\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\nfi\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -411,7 +393,6 @@
 				501D30121E96C00000DE30A6 /* display.c in Sources */,
 				501D30131E96C00000DE30A6 /* draw.c in Sources */,
 				501D30141E96C00000DE30A6 /* gen_img.c in Sources */,
-				501D30151E96C00000DE30A6 /* img_float.c in Sources */,
 				501D30161E96C00000DE30A6 /* palinit.c in Sources */,
 				501D30191E96C00000DE30A6 /* remote_overlay.c in Sources */,
 				501D30171E96C00000DE30A6 /* rolnfade.c in Sources */,
@@ -483,6 +464,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -508,6 +490,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Debug;
 		};
@@ -545,6 +528,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -563,6 +547,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Release;
 		};
@@ -575,11 +560,17 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 2;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
+					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"GL_SILENCE_DEPRECATION=1",
@@ -589,16 +580,12 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "(c) Copyright 1992, 1993 by Noah Spurrier.  macOS port by Matthew Zavislak.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
-					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
-				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 5.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -606,7 +593,6 @@
 					"-framework",
 					SDL3_image,
 				);
-				MARKETING_VERSION = 5.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "Acid Warp";
 				REGISTER_APP_GROUPS = YES;
@@ -625,6 +611,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 2;
+				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -636,6 +624,11 @@
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
+					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"GL_SILENCE_DEPRECATION=1",
@@ -645,16 +638,12 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "(c) Copyright 1992, 1993 by Noah Spurrier.  macOS port by Matthew Zavislak.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
-					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
-				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MARKETING_VERSION = 5.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -662,7 +651,6 @@
 					"-framework",
 					SDL3_image,
 				);
-				MARKETING_VERSION = 5.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dermochelys.acidwarp;
 				PRODUCT_NAME = "Acid Warp";
 				REGISTER_APP_GROUPS = YES;
@@ -672,8 +660,6 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
-				STRIP_STYLE = "non-global";
-				DEPLOYMENT_POSTPROCESSING = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
@@ -685,6 +671,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
@@ -703,6 +690,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
@@ -720,6 +708,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
@@ -736,6 +725,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = V4H3G6CSTR;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;

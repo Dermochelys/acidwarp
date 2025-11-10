@@ -56,3 +56,4 @@ GEMINI.md
 
 .DS_Store
 **/.DS_Store
+cmake-build-debug/

@@ -12,7 +12,6 @@
 		501D30221E96C10000DE30A6 /* display.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30141E96C10000DE30A6 /* display.c */; };
 		501D30231E96C10000DE30A6 /* draw.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30151E96C10000DE30A6 /* draw.c */; };
 		501D30241E96C10000DE30A6 /* gen_img.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30161E96C10000DE30A6 /* gen_img.c */; };
-		501D30251E96C10000DE30A6 /* img_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30171E96C10000DE30A6 /* img_float.c */; };
 		501D30261E96C10000DE30A6 /* palinit.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30181E96C10000DE30A6 /* palinit.c */; };
 		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
 		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
@@ -382,7 +381,6 @@
 				501D30221E96C10000DE30A6 /* display.c in Sources */,
 				501D30231E96C10000DE30A6 /* draw.c in Sources */,
 				501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
-				501D30251E96C10000DE30A6 /* img_float.c in Sources */,
 				501D30261E96C10000DE30A6 /* palinit.c in Sources */,
 				501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
 				501D30281E96C10000DE30A6 /* warp_text.c in Sources */,

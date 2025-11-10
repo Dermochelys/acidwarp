@@ -4,10 +4,6 @@ Not in iOS App Store yet, stay tuned!
 
 Supports devices running iOS / iPadOS 15.6 or later.
 
-## Technical Details
-- Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](app/jni).
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
-
 ## Building
 
 - Use Xcode 26 or later.
@@ -32,9 +28,6 @@ Supports devices running iOS / iPadOS 15.6 or later.
   - JxlDecoderSubscribeEvents → SDL_JxlDecoderSubscribeEvents
 
 - This is done via C preprocessor macros added during SDL3_image's build process.
-
-## Previous ports
-- See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).
 
 ## License
 

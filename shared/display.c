@@ -82,7 +82,7 @@ static int pending_click_x = 0;
 static int pending_click_y = 0;
 static const Uint64 DOUBLE_CLICK_DELAY_MS = 300; /* Wait 300ms to see if double-click occurs */
 
-static int getInternalFormat() {
+static int getInternalFormat(void) {
 #ifdef __APPLE__
 #if TARGET_OS_IOS
 return GL_LUMINANCE;
@@ -96,7 +96,7 @@ return GL_LUMINANCE;
 #endif
 }
 
-static int getFormat() {
+static int getFormat(void) {
 #ifdef __APPLE__
 #if TARGET_OS_IOS
 return GL_LUMINANCE;
@@ -378,13 +378,13 @@ static GLuint loadShader(GLuint program, GLenum type,
     return 0;
 }
 
-static void setAttributesForGLES() {
+static void setAttributesForGLES(void) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 }
 
-static void setAttributesForGL() {
+static void setAttributesForGL(void) {
   // OpenGL 4.1 includes full compatibility with the OpenGL ES 2.0 API
   // through the GL_ARB_ES2_compatibility extension
 
