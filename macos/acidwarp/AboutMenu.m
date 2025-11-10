@@ -3,7 +3,7 @@
 // functionality, but it considered "good enough" as-is.
 
 #import <Cocoa/Cocoa.h>
-#import "acidwarp/AboutMenu.h"
+#import "AboutMenu.h"
 #import "AboutWindowController.h"
 
 // Add a category to NSObject so any object in the responder chain can handle this

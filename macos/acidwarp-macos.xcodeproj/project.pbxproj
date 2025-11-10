@@ -16,7 +16,6 @@
 		501D30171E96C00000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30091E96C00000DE30A6 /* rolnfade.c */; };
 		501D30181E96C00000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D300A1E96C00000DE30A6 /* warp_text.c */; };
 		501D30191E96C00000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D300B1E96C00000DE30A6 /* remote_overlay.c */; };
-		501D301A1E96C00000DE30A8 /* remote.png in Resources */ = {isa = PBXBuildFile; fileRef = 501D300C1E96C00000DE30A8 /* remote.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +65,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		504B277E2EC28D0C005AE698 /* shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = shared;
+			path = ../shared;
+			sourceTree = SOURCE_ROOT;
+		};
 		506E5C502E91B90700F39B20 /* acidwarp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = acidwarp;
@@ -111,12 +116,12 @@
 		506E5C452E91B90700F39B20 = {
 			isa = PBXGroup;
 			children = (
+				504B277E2EC28D0C005AE698 /* shared */,
 				506E5C502E91B90700F39B20 /* acidwarp */,
 				506E5C622E91B90800F39B20 /* acidwarpTests */,
 				506E5C6C2E91B90800F39B20 /* acidwarpUITests */,
 				506E5CA92E91BAD300F39B20 /* Frameworks */,
 				506E5C4F2E91B90700F39B20 /* Products */,
-				508DE7F22EB59A1000C79955 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -135,24 +140,6 @@
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		508DE7F22EB59A1000C79955 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				501D30021E96C00000DE30A6 /* acidwarp.c */,
-				501D30031E96C00000DE30A6 /* bit_map.c */,
-				501D30041E96C00000DE30A6 /* display.c */,
-				501D30051E96C00000DE30A6 /* draw.c */,
-				501D30061E96C00000DE30A6 /* gen_img.c */,
-				501D30071E96C00000DE30A6 /* img_float.c */,
-				501D30081E96C00000DE30A6 /* palinit.c */,
-				501D30091E96C00000DE30A6 /* rolnfade.c */,
-				501D300A1E96C00000DE30A6 /* warp_text.c */,
-				501D300B1E96C00000DE30A6 /* remote_overlay.c */,
-				501D300C1E96C00000DE30A8 /* remote.png */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -176,6 +163,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				504B277E2EC28D0C005AE698 /* shared */,
 				506E5C502E91B90700F39B20 /* acidwarp */,
 			);
 			name = "acidwarp-macos";
@@ -279,7 +267,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				501D301A1E96C00000DE30A8 /* remote.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,15 +375,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				501D30101E96C00000DE30A6 /* acidwarp.c in Sources */,
-				501D30111E96C00000DE30A6 /* bit_map.c in Sources */,
-				501D30121E96C00000DE30A6 /* display.c in Sources */,
-				501D30131E96C00000DE30A6 /* draw.c in Sources */,
-				501D30141E96C00000DE30A6 /* gen_img.c in Sources */,
-				501D30161E96C00000DE30A6 /* palinit.c in Sources */,
-				501D30191E96C00000DE30A6 /* remote_overlay.c in Sources */,
-				501D30171E96C00000DE30A6 /* rolnfade.c in Sources */,
-				501D30181E96C00000DE30A6 /* warp_text.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +549,10 @@
 					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
 					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"GL_SILENCE_DEPRECATION=1",
@@ -628,6 +610,10 @@
 					"$(inherited)",
 					"$(SRCROOT)/../SDL3.xcframework/macos-arm64_x86_64",
 					"$(SRCROOT)/../SDL3_image.xcframework/macos-arm64_x86_64",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../shared",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",

@@ -16,7 +16,6 @@
 		501D30271E96C10000DE30A6 /* rolnfade.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D30191E96C10000DE30A6 /* rolnfade.c */; };
 		501D30281E96C10000DE30A6 /* warp_text.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301A1E96C10000DE30A6 /* warp_text.c */; };
 		501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */ = {isa = PBXBuildFile; fileRef = 501D301B1E96C10000DE30A6 /* remote_overlay.c */; };
-		501D302A1E96C10000DE30A7 /* remote.png in Resources */ = {isa = PBXBuildFile; fileRef = 501D301C1E96C10000DE30A6 /* remote.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,7 +56,6 @@
 		504807AE2E97632900B1C478 /* Exceptions for "acidwarp" folder in "acidwarp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				acidwarp,
 				Info.plist,
 			);
 			target = 502A14FB2E70BBC000BA2A0F /* acidwarp */;
@@ -82,6 +80,12 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = acidwarpUITests;
 			sourceTree = "<group>";
+		};
+		50A5FFD32EC28C3C00F0186E /* shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = shared;
+			path = ../shared;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -113,11 +117,11 @@
 		502A14F32E70BBC000BA2A0F = {
 			isa = PBXGroup;
 			children = (
+				50A5FFD32EC28C3C00F0186E /* shared */,
 				502A14FE2E70BBC000BA2A0F /* acidwarp */,
 				502A151C2E70BBC100BA2A0F /* acidwarpTests */,
 				502A15262E70BBC100BA2A0F /* acidwarpUITests */,
 				502A14FD2E70BBC000BA2A0F /* Products */,
-				50B9AB9A2EC01E1000A028A5 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,24 +133,6 @@
 				502A15232E70BBC100BA2A0F /* acidwarpUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		50B9AB9A2EC01E1000A028A5 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				501D30121E96C10000DE30A6 /* acidwarp.c */,
-				501D30131E96C10000DE30A6 /* bit_map.c */,
-				501D30141E96C10000DE30A6 /* display.c */,
-				501D30151E96C10000DE30A6 /* draw.c */,
-				501D30161E96C10000DE30A6 /* gen_img.c */,
-				501D30171E96C10000DE30A6 /* img_float.c */,
-				501D30181E96C10000DE30A6 /* palinit.c */,
-				501D30191E96C10000DE30A6 /* rolnfade.c */,
-				501D301A1E96C10000DE30A6 /* warp_text.c */,
-				501D301B1E96C10000DE30A6 /* remote_overlay.c */,
-				501D301C1E96C10000DE30A6 /* remote.png */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -170,6 +156,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				502A14FE2E70BBC000BA2A0F /* acidwarp */,
+				50A5FFD32EC28C3C00F0186E /* shared */,
 			);
 			name = acidwarp;
 			packageProductDependencies = (
@@ -272,7 +259,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				501D302A1E96C10000DE30A7 /* remote.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,7 +353,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\nif [ \"$PLATFORM_NAME\" != \"iphonesimulator\" ]; then\n  SIGNING_IDENTITY=\"${EXPANDED_CODE_SIGN_IDENTITY}\"\n  if [ -z \"$SIGNING_IDENTITY\" ] || [ \"$SIGNING_IDENTITY\" = \"-\" ]; then\n    SIGNING_IDENTITY=\"${CODE_SIGN_IDENTITY}\"\n  fi\n  if [ -n \"$SIGNING_IDENTITY\" ] && [ \"$SIGNING_IDENTITY\" != \"-\" ]; then\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\n  fi\nfi\n";
+			shellScript = "set -e\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64_x86_64-simulator/SDL3_image.framework\"\nelse\n  SDL3_FRAMEWORK_PATH=\"$SRCROOT/../SDL3.xcframework/ios-arm64/SDL3.framework\"\n  SDL3_IMAGE_FRAMEWORK_PATH=\"$SRCROOT/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework\"\nfi\nmkdir -p \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\ncp -R \"$SDL3_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\ncp -R \"$SDL3_IMAGE_FRAMEWORK_PATH\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/\"\n\n# Sign frameworks for both device and simulator\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  # Simulator: use ad-hoc signing\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n  codesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\nelse\n  # Device: use proper signing identity\n  SIGNING_IDENTITY=\"${EXPANDED_CODE_SIGN_IDENTITY}\"\n  if [ -z \"$SIGNING_IDENTITY\" ] || [ \"$SIGNING_IDENTITY\" = \"-\" ]; then\n    SIGNING_IDENTITY=\"${CODE_SIGN_IDENTITY}\"\n  fi\n  if [ -n \"$SIGNING_IDENTITY\" ] && [ \"$SIGNING_IDENTITY\" != \"-\" ]; then\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework\"\n    codesign --force --sign \"$SIGNING_IDENTITY\" --timestamp=none \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework\"\n  fi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -376,15 +362,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				501D30201E96C10000DE30A6 /* acidwarp.c in Sources */,
-				501D30211E96C10000DE30A6 /* bit_map.c in Sources */,
-				501D30221E96C10000DE30A6 /* display.c in Sources */,
-				501D30231E96C10000DE30A6 /* draw.c in Sources */,
-				501D30241E96C10000DE30A6 /* gen_img.c in Sources */,
-				501D30261E96C10000DE30A6 /* palinit.c in Sources */,
-				501D30271E96C10000DE30A6 /* rolnfade.c in Sources */,
-				501D30281E96C10000DE30A6 /* warp_text.c in Sources */,
-				501D30291E96C10000DE30A6 /* remote_overlay.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -576,7 +553,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/acidwarp/acidwarp",
+					"$(SRCROOT)/../shared",
 					"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
 					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
 					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
@@ -649,7 +626,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/acidwarp/acidwarp",
+					"$(SRCROOT)/../shared",
 					"$(SRCROOT)/../SDL3.xcframework/ios-arm64/SDL3.framework/Headers",
 					"$(SRCROOT)/../SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Headers",
 					"$(SRCROOT)/../SDL3_image.xcframework/ios-arm64/SDL3_image.framework/Headers",
