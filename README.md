@@ -1,4 +1,4 @@
-# Acid Warp for Android / iOS / iPadOS / macOS / Windows
+# Acid Warp for Android / iOS / iPadOS / macOS / Windows / Linux
 
 [![Build All Platforms](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml/badge.svg)](https://github.com/Dermochelys/acidwarp/actions/workflows/build-all-platforms.yml)
 
@@ -11,11 +11,11 @@ Acid Warp is an eye candy program which displays various patterns and animates t
 This is a fork by [Matthew Zavislak](https://github.com/elevenfive) based on the previous [SDL2-based port](https://github.com/dreamlayers/acidwarp) by [Boris Gjenero](https://github.com/dreamlayers) to the SDL 1.2 / 2 library. That, in turn, is based on the Linux SVGALib port by Steven Wills.
 
 This fork can be built for:
- - Android phones, tablets, and TVs
- - iOS phones and iPadOS tablets
- - macOS devices
- - Linux devices (Confirmed working on Ubuntu 22.04+)
- - Windows devices (requires DirectX 11+)
+ - Android phones, tablets, and TVs (10+)
+ - iOS phones and iPadOS tablets (15.6+)
+ - macOS devices (11.5+)
+ - Linux devices (22.04+)
+ - Windows devices (Windows 10+, DirectX 11+)
 
 ## Platform-Specific Build Instructions
 
