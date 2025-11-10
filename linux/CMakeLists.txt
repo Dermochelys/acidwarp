@@ -45,10 +45,10 @@ if(NOT OPENGL_FOUND)
     message(FATAL_ERROR "OpenGL 4.1+ is required for Linux desktop builds")
 endif()
 
-# Add the acidwarp submodule as a subdirectory
+# Add the acidwarp source directory
 add_subdirectory(acidwarp)
 
-# Create an executable that links to the main library from the submodule
+# Create an executable that links to the main library
 add_executable(acidwarp-linux acidwarp/acidwarp.c)
 
 # Link against the library and OpenGL for desktop

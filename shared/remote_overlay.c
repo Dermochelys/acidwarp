@@ -646,7 +646,6 @@ int remote_overlay_is_point_inside(int x, int y, int window_width, int window_he
 int remote_overlay_handle_click(int x, int y, int window_width, int window_height)
 {
     int i;
-    float click_x, click_y;
     float scale, scaled_width, scaled_height;
     float remote_left, remote_top;
     float rel_x, rel_y;

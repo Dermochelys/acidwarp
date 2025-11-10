@@ -6,6 +6,11 @@
 #import "acidwarp/AboutMenu.h"
 #import "AboutWindowController.h"
 
+// Add a category to NSObject so any object in the responder chain can handle this
+@interface NSObject (AcidWarpAbout)
+- (void)showCustomAboutWindow:(id)sender;
+@end
+
 void setupCustomAboutMenu(void) {
     @autoreleasepool {
         // Find the About menu item that SDL created
@@ -27,11 +32,6 @@ void setupCustomAboutMenu(void) {
         }
     }
 }
-
-// Add a category to NSObject so any object in the responder chain can handle this
-@interface NSObject (AcidWarpAbout)
-- (void)showCustomAboutWindow:(id)sender;
-@end
 
 @implementation NSObject (AcidWarpAbout)
 

@@ -4,11 +4,7 @@
 
 Supports devices running Ubuntu 24+ and OpenGL 4.1+.
 
-SDL3 is statically linked (for now) as latest Ubuntu LTS (24.04) [does not include SDL3](https://launchpad.net/ubuntu/+source/libsdl3).
-
-## Technical Details
-- Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](acidwarp).
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
+SDL3 and SDL3_image are statically linked (for now) as latest Ubuntu LTS (24.04) [does not include SDL3](https://launchpad.net/ubuntu/+source/libsdl3).
 
 ## Building Locally
 
@@ -35,10 +31,6 @@ If SDL3 is installed in a non-standard location, specify it with `CMAKE_PREFIX_P
 ```bash
 cmake --fresh -DCMAKE_PREFIX_PATH=/path/to/sdl3/install && cmake --build .
 ```
-
-## Previous ports
-- See the `previous_ports` folder inside the [submodule](https://github.com/Dermochelys/acidwarp).
-- Original website: https://noah.org/acidwarp/
 
 ## License
 

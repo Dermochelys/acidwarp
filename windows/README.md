@@ -6,17 +6,12 @@ Supports devices running Windows 10 or later.
 
 Does not require any runtime dependencies as required libs are statically linked in the executable file.
 
-## Technical Details
-
-- Based on a [fork](https://github.com/Dermochelys/acidwarp) of [dreamlayers/acidwarp](https://github.com/dreamlayers/acidwarp), which is embedded as a [submodule](acidwarp/acidwarp).
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
-- Statically links and uses [GLEW](https://github.com/nigels-com/glew).
-
 ## Building
 
 - [MSYS2](https://www.msys2.org/) is used for the build environment, along with [pacman](https://wiki.archlinux.org/title/Pacman) for dependency installation, and [CMake](https://cmake.org/) for the actual build orchestration.
 - See the [SDL3 Wiki](https://wiki.libsdl.org/SDL3/README-windows) for more information about the build environment setup.
 - SDL3 and SDL3_image are installed via MSYS2 pacman packages: `mingw-w64-x86_64-sdl3` and `mingw-w64-x86_64-sdl3-image`
+- Statically links and uses [GLEW](https://github.com/nigels-com/glew)
 
 ### Runtime Dependencies
 
@@ -48,9 +43,6 @@ Follow these steps to create a new release:
 7. **Manual Testing**: Manually test that the app works correctly and the upgrade process functions as expected
 8. **Cleanup Test Artifacts**: Uninstall the app and remove the temporary certificate used for testing
 9. **Cleanup Project Files**: Remove any temporary files created during steps 5-8 from the project folder
-
-## Previous ports
-- See the submodule's [README.md](https://github.com/Dermochelys/acidwarp) for more details.
 
 ## License
 

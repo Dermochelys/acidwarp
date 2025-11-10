@@ -236,11 +236,30 @@ xcodebuild archive \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     "${BUILD_SETTINGS[@]}" 2>&1 | grep -v "warning: no debug symbols" || true
 
+# Build for macOS
+echo "Building for macOS (arm64, x86_64)..."
+xcodebuild archive \
+    -project Xcode/SDL_image.xcodeproj \
+    -scheme SDL3_image \
+    -configuration Release \
+    -destination "generic/platform=macOS" \
+    -archivePath "build/macos.xcarchive" \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    CODE_SIGN_IDENTITY="" \
+    CODE_SIGNING_REQUIRED=NO \
+    CODE_SIGNING_ALLOWED=NO \
+    DEVELOPMENT_TEAM="" \
+    MACOSX_DEPLOYMENT_TARGET=10.15 \
+    ALWAYS_SEARCH_USER_PATHS=NO \
+    USE_HEADERMAP=NO 2>&1 | grep -v "warning: no debug symbols" || true
+
 # Create the xcframework from the archives
 echo "Creating xcframework..."
 xcodebuild -create-xcframework \
     -framework "build/ios.xcarchive/Products/Library/Frameworks/SDL3_image.framework" \
     -framework "build/iossimulator.xcarchive/Products/Library/Frameworks/SDL3_image.framework" \
+    -framework "build/macos.xcarchive/Products/Library/Frameworks/SDL3_image.framework" \
     -output "build/SDL3_image.xcframework"
 
 # The build output will be in the build directory
