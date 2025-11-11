@@ -9,7 +9,7 @@ mkdir -p "$SCREENSHOT_DIR"
 
 echo "Launching Acid Warp..."
 # Launch the app using 'open' to properly register with macOS
-open -a "$APP_PATH"
+open "$APP_PATH"
 
 # Wait for app to start
 sleep 3

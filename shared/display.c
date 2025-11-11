@@ -460,8 +460,6 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 #ifdef _WIN32
   printf("[GL] Initializing GLEW...\n");
   fflush(stdout);
-  /* Enable experimental mode for Core Profile contexts */
-  glewExperimental = GL_TRUE;
   GLenum glew_err = glewInit();
   if (glew_err != GLEW_OK) {
     fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
