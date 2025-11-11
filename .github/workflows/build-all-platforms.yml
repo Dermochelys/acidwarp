@@ -84,6 +84,19 @@ jobs:
           disable-animations: true
           script: cd android && ./gradlew build connectedCheck
 
+      - name: Pull screenshots from emulator
+        if: always()
+        run: |
+          adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots android/ || echo "No screenshots found"
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ui-test-screenshots
+          path: android/screenshots/*.png
+          if-no-files-found: error
+
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
 
@@ -171,6 +184,24 @@ jobs:
         working-directory: linux
         run: cmake --build build --config Release
 
+      - name: Install test dependencies
+        run: |
+          sudo apt-get install -y xvfb scrot xdotool
+
+      - name: Run UI tests
+        working-directory: linux
+        run: |
+          chmod +x ui_test.sh
+          ./ui_test.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-ui-test-screenshots
+          path: linux/screenshots/*.png
+          if-no-files-found: error
+
 
 
   # ============================================================================
@@ -211,6 +242,20 @@ jobs:
         working-directory: windows
         run: cmake --build build --config Release
 
+      - name: Run UI tests
+        working-directory: windows
+        run: |
+          chmod +x ui_test.sh
+          ./ui_test.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test-screenshots
+          path: windows/screenshots/*.png
+          if-no-files-found: error
+
 
 
   # ============================================================================
@@ -238,6 +283,20 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Run UI tests
+        working-directory: macos
+        run: |
+          chmod +x ui_test.sh
+          ./ui_test.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-ui-test-screenshots
+          path: macos/screenshots/*.png
+          if-no-files-found: error
+
       - name: Create macOS app archive
         working-directory: macos
         run: |
@@ -259,6 +318,74 @@ jobs:
 
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Run UI tests on simulator
+        working-directory: ios
+        run: |
+          xcodebuild test \
+            -project acidwarp-ios.xcodeproj \
+            -scheme acidwarp \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Extract screenshots from test results
+        if: always()
+        working-directory: ios
+        run: |
+          mkdir -p screenshots
+          # Find the test results bundle
+          RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
+          if [ -n "$RESULTS_BUNDLE" ]; then
+            echo "Found test results: $RESULTS_BUNDLE"
+            # Export screenshots from xcresult bundle
+            # XCTest attachments are in the Attachments subdirectory
+            ATTACHMENTS_DIR="$RESULTS_BUNDLE/Attachments"
+            if [ -d "$ATTACHMENTS_DIR" ]; then
+              # Copy all PNG files from attachments
+              find "$ATTACHMENTS_DIR" -name "*.png" -print0 | while IFS= read -r -d '' file; do
+                # Get the base filename
+                filename=$(basename "$file")
+                # Copy to screenshots directory
+                cp "$file" "screenshots/$filename"
+              done
+
+              # Rename files to match our naming convention
+              cd screenshots
+              # XCTest saves attachments with the name in the filename
+              for file in *.png; do
+                # Try to extract our naming pattern from filename
+                # Files are typically named like "Screenshot_<name>_<uuid>.png"
+                if [[ $file =~ (.+)_[A-Z0-9-]+\.png ]]; then
+                  cleanname="${BASH_REMATCH[1]}"
+                  # Remove "Screenshot_" prefix if present
+                  cleanname="${cleanname#Screenshot_}"
+                  mv "$file" "$cleanname.png" 2>/dev/null || true
+                fi
+              done
+            else
+              echo "No attachments directory found, trying alternative extraction..."
+              # Fallback: search entire bundle for PNGs
+              find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
+            fi
+
+            echo "Screenshots extracted:"
+            ls -lh screenshots/
+          else
+            echo "No xcresult bundle found"
+          fi
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-screenshots
+          path: ios/screenshots/*.png
+          if-no-files-found: error
 
       - name: Build iOS app
         working-directory: ios
