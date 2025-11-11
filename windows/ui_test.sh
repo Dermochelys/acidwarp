@@ -30,16 +30,63 @@ sleep 5
 
 # Verify the app process is still running
 echo "Checking if Acid Warp process is running..."
-PROCESS_RUNNING=$(powershell.exe -Command "
-\$process = Get-Process -Id $APP_PID -ErrorAction SilentlyContinue
-if (\$process) { Write-Output 'running' }
-")
-if [ "$PROCESS_RUNNING" != "running" ]; then
+echo "DEBUG: Checking PID=$APP_PID"
+
+# First, check if bash still knows about the process
+if ps -p $APP_PID > /dev/null 2>&1; then
+  echo "DEBUG: Bash reports process $APP_PID exists"
+else
+  echo "DEBUG: Bash reports process $APP_PID does NOT exist"
+fi
+
+# List all acidwarp processes
+echo "DEBUG: Looking for acidwarp processes..."
+ps aux | grep -i acidwarp | grep -v grep || echo "DEBUG: No acidwarp processes found by ps"
+
+# Now check with PowerShell
+echo "DEBUG: Checking with PowerShell..."
+echo "DEBUG: About to run PowerShell command at $(date '+%H:%M:%S')"
+
+# Use timeout to prevent hanging (10 second timeout)
+timeout 10s powershell.exe -Command "
+Write-Output 'PowerShell starting process check for PID $APP_PID'
+try {
+    \$process = Get-Process -Id $APP_PID -ErrorAction SilentlyContinue
+    if (\$process) {
+        Write-Output 'Process found: running'
+        Write-Output 'running'
+    } else {
+        Write-Output 'Process not found'
+    }
+} catch {
+    Write-Output 'Error checking process'
+    Write-Output \$_.Exception.Message
+}
+Write-Output 'PowerShell command completed'
+" > /tmp/ps_output.txt 2>&1
+
+PS_EXIT_CODE=$?
+echo "DEBUG: PowerShell command finished at $(date '+%H:%M:%S') with exit code $PS_EXIT_CODE"
+
+if [ -f /tmp/ps_output.txt ]; then
+    echo "DEBUG: PowerShell output file exists, size: $(stat -c%s /tmp/ps_output.txt 2>/dev/null || stat -f%z /tmp/ps_output.txt 2>/dev/null || echo 'unknown') bytes"
+    PROCESS_RUNNING=$(cat /tmp/ps_output.txt)
+else
+    echo "DEBUG: PowerShell output file does not exist!"
+    PROCESS_RUNNING=""
+fi
+
+echo "DEBUG: PowerShell output:"
+echo "$PROCESS_RUNNING"
+echo "DEBUG: End of PowerShell output"
+
+if echo "$PROCESS_RUNNING" | grep -q "running"; then
+  echo "✓ Acid Warp process is running"
+else
   echo "✗ Acid Warp process ($APP_PID) is not running!"
   echo "The process may have crashed during initialization."
   exit 1
 fi
-echo "✓ Acid Warp process is running"
 
 # Capture startup screenshot using PowerShell
 powershell.exe -Command "
@@ -57,12 +104,43 @@ echo "✓ Captured startup screenshot"
 
 # Check for error dialogs - look for SDL Error window
 echo "Checking for error dialogs..."
-ERROR_WINDOW=$(powershell.exe -Command "
+echo "DEBUG: Listing all windows with titles at $(date '+%H:%M:%S')..."
+
+timeout 10s powershell.exe -Command "
 Add-Type -AssemblyName System.Windows.Forms
-\$windows = Get-Process | Where-Object {$_.MainWindowTitle -like '*SDL Error*'}
-if (\$windows) { Write-Output 'found' }
-")
-if [ "$ERROR_WINDOW" = "found" ]; then
+Write-Output '=== All processes with window titles ==='
+\$allProcesses = Get-Process | Where-Object { \$_.MainWindowTitle -ne '' }
+foreach (\$proc in \$allProcesses) {
+    Write-Output ('Process: ' + \$proc.ProcessName + ' (PID: ' + \$proc.Id + ')')
+    Write-Output ('  Window Title: ' + \$proc.MainWindowTitle)
+}
+Write-Output '=== End of window list ==='
+Write-Output ''
+Write-Output 'Checking for SDL Error windows...'
+\$errorWindows = Get-Process | Where-Object { \$_.MainWindowTitle -like '*SDL Error*' }
+if (\$errorWindows) {
+    Write-Output 'ERROR: Found SDL Error windows:'
+    foreach (\$win in \$errorWindows) {
+        Write-Output ('  Process: ' + \$win.ProcessName + ', Title: ' + \$win.MainWindowTitle)
+    }
+    Write-Output 'found'
+} else {
+    Write-Output 'No SDL Error windows found'
+}
+" > /tmp/error_check.txt 2>&1
+
+ERROR_CHECK_EXIT=$?
+echo "DEBUG: Error check command finished at $(date '+%H:%M:%S') with exit code $ERROR_CHECK_EXIT"
+
+if [ -f /tmp/error_check.txt ]; then
+    ERROR_CHECK_OUTPUT=$(cat /tmp/error_check.txt)
+else
+    ERROR_CHECK_OUTPUT=""
+fi
+
+echo "$ERROR_CHECK_OUTPUT"
+
+if echo "$ERROR_CHECK_OUTPUT" | grep -q "^found"; then
   echo "✗ Found SDL Error dialog!"
   taskkill //PID $APP_PID //F 2>/dev/null || true
   exit 1

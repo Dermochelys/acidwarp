@@ -37,9 +37,74 @@ echo "✓ Captured startup screenshot"
 
 # Check for SDL error dialogs
 echo "Checking for error dialogs..."
+
+# First, list all running processes and their windows for debugging
+echo "=== Debug: All running processes and windows ==="
+DEBUG_OUTPUT=$(osascript <<'EOFDBG'
+tell application "System Events"
+    set output to ""
+    set allProcesses to every process
+    repeat with proc in allProcesses
+        try
+            set procName to name of proc
+            set procWindows to every window of proc
+            if (count of procWindows) > 0 then
+                set output to output & "Process: " & procName & return
+                repeat with win in procWindows
+                    try
+                        set winName to name of win
+                        set output to output & "  Window: " & winName & return
+                    end try
+                end repeat
+            end if
+        end try
+    end repeat
+    return output
+end tell
+EOFDBG
+)
+echo "$DEBUG_OUTPUT"
+echo "=== End debug output ==="
+
+# Check specifically for processes matching "SDL Error"
+echo "Checking for processes containing 'SDL Error'..."
+MATCHING_PROCESSES=$(osascript <<'EOFCHECK'
+tell application "System Events"
+    set output to ""
+    set allProcesses to every process
+    repeat with proc in allProcesses
+        try
+            set procName to name of proc
+            if procName contains "SDL Error" then
+                set output to output & "Matched process: " & procName & return
+                set procWindows to every window of proc
+                if (count of procWindows) > 0 then
+                    repeat with win in procWindows
+                        try
+                            set winName to name of win
+                            set output to output & "  Window name: " & winName & return
+                        end try
+                    end repeat
+                else
+                    set output to output & "  (no windows)" & return
+                end if
+            end if
+        end try
+    end repeat
+    return output
+end tell
+EOFCHECK
+)
+if [ -n "$MATCHING_PROCESSES" ]; then
+    echo "$MATCHING_PROCESSES"
+else
+    echo "No processes containing 'SDL Error' found"
+fi
+
 ERROR_DIALOG=$(osascript -e 'tell application "System Events" to get name of every window of every process whose name contains "SDL Error"' 2>/dev/null || true)
 if [ -n "$ERROR_DIALOG" ]; then
   echo "✗ Found SDL Error dialog!"
+  echo "Dialog details: $ERROR_DIALOG"
   screencapture "$SCREENSHOT_DIR/error-dialog.png"
   echo "✓ Captured error dialog screenshot"
   kill $APP_PID || true
