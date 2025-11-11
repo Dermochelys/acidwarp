@@ -276,6 +276,83 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
+      - name: Run UI tests
+        working-directory: macos
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project acidwarp-macos.xcodeproj \
+            -scheme acidwarp-macos \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
+
+      - name: Upload xcodebuild log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-xcodebuild-log
+          path: macos/xcodebuild.log
+          if-no-files-found: ignore
+
+      - name: Extract screenshots from test results
+        if: always()
+        working-directory: macos
+        run: |
+          mkdir -p screenshots
+          # Find the test results bundle
+          RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
+          if [ -n "$RESULTS_BUNDLE" ]; then
+            echo "Found test results: $RESULTS_BUNDLE"
+            # Export screenshots from xcresult bundle
+            # XCTest attachments are in the Attachments subdirectory
+            ATTACHMENTS_DIR="$RESULTS_BUNDLE/Attachments"
+            if [ -d "$ATTACHMENTS_DIR" ]; then
+              # Copy all PNG files from attachments
+              find "$ATTACHMENTS_DIR" -name "*.png" -print0 | while IFS= read -r -d '' file; do
+                # Get the base filename
+                filename=$(basename "$file")
+                # Copy to screenshots directory
+                cp "$file" "screenshots/$filename"
+              done
+
+              # Rename files to match our naming convention
+              cd screenshots
+              # XCTest saves attachments with the name in the filename
+              for file in *.png; do
+                # Try to extract our naming pattern from filename
+                # Files are typically named like "Screenshot_<name>_<uuid>.png"
+                if [[ $file =~ (.+)_[A-Z0-9-]+\.png ]]; then
+                  cleanname="${BASH_REMATCH[1]}"
+                  # Remove "Screenshot_" prefix if present
+                  cleanname="${cleanname#Screenshot_}"
+                  mv "$file" "$cleanname.png" 2>/dev/null || true
+                fi
+              done
+            else
+              echo "No attachments directory found, trying alternative extraction..."
+              # Fallback: search entire bundle for PNGs
+              find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
+            fi
+
+            echo "Screenshots extracted:"
+            ls -lh screenshots/
+          else
+            echo "No xcresult bundle found"
+          fi
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-ui-test-screenshots
+          path: macos/screenshots/*.png
+          if-no-files-found: error
+
       - name: Build macOS app
         working-directory: macos
         run: |
@@ -286,95 +363,6 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
-
-      - name: Verify build output
-        working-directory: macos
-        run: |
-          echo "Checking build directory structure:"
-          ls -la build/
-          echo ""
-          echo "Checking Build subdirectory:"
-          ls -la build/Build/ || echo "No Build subdirectory"
-          echo ""
-          echo "Looking for .app bundles:"
-          find build -name "*.app" -type d
-
-      - name: Grant screen recording permissions
-        run: |
-          # Grant screen recording permissions to bash for screencapture to work
-          BASH_PATH=$(which bash)
-
-          # Create TCC database directory if it doesn't exist
-          mkdir -p ~/Library/Application\ Support/com.apple.TCC
-
-          # Try to reset and grant permissions using tccutil (macOS 13+)
-          tccutil reset ScreenCapture 2>/dev/null || true
-
-          # For macOS runners, we need to grant permissions via sqlite3
-          # This uses the user TCC database
-          if [ -f ~/Library/Application\ Support/com.apple.TCC/TCC.db ]; then
-            echo "Modifying user TCC database..."
-            sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db \
-              "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','$BASH_PATH',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || echo "User DB modification failed, continuing..."
-          fi
-
-          # Also try system database (requires sudo)
-          if [ -f /Library/Application\ Support/com.apple.TCC/TCC.db ]; then
-            echo "Modifying system TCC database..."
-            sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
-              "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','$BASH_PATH',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || echo "System DB modification failed, continuing..."
-          fi
-
-          # Alternative: Grant to Terminal.app which may be the parent process
-          sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db \
-            "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || true
-
-          echo "✓ Screen recording permission setup complete"
-
-      - name: Run UI tests
-        working-directory: macos
-        run: |
-          chmod +x ui_test.sh
-
-          # Start a background script to auto-accept permission dialogs
-          osascript -e '
-          repeat
-            try
-              tell application "System Events"
-                tell process "CoreServicesUIAgent"
-                  if exists (window 1) then
-                    set windowTitle to name of window 1
-                    -- Look for permission dialog
-                    if windowTitle contains "requesting" or windowTitle contains "access" then
-                      -- Click the "Allow" button
-                      click button "Allow" of window 1
-                      delay 0.5
-                    end if
-                  end if
-                end tell
-              end tell
-            end try
-            delay 0.5
-          end repeat
-          ' &
-          DIALOG_HELPER_PID=$!
-
-          # Run the actual tests
-          ./ui_test.sh
-          TEST_RESULT=$?
-
-          # Kill the dialog helper
-          kill $DIALOG_HELPER_PID 2>/dev/null || true
-
-          exit $TEST_RESULT
-
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-ui-test-screenshots
-          path: macos/screenshots/*.png
-          if-no-files-found: error
 
       - name: Create macOS app archive
         working-directory: macos

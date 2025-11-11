@@ -285,11 +285,16 @@ void disp_processInput(void) {
         display_redraw();
         break;
       case SDL_EVENT_QUIT:
+        handleinput(CMD_QUIT);
+        break;
+#if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
+      /* Only quit on background/termination events on mobile platforms */
       case SDL_EVENT_TERMINATING:
       case SDL_EVENT_WILL_ENTER_BACKGROUND:
       case SDL_EVENT_DID_ENTER_BACKGROUND:
         handleinput(CMD_QUIT);
         break;
+#endif
 
       default:
         break;
