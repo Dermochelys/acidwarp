@@ -48,10 +48,16 @@
     XCUIElement *alert = app.alerts[@"SDL Error"];
     XCTAssertFalse(alert.exists, @"SDL Error dialog should not appear on launch");
 
-    // Test pattern cycling with space key
+    // First tap shows the remote control overlay
+    XCUICoordinate *centerCoordinate = [app coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
+    [centerCoordinate tap];
+    sleep(1);
+
+    // Test pattern cycling by tapping "Next Pattern" button on overlay
+    // The "Next Pattern" button is at the bottom of the centered overlay (y ~0.6)
+    XCUICoordinate *nextPatternButton = [app coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.6)];
     for (int i = 1; i <= 5; i++) {
-        // Send space key
-        [app typeText:@" "];
+        [nextPatternButton tap];
         sleep(2);
 
         // Capture screenshot
@@ -59,14 +65,15 @@
         [self takeScreenshotNamed:screenshotName];
     }
 
-    // Test touch input - tap center of screen
-    XCUICoordinate *centerCoordinate = [app coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
+    // Tap anywhere to re-show overlay (it may have auto-hidden)
     [centerCoordinate tap];
     sleep(1);
     [self takeScreenshotNamed:@"03-after-click"];
 
-    // Test palette change (p key)
-    [app typeText:@"p"];
+    // Test palette change by tapping "Next Palette" button on overlay
+    // The "Next Palette" button is in the middle of the centered overlay (y ~0.5)
+    XCUICoordinate *nextPaletteButton = [app coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
+    [nextPaletteButton tap];
     sleep(1);
     [self takeScreenshotNamed:@"04-palette-change"];
 
