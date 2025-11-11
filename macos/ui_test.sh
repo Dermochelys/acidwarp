@@ -3,7 +3,7 @@ set -e
 
 SCREENSHOT_DIR="screenshots"
 APP_PATH="build/Build/Products/Release/Acid Warp.app"
-APP_BINARY="$APP_PATH/Contents/MacOS/acidwarp-macos"
+APP_BINARY="$APP_PATH/Contents/MacOS/Acid Warp"
 
 mkdir -p "$SCREENSHOT_DIR"
 

@@ -17,6 +17,22 @@ echo "App launched with PID: $APP_PID"
 echo "Waiting for app initialization..."
 sleep 5
 
+# Verify the app window actually opened
+echo "Checking if Acid Warp window opened..."
+WINDOW_FOUND=$(powershell.exe -Command "
+\$process = Get-Process | Where-Object { \$_.MainWindowTitle -eq 'Acid Warp' }
+if (\$process) { Write-Output 'found' }
+")
+if [ "$WINDOW_FOUND" != "found" ]; then
+  echo "✗ Acid Warp window not found!"
+  echo "Checking running processes..."
+  powershell.exe -Command "Get-Process | Where-Object { \$_.ProcessName -like '*acidwarp*' } | Format-Table ProcessName, Id, MainWindowTitle, HasExited"
+  echo "Checking for any error output..."
+  taskkill //PID $APP_PID //F 2>/dev/null || true
+  exit 1
+fi
+echo "✓ Acid Warp window found and running"
+
 # Capture startup screenshot using PowerShell
 powershell.exe -Command "
 Add-Type -AssemblyName System.Windows.Forms,System.Drawing

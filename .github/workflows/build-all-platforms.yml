@@ -82,12 +82,10 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: cd android && ./gradlew build connectedCheck
-
-      - name: Pull screenshots from emulator
-        if: always()
-        run: |
-          adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots android/ || echo "No screenshots found"
+          script: |
+            cd android
+            ./gradlew build connectedCheck
+            adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots . || echo "No screenshots found"
 
       - name: Upload screenshots
         if: always()
