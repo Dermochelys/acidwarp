@@ -6,6 +6,17 @@ APP_BINARY="build/acidwarp-windows.exe"
 
 mkdir -p "$SCREENSHOT_DIR"
 
+echo "Setting up Mesa software rendering..."
+# Copy Mesa's OpenGL DLL to the executable directory so Windows uses it instead of system OpenGL 1.1
+MESA_OPENGL="/mingw64/bin/opengl32.dll"
+if [ -f "$MESA_OPENGL" ]; then
+    cp "$MESA_OPENGL" build/
+    echo "✓ Copied Mesa OpenGL DLL to build directory"
+else
+    echo "⚠ Mesa OpenGL DLL not found at $MESA_OPENGL"
+    ls -la /mingw64/bin/opengl32.dll || echo "File does not exist"
+fi
+
 echo "Launching Acid Warp..."
 # Launch the app in background
 "$APP_BINARY" &

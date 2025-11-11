@@ -248,9 +248,6 @@ jobs:
 
       - name: Run UI tests
         working-directory: windows
-        env:
-          LIBGL_ALWAYS_SOFTWARE: 1
-          GALLIUM_DRIVER: llvmpipe
         run: |
           chmod +x ui_test.sh
           ./ui_test.sh
@@ -289,6 +286,18 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Verify build output
+        working-directory: macos
+        run: |
+          echo "Checking build directory structure:"
+          ls -la build/
+          echo ""
+          echo "Checking Build subdirectory:"
+          ls -la build/Build/ || echo "No Build subdirectory"
+          echo ""
+          echo "Looking for .app bundles:"
+          find build -name "*.app" -type d
 
       - name: Grant screen recording permissions
         run: |
@@ -438,7 +447,6 @@ jobs:
             -derivedDataPath ./build \
             -test-timeouts-enabled YES \
             -maximum-test-execution-time-allowance 120 \
-            -maximum-test-repetitions 1 \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
