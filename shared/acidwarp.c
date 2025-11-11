@@ -125,7 +125,16 @@ static void timer_unlock(void)
 
 static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
+  static int call_count = 0;
   unsigned int tmint = TIMER_INTERVAL;
+
+  /* Only log first few calls to avoid spam */
+  if (call_count < 5) {
+    printf("[TIMER] timer_proc() called (count=%d)\n", call_count);
+    fflush(stdout);
+    call_count++;
+  }
+
   timer_lock();
   timer_data.flag = true;
   SDL_SignalCondition(timer_data.cond);
@@ -152,12 +161,24 @@ static void timer_init(void)
 
 static void timer_wait(void)
 {
+  printf("[TIMER] timer_wait() entered\n");
+  fflush(stdout);
   timer_lock();
+  printf("[TIMER] timer_lock() acquired\n");
+  fflush(stdout);
   while (!timer_data.flag) {
+    printf("[TIMER] Waiting on condition variable...\n");
+    fflush(stdout);
     SDL_WaitCondition(timer_data.cond, timer_data.mutex);
+    printf("[TIMER] Woke up from SDL_WaitCondition\n");
+    fflush(stdout);
   }
   timer_data.flag = false;
+  printf("[TIMER] Unlocking mutex\n");
+  fflush(stdout);
   timer_unlock();
+  printf("[TIMER] timer_wait() exiting\n");
+  fflush(stdout);
 }
 
 int main (int argc, char *argv[])
@@ -210,7 +231,11 @@ int main (int argc, char *argv[])
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
   while(!QUIT_MAIN_LOOP) {
     mainLoop();
+    printf("[MAIN] About to call timer_wait()\n");
+    fflush(stdout);
     timer_wait();
+    printf("[MAIN] timer_wait() completed\n");
+    fflush(stdout);
   }
 
   printf("[EXIT] Exiting main loop\n");
@@ -235,7 +260,11 @@ static void mainLoop(void)
     first_iteration = 0;
   }
 
+  printf("[MAIN] About to call disp_processInput()\n");
+  fflush(stdout);
   disp_processInput();
+  printf("[MAIN] disp_processInput() completed\n");
+  fflush(stdout);
 
   if (RESIZE) {
     RESIZE = FALSE;
@@ -308,6 +337,9 @@ static void mainLoop(void)
     }
     break;
   }
+
+  printf("[MAIN] mainLoop() completing\n");
+  fflush(stdout);
 }
 
 /* ------------------------END MAIN----------------------------------------- */
