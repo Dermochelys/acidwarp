@@ -471,6 +471,29 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   glGetError();
   printf("[GL] GLEW initialized successfully\n");
   fflush(stdout);
+
+  /* Verify OpenGL version and function pointers */
+  printf("[GL] Verifying OpenGL context...\n");
+  fflush(stdout);
+  const GLubyte* version = glGetString(GL_VERSION);
+  const GLubyte* renderer = glGetString(GL_RENDERER);
+  const GLubyte* vendor = glGetString(GL_VENDOR);
+  if (version) printf("[GL]   Version: %s\n", version);
+  if (renderer) printf("[GL]   Renderer: %s\n", renderer);
+  if (vendor) printf("[GL]   Vendor: %s\n", vendor);
+  fflush(stdout);
+
+  /* Check if critical function pointers are available */
+  if (!glCreateProgram) {
+    fprintf(stderr, "[GL] ERROR: glCreateProgram function not available!\n");
+    quit(-1);
+  }
+  if (!glCreateShader) {
+    fprintf(stderr, "[GL] ERROR: glCreateShader function not available!\n");
+    quit(-1);
+  }
+  printf("[GL] OpenGL context verification complete\n");
+  fflush(stdout);
 #endif
 
   printf("[GL] Creating shader program...\n");
