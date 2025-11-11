@@ -18,8 +18,8 @@ else
 fi
 
 echo "Launching Acid Warp..."
-# Launch the app in background
-"$APP_BINARY" &
+# Launch the app in background with output redirection to capture logs
+"$APP_BINARY" > build/acidwarp.log 2>&1 &
 APP_PID=$!
 
 echo "App launched with PID: $APP_PID"
@@ -28,35 +28,44 @@ echo "App launched with PID: $APP_PID"
 echo "Waiting for app initialization..."
 sleep 5
 
-# Verify the app process is still running
-echo "Checking if Acid Warp process is running..."
-echo "DEBUG: Checking PID=$APP_PID"
-
-# First, check if bash still knows about the process
-if ps -p $APP_PID > /dev/null 2>&1; then
-  echo "DEBUG: Bash reports process $APP_PID exists"
+# Check if log file exists and show recent output
+if [ -f build/acidwarp.log ]; then
+    echo "=== Recent app output ==="
+    tail -50 build/acidwarp.log || echo "Log file exists but empty or unreadable"
+    echo "=== End of app output ==="
 else
-  echo "DEBUG: Bash reports process $APP_PID does NOT exist"
+    echo "⚠ Log file not found at build/acidwarp.log"
 fi
 
-# List all acidwarp processes
-echo "DEBUG: Looking for acidwarp processes..."
-ps aux | grep -i acidwarp | grep -v grep || echo "DEBUG: No acidwarp processes found by ps"
+# Verify the app process is still running
+echo "Checking if Acid Warp process is running..."
+echo "DEBUG: Original PID from bash: $APP_PID"
 
-# Now check with PowerShell
-echo "DEBUG: Checking with PowerShell..."
-echo "DEBUG: About to run PowerShell command at $(date '+%H:%M:%S')"
-
-# Use timeout to prevent hanging (10 second timeout)
+# Check for process by name instead of PID (more reliable in MSYS2)
+# PowerShell check for process by executable name
+echo "DEBUG: Checking for acidwarp-windows.exe process..."
 timeout 10s powershell.exe -Command "
-Write-Output 'PowerShell starting process check for PID $APP_PID'
+Write-Output 'PowerShell starting process check by name'
 try {
-    \$process = Get-Process -Id $APP_PID -ErrorAction SilentlyContinue
-    if (\$process) {
-        Write-Output 'Process found: running'
+    \$processes = Get-Process -Name 'acidwarp-windows' -ErrorAction SilentlyContinue
+    if (\$processes) {
+        Write-Output 'Process found by name: running'
+        foreach (\$proc in \$processes) {
+            Write-Output ('  Found PID: ' + \$proc.Id + ', Name: ' + \$proc.ProcessName)
+        }
+        Write-Output ('FOUND_PID=' + (\$processes[0].Id))
         Write-Output 'running'
     } else {
-        Write-Output 'Process not found'
+        Write-Output 'Process not found by name'
+        # Also try checking by PID as fallback
+        \$process = Get-Process -Id $APP_PID -ErrorAction SilentlyContinue
+        if (\$process) {
+            Write-Output 'Process found by PID: running'
+            Write-Output ('FOUND_PID=' + \$process.Id)
+            Write-Output 'running'
+        } else {
+            Write-Output 'Process not found by PID either'
+        }
     }
 } catch {
     Write-Output 'Error checking process'
@@ -66,25 +75,88 @@ Write-Output 'PowerShell command completed'
 " > /tmp/ps_output.txt 2>&1
 
 PS_EXIT_CODE=$?
-echo "DEBUG: PowerShell command finished at $(date '+%H:%M:%S') with exit code $PS_EXIT_CODE"
+echo "DEBUG: PowerShell command finished with exit code $PS_EXIT_CODE"
 
 if [ -f /tmp/ps_output.txt ]; then
-    echo "DEBUG: PowerShell output file exists, size: $(stat -c%s /tmp/ps_output.txt 2>/dev/null || stat -f%z /tmp/ps_output.txt 2>/dev/null || echo 'unknown') bytes"
     PROCESS_RUNNING=$(cat /tmp/ps_output.txt)
+    echo "DEBUG: PowerShell output:"
+    echo "$PROCESS_RUNNING"
 else
-    echo "DEBUG: PowerShell output file does not exist!"
     PROCESS_RUNNING=""
+    echo "DEBUG: PowerShell output file does not exist!"
 fi
 
-echo "DEBUG: PowerShell output:"
-echo "$PROCESS_RUNNING"
-echo "DEBUG: End of PowerShell output"
+# Also check if a window exists (alternative verification)
+echo "DEBUG: Checking for Acid Warp window..."
+WINDOW_CHECK=$(timeout 10s powershell.exe -Command "
+Add-Type -AssemblyName System.Windows.Forms
+\$processes = Get-Process | Where-Object { \$_.ProcessName -like '*acidwarp*' -or \$_.MainWindowTitle -like '*Acid Warp*' }
+if (\$processes) {
+    Write-Output 'window-found'
+    foreach (\$proc in \$processes) {
+        Write-Output ('Process: ' + \$proc.ProcessName + ', PID: ' + \$proc.Id + ', Window: ' + \$proc.MainWindowTitle)
+    }
+    Write-Output ('FOUND_PID=' + (\$processes[0].Id))
+} else {
+    Write-Output 'no-window'
+}
+" 2>&1)
 
+echo "DEBUG: Window check result:"
+echo "$WINDOW_CHECK"
+
+# Determine if process is running
+PROCESS_FOUND=false
 if echo "$PROCESS_RUNNING" | grep -q "running"; then
+  PROCESS_FOUND=true
+elif echo "$WINDOW_CHECK" | grep -q "window-found"; then
+  PROCESS_FOUND=true
+  echo "DEBUG: Process verified via window check"
+fi
+
+if [ "$PROCESS_FOUND" = true ]; then
   echo "✓ Acid Warp process is running"
+  # Update APP_PID to the actual PID if we found it
+  # Extract PID from FOUND_PID=1234 format
+  ACTUAL_PID=$(echo "$PROCESS_RUNNING" "$WINDOW_CHECK" | grep "FOUND_PID=" | cut -d= -f2 | head -1)
+  if [ -n "$ACTUAL_PID" ] && [ "$ACTUAL_PID" != "" ]; then
+    APP_PID=$ACTUAL_PID
+    echo "DEBUG: Using actual PID: $APP_PID"
+  else
+    echo "DEBUG: Could not extract PID, using original: $APP_PID"
+  fi
 else
-  echo "✗ Acid Warp process ($APP_PID) is not running!"
+  echo "✗ Acid Warp process is not running!"
   echo "The process may have crashed during initialization."
+  echo ""
+  echo "Process check output:"
+  echo "$PROCESS_RUNNING"
+  echo ""
+  echo "Window check output:"
+  echo "$WINDOW_CHECK"
+  echo ""
+  echo "=== Full app log (if available) ==="
+  if [ -f build/acidwarp.log ]; then
+    cat build/acidwarp.log || echo "Could not read log file"
+  else
+    echo "Log file not found"
+  fi
+  echo "=== End of app log ==="
+  echo ""
+  echo "Capturing screenshot to check if app window is visible..."
+  # Take a screenshot even if process detection failed - app might be running
+  powershell.exe -Command "
+  Add-Type -AssemblyName System.Windows.Forms,System.Drawing
+  \$screens = [System.Windows.Forms.Screen]::AllScreens
+  \$bounds = \$screens[0].Bounds
+  \$bitmap = New-Object System.Drawing.Bitmap \$bounds.Width, \$bounds.Height
+  \$graphics = [System.Drawing.Graphics]::FromImage(\$bitmap)
+  \$graphics.CopyFromScreen(\$bounds.Location, [System.Drawing.Point]::Empty, \$bounds.Size)
+  \$bitmap.Save('$SCREENSHOT_DIR/00-process-not-detected.png')
+  \$graphics.Dispose()
+  \$bitmap.Dispose()
+  " || echo "Failed to capture screenshot"
+  echo "Screenshot saved to $SCREENSHOT_DIR/00-process-not-detected.png"
   exit 1
 fi
 

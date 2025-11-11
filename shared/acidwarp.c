@@ -55,31 +55,50 @@ static void mainLoop(void);
 
 bool HandleAppEvents(void *userdata, SDL_Event *event)
 {
+    printf("[EVENT_FILTER] HandleAppEvents() called, event type=%u\n", (unsigned int)event->type);
+    fflush(stdout);
     switch (event->type)
     {
     case SDL_EVENT_TERMINATING:
+        printf("[EVENT_FILTER] SDL_EVENT_TERMINATING, calling quit(0)\n");
+        fflush(stdout);
         quit(0);
         return false;
     case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        printf("[EVENT_FILTER] SDL_EVENT_WILL_ENTER_BACKGROUND, pausing\n");
+        fflush(stdout);
         handleinput(CMD_PAUSE);
         return false;
     case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        printf("[EVENT_FILTER] SDL_EVENT_WILL_ENTER_FOREGROUND, pausing\n");
+        fflush(stdout);
         handleinput(CMD_PAUSE);
         return false;
     default:
         /* No special processing, add it to the event queue */
+        printf("[EVENT_FILTER] Event type %u passed through to event queue\n", (unsigned int)event->type);
+        fflush(stdout);
         return true;
     }
 }
 
 void quit(int retcode)
 {
+  printf("[QUIT] quit() called with retcode=%d\n", retcode);
+  fflush(stdout);
+  printf("[QUIT] Setting QUIT_MAIN_LOOP=TRUE\n");
+  fflush(stdout);
   QUIT_MAIN_LOOP = TRUE;
+  printf("[QUIT] QUIT_MAIN_LOOP set, quit() returning\n");
+  fflush(stdout);
 }
 
 void fatalSDLError(const char *msg)
 {
-  fprintf(stderr, "SDL error while %s: %s", msg, SDL_GetError());
+  fprintf(stderr, "[FATAL] SDL error while %s: %s\n", msg, SDL_GetError());
+  fflush(stderr);
+  printf("[FATAL] Calling quit(-1) due to SDL error\n");
+  fflush(stdout);
   quit(-1);
 }
 
@@ -111,16 +130,28 @@ static struct {
 
 static void timer_lock(void)
 {
+  printf("[TIMER] timer_lock() called\n");
+  fflush(stdout);
   if (SDL_LockMutex(timer_data.mutex) != 0) {
+    printf("[TIMER] ERROR: Failed to lock mutex\n");
+    fflush(stderr);
     fatalSDLError("locking timer mutex");
   }
+  printf("[TIMER] timer_lock() succeeded\n");
+  fflush(stdout);
 }
 
 static void timer_unlock(void)
 {
+  printf("[TIMER] timer_unlock() called\n");
+  fflush(stdout);
   if (SDL_UnlockMutex(timer_data.mutex) != 0) {
+    printf("[TIMER] ERROR: Failed to unlock mutex\n");
+    fflush(stderr);
     fatalSDLError("unlocking timer mutex");
   }
+  printf("[TIMER] timer_unlock() succeeded\n");
+  fflush(stdout);
 }
 
 static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
@@ -144,35 +175,65 @@ static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
 
 static void timer_init(void)
 {
+  printf("[TIMER] timer_init() called\n");
+  fflush(stdout);
+  printf("[TIMER] Creating mutex...\n");
+  fflush(stdout);
   timer_data.mutex = SDL_CreateMutex();
   if (timer_data.mutex == NULL) {
+    printf("[TIMER] ERROR: Failed to create mutex\n");
+    fflush(stderr);
     fatalSDLError("creating timer mutex");
   }
+  printf("[TIMER] Mutex created successfully\n");
+  fflush(stdout);
+  printf("[TIMER] Creating condition variable...\n");
+  fflush(stdout);
   timer_data.cond = SDL_CreateCondition();
   if (timer_data.cond == NULL) {
+    printf("[TIMER] ERROR: Failed to create condition variable\n");
+    fflush(stderr);
     fatalSDLError("creating timer condition variable");
   }
+  printf("[TIMER] Condition variable created successfully\n");
+  fflush(stdout);
+  printf("[TIMER] Adding timer (interval=%u)...\n", TIMER_INTERVAL);
+  fflush(stdout);
   timer_data.timer_id = SDL_AddTimer(TIMER_INTERVAL, timer_proc,
                                      timer_data.cond);
   if (timer_data.timer_id == 0) {
+    printf("[TIMER] ERROR: Failed to add timer\n");
+    fflush(stderr);
     fatalSDLError("adding timer");
   }
+  printf("[TIMER] Timer added successfully (timer_id=%u)\n", timer_data.timer_id);
+  fflush(stdout);
 }
 
 static void timer_wait(void)
 {
   printf("[TIMER] timer_wait() entered\n");
   fflush(stdout);
+  printf("[TIMER] timer_data.flag=%d before lock\n", timer_data.flag);
+  fflush(stdout);
   timer_lock();
   printf("[TIMER] timer_lock() acquired\n");
   fflush(stdout);
+  printf("[TIMER] Checking flag: timer_data.flag=%d\n", timer_data.flag);
+  fflush(stdout);
   while (!timer_data.flag) {
-    printf("[TIMER] Waiting on condition variable...\n");
+    printf("[TIMER] Flag is false, waiting on condition variable...\n");
+    fflush(stdout);
+    printf("[TIMER] About to call SDL_WaitCondition()\n");
     fflush(stdout);
     SDL_WaitCondition(timer_data.cond, timer_data.mutex);
-    printf("[TIMER] Woke up from SDL_WaitCondition\n");
+    printf("[TIMER] Woke up from SDL_WaitCondition(), checking flag again\n");
+    fflush(stdout);
+    printf("[TIMER] timer_data.flag=%d after wait\n", timer_data.flag);
     fflush(stdout);
   }
+  printf("[TIMER] Flag is true, clearing it\n");
+  fflush(stdout);
   timer_data.flag = false;
   printf("[TIMER] Unlocking mutex\n");
   fflush(stdout);
@@ -229,14 +290,24 @@ int main (int argc, char *argv[])
   fflush(stdout);
   // ReSharper disable once CppDFALoopConditionNotUpdated
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
+  int loop_iteration = 0;
   while(!QUIT_MAIN_LOOP) {
+    loop_iteration++;
+    printf("[MAIN] === Main loop iteration %d ===\n", loop_iteration);
+    fflush(stdout);
+    printf("[MAIN] QUIT_MAIN_LOOP=%d\n", QUIT_MAIN_LOOP);
+    fflush(stdout);
     mainLoop();
+    printf("[MAIN] mainLoop() returned\n");
+    fflush(stdout);
     printf("[MAIN] About to call timer_wait()\n");
     fflush(stdout);
     timer_wait();
     printf("[MAIN] timer_wait() completed\n");
     fflush(stdout);
   }
+  printf("[MAIN] Exited main loop after %d iterations\n", loop_iteration);
+  fflush(stdout);
 
   printf("[EXIT] Exiting main loop\n");
   fflush(stdout);
@@ -260,84 +331,153 @@ static void mainLoop(void)
     first_iteration = 0;
   }
 
+  printf("[MAIN] Current state: %d\n", state);
+  fflush(stdout);
   printf("[MAIN] About to call disp_processInput()\n");
   fflush(stdout);
   disp_processInput();
   printf("[MAIN] disp_processInput() completed\n");
   fflush(stdout);
 
+  printf("[MAIN] Checking flags: RESIZE=%d, SKIP=%d, NP=%d, GO=%d, LOCK=%d\n", 
+         RESIZE, SKIP, NP, GO, LOCK);
+  fflush(stdout);
+
   if (RESIZE) {
+    printf("[MAIN] Handling RESIZE flag\n");
+    fflush(stdout);
     RESIZE = FALSE;
     if (state != STATE_INITIAL) {
+      printf("[MAIN] Calling draw_same() and applyPalette()\n");
+      fflush(stdout);
       draw_same();
       applyPalette();
+      printf("[MAIN] draw_same() and applyPalette() completed\n");
+      fflush(stdout);
     }
   }
 
   if (SKIP) {
+    printf("[MAIN] Checking SKIP flag (state=%d)\n", state);
+    fflush(stdout);
     if (state != STATE_DISPLAY) {
+      printf("[MAIN] Clearing SKIP flag\n");
+      fflush(stdout);
       SKIP = FALSE;
     }
   }
 
   if(NP) {
-    if (!show_logo) newPalette();
+    printf("[MAIN] Handling NP flag (show_logo=%d)\n", show_logo);
+    fflush(stdout);
+    if (!show_logo) {
+      printf("[MAIN] Calling newPalette()\n");
+      fflush(stdout);
+      newPalette();
+      printf("[MAIN] newPalette() completed\n");
+      fflush(stdout);
+    }
     NP = FALSE;
   }
 
+  printf("[MAIN] Entering state machine switch (state=%d)\n", state);
+  fflush(stdout);
   switch (state) {
   case STATE_INITIAL:
     printf("[MAIN] STATE_INITIAL: Initializing drawing system\n");
     fflush(stdout);
+    printf("[MAIN] About to call draw_init()\n");
+    fflush(stdout);
     draw_init(draw_flags | (show_logo ? DRAW_LOGO : 0));
     printf("[MAIN] Drawing system initialized\n");
     fflush(stdout);
+    printf("[MAIN] About to call initRolNFade()\n");
+    fflush(stdout);
     initRolNFade(show_logo);
+    printf("[MAIN] initRolNFade() completed\n");
+    fflush(stdout);
 
     /* Fall through */
   case STATE_NEXT:
     /* install a new image */
     printf("[MAIN] STATE_NEXT: Generating next pattern\n");
     fflush(stdout);
+    printf("[MAIN] About to call draw_next()\n");
+    fflush(stdout);
     draw_next();
     printf("[MAIN] Pattern generated\n");
     fflush(stdout);
 
     if (!show_logo) {
+      printf("[MAIN] Calling newPalette() in STATE_NEXT\n");
+      fflush(stdout);
       newPalette();
+      printf("[MAIN] newPalette() completed\n");
+      fflush(stdout);
     }
 
     ltime = time(NULL);
     mtime = ltime + image_time;
+    printf("[MAIN] Setting display time: ltime=%ld, mtime=%ld, image_time=%d\n", 
+           (long)ltime, (long)mtime, image_time);
+    fflush(stdout);
     state = STATE_DISPLAY;
+    printf("[MAIN] Transitioned to STATE_DISPLAY\n");
+    fflush(stdout);
     /* Fall through */
   case STATE_DISPLAY:
     /* rotate the palette for a while */
+    printf("[MAIN] STATE_DISPLAY: GO=%d\n", GO);
+    fflush(stdout);
     if(GO) {
+      printf("[MAIN] Calling fadeInAndRotate()\n");
+      fflush(stdout);
       fadeInAndRotate();
+      printf("[MAIN] fadeInAndRotate() completed\n");
+      fflush(stdout);
     }
 
-    if(SKIP || (time(NULL) > mtime && !LOCK)) {
+    time_t current_time = time(NULL);
+    int should_skip = SKIP || (current_time > mtime && !LOCK);
+    printf("[MAIN] Checking transition: SKIP=%d, current_time=%ld, mtime=%ld, LOCK=%d, should_skip=%d\n",
+           SKIP, (long)current_time, (long)mtime, LOCK, should_skip);
+    fflush(stdout);
+    if(should_skip) {
+      printf("[MAIN] Transitioning to STATE_FADEOUT\n");
+      fflush(stdout);
       /* Transition from logo only fades to black,
        * like the first transition in Acidwarp 4.10.
        */
       beginFadeOut(show_logo);
       state = STATE_FADEOUT;
+      printf("[MAIN] Transitioned to STATE_FADEOUT\n");
+      fflush(stdout);
     }
     break;
 
   case STATE_FADEOUT:
     /* fade out */
+    printf("[MAIN] STATE_FADEOUT: GO=%d\n", GO);
+    fflush(stdout);
     if(GO) {
+      printf("[MAIN] Calling fadeOut()\n");
+      fflush(stdout);
       if (fadeOut()) {
+        printf("[MAIN] fadeOut() returned true, transitioning to STATE_NEXT\n");
+        fflush(stdout);
         show_logo = 0;
         image_time = PATTERN_TIME;
         state = STATE_NEXT;
+      } else {
+        printf("[MAIN] fadeOut() returned false, staying in STATE_FADEOUT\n");
+        fflush(stdout);
       }
     }
     break;
   }
 
+  printf("[MAIN] State machine switch completed, new state=%d\n", state);
+  fflush(stdout);
   printf("[MAIN] mainLoop() completing\n");
   fflush(stdout);
 }

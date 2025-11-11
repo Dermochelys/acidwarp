@@ -232,12 +232,25 @@ static void display_redraw(void)
 void disp_processInput(void) {
   SDL_Event event;
 
+  printf("[INPUT] disp_processInput() entered\n");
+  fflush(stdout);
+
   /* Check if pending single click should be processed */
   if (pending_click_time != 0) {
+    printf("[INPUT] Checking pending click (time=%llu)\n", (unsigned long long)pending_click_time);
+    fflush(stdout);
+    printf("[INPUT] About to call SDL_GetTicks() for pending click check\n");
+    fflush(stdout);
     Uint64 current_time = SDL_GetTicks();
+    printf("[INPUT] SDL_GetTicks() returned: %llu\n", (unsigned long long)current_time);
+    fflush(stdout);
     if (current_time - pending_click_time >= DOUBLE_CLICK_DELAY_MS) {
+      printf("[INPUT] Processing pending single click\n");
+      fflush(stdout);
       /* Enough time has passed - process as single click */
       if (remote_overlay_is_visible()) {
+        printf("[INPUT] Remote overlay is visible, handling click\n");
+        fflush(stdout);
         int result = remote_overlay_handle_click(pending_click_x, pending_click_y, width, height);
         if (result == -1) {
           /* Click was outside remote bounds - hide it */
@@ -246,60 +259,111 @@ void disp_processInput(void) {
         /* result == 0: click on remote but not button, keep showing */
         /* result == 1: button clicked, keep showing */
       } else {
+        printf("[INPUT] Remote overlay not visible, showing it\n");
+        fflush(stdout);
         /* Overlay not visible - show it on click */
         remote_overlay_show();
       }
       pending_click_time = 0; /* Clear pending click */
+      printf("[INPUT] Pending click processed\n");
+      fflush(stdout);
     }
+  } else {
+    printf("[INPUT] No pending click to process\n");
+    fflush(stdout);
   }
 
+  printf("[INPUT] Starting SDL_PollEvent() loop\n");
+  fflush(stdout);
+  int event_count = 0;
   while ( SDL_PollEvent(&event) > 0 ) {
+    event_count++;
+    printf("[INPUT] SDL_PollEvent() returned event #%d, type=%u\n", event_count, (unsigned int)event.type);
+    fflush(stdout);
     switch (event.type) {
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        printf("[INPUT] Processing SDL_EVENT_MOUSE_BUTTON_DOWN\n");
+        fflush(stdout);
         if (event.button.button == SDL_BUTTON_LEFT) {
+          printf("[INPUT] Left mouse button, clicks=%d\n", event.button.clicks);
+          fflush(stdout);
           if (event.button.clicks == 2) {
+            printf("[INPUT] Double click detected\n");
+            fflush(stdout);
             /* Double click detected - cancel pending single click and toggle fullscreen */
             pending_click_time = 0; /* Cancel pending single click */
             /* Prevent fullscreen toggle if clicking within remote overlay bounds */
             if (!remote_overlay_is_visible() || 
                 !remote_overlay_is_point_inside(event.button.x, event.button.y, width, height)) {
+              printf("[INPUT] Toggling fullscreen\n");
+              fflush(stdout);
               disp_toggleFullscreen();
             }
           } else if (event.button.clicks == 1) {
+            printf("[INPUT] Single click, storing pending state\n");
+            fflush(stdout);
             /* Single click - store in pending state and wait for potential double-click */
+            printf("[INPUT] About to call SDL_GetTicks() for single click\n");
+            fflush(stdout);
             pending_click_time = SDL_GetTicks();
+            printf("[INPUT] SDL_GetTicks() returned: %llu\n", (unsigned long long)pending_click_time);
+            fflush(stdout);
             pending_click_x = event.button.x;
             pending_click_y = event.button.y;
           }
         }
         break;
       case SDL_EVENT_KEY_DOWN:
+        printf("[INPUT] Processing SDL_EVENT_KEY_DOWN, key=%d\n", (int)event.key.key);
+        fflush(stdout);
         disp_processKey(event.key.key);
+        printf("[INPUT] disp_processKey() completed\n");
+        fflush(stdout);
         break;
       case SDL_EVENT_DISPLAY_ORIENTATION:
       case SDL_EVENT_WINDOW_RESIZED:
+        printf("[INPUT] Processing window resize event\n");
+        fflush(stdout);
         disp_init(event.window.data1,event.window.data2,fullscreen);
         handleinput(CMD_RESIZE);
+        printf("[INPUT] Window resize handled\n");
+        fflush(stdout);
         break;
       case SDL_EVENT_WINDOW_EXPOSED:
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_EXPOSED\n");
+        fflush(stdout);
         display_redraw();
+        printf("[INPUT] display_redraw() completed\n");
+        fflush(stdout);
         break;
       case SDL_EVENT_QUIT:
+        printf("[INPUT] Processing SDL_EVENT_QUIT\n");
+        fflush(stdout);
         handleinput(CMD_QUIT);
+        printf("[INPUT] CMD_QUIT handled\n");
+        fflush(stdout);
         break;
 #if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
       /* Only quit on background/termination events on mobile platforms */
       case SDL_EVENT_TERMINATING:
       case SDL_EVENT_WILL_ENTER_BACKGROUND:
       case SDL_EVENT_DID_ENTER_BACKGROUND:
+        printf("[INPUT] Processing mobile platform termination event\n");
+        fflush(stdout);
         handleinput(CMD_QUIT);
         break;
 #endif
 
       default:
+        printf("[INPUT] Unknown event type: %u\n", (unsigned int)event.type);
+        fflush(stdout);
         break;
     }
   }
+  printf("[INPUT] SDL_PollEvent() loop completed, processed %d events\n", event_count);
+  fflush(stdout);
+  printf("[INPUT] disp_processInput() exiting\n");
+  fflush(stdout);
 }
 
 

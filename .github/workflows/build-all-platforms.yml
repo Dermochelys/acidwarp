@@ -260,6 +260,14 @@ jobs:
           path: windows/screenshots/*.png
           if-no-files-found: error
 
+      - name: Upload app log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test-log
+          path: windows/build/acidwarp.log
+          if-no-files-found: ignore
+
 
 
   # ============================================================================
