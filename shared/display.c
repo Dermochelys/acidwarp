@@ -449,14 +449,26 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   printf("[GL] OpenGL context created successfully\n");
   fflush(stdout);
 
+  printf("[GL] Making OpenGL context current...\n");
+  fflush(stdout);
+  if (SDL_GL_MakeCurrent(window, context) < 0) {
+    fatalSDLError("making OpenGL context current");
+  }
+  printf("[GL] OpenGL context is now current\n");
+  fflush(stdout);
+
 #ifdef _WIN32
   printf("[GL] Initializing GLEW...\n");
   fflush(stdout);
+  /* Enable experimental mode for Core Profile contexts */
+  glewExperimental = GL_TRUE;
   GLenum glew_err = glewInit();
   if (glew_err != GLEW_OK) {
     fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
     quit(-1);
   }
+  /* glewInit() may generate a GL_INVALID_ENUM error in core profile - clear it */
+  glGetError();
   printf("[GL] GLEW initialized successfully\n");
   fflush(stdout);
 #endif

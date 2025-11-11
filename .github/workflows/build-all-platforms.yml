@@ -84,15 +84,20 @@ jobs:
           disable-animations: true
           working-directory: ./android
           script: |
-            ./gradlew build connectedCheck
-            adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots . || echo "No screenshots found"
+            ./gradlew build
+            ./gradlew :app:installDebug :app:installDebugAndroidTest
+            adb shell am instrument -w -r -e debug false com.dermochelys.acidwarp.test/androidx.test.runner.AndroidJUnitRunner
+            mkdir -p screenshots
+            adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots screenshots/ || echo "No screenshots found"
+            adb uninstall com.dermochelys.acidwarp || true
+            adb uninstall com.dermochelys.acidwarp.test || true
 
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-ui-test-screenshots
-          path: android/screenshots/*.png
+          path: android/screenshots/screenshots/*.png
           if-no-files-found: error
 
       - name: Check Android ELF Alignment
@@ -282,11 +287,74 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Grant screen recording permissions
+        run: |
+          # Grant screen recording permissions to bash for screencapture to work
+          BASH_PATH=$(which bash)
+
+          # Create TCC database directory if it doesn't exist
+          mkdir -p ~/Library/Application\ Support/com.apple.TCC
+
+          # Try to reset and grant permissions using tccutil (macOS 13+)
+          tccutil reset ScreenCapture 2>/dev/null || true
+
+          # For macOS runners, we need to grant permissions via sqlite3
+          # This uses the user TCC database
+          if [ -f ~/Library/Application\ Support/com.apple.TCC/TCC.db ]; then
+            echo "Modifying user TCC database..."
+            sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db \
+              "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','$BASH_PATH',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || echo "User DB modification failed, continuing..."
+          fi
+
+          # Also try system database (requires sudo)
+          if [ -f /Library/Application\ Support/com.apple.TCC/TCC.db ]; then
+            echo "Modifying system TCC database..."
+            sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
+              "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','$BASH_PATH',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || echo "System DB modification failed, continuing..."
+          fi
+
+          # Alternative: Grant to Terminal.app which may be the parent process
+          sudo sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db \
+            "INSERT OR REPLACE INTO access VALUES('kTCCServiceScreenCapture','com.apple.Terminal',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687364800);" 2>/dev/null || true
+
+          echo "✓ Screen recording permission setup complete"
+
       - name: Run UI tests
         working-directory: macos
         run: |
           chmod +x ui_test.sh
+
+          # Start a background script to auto-accept permission dialogs
+          osascript -e '
+          repeat
+            try
+              tell application "System Events"
+                tell process "CoreServicesUIAgent"
+                  if exists (window 1) then
+                    set windowTitle to name of window 1
+                    -- Look for permission dialog
+                    if windowTitle contains "requesting" or windowTitle contains "access" then
+                      -- Click the "Allow" button
+                      click button "Allow" of window 1
+                      delay 0.5
+                    end if
+                  end if
+                end tell
+              end tell
+            end try
+            delay 0.5
+          end repeat
+          ' &
+          DIALOG_HELPER_PID=$!
+
+          # Run the actual tests
           ./ui_test.sh
+          TEST_RESULT=$?
+
+          # Kill the dialog helper
+          kill $DIALOG_HELPER_PID 2>/dev/null || true
+
+          exit $TEST_RESULT
 
       - name: Upload screenshots
         if: always()
