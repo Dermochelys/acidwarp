@@ -162,13 +162,20 @@ static void timer_wait(void)
 
 int main (int argc, char *argv[])
 {
+  printf("[INIT] Starting Acid Warp...\n");
+  fflush(stdout);
+
   /* Initialize SDL */
+  printf("[INIT] Initializing SDL...\n");
+  fflush(stdout);
   if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0 ) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     /* SDL 2 docs say this is safe, but SDL 1 docs don't. */
     SDL_Quit();
     return -1;
   }
+  printf("[INIT] SDL initialized successfully\n");
+  fflush(stdout);
 
 #ifdef __ANDROID__
   // Trap the Android back button, only works on API 30 (Android 11) and earlier
@@ -180,12 +187,25 @@ int main (int argc, char *argv[])
 #endif
 
   SDL_SetEventFilter(HandleAppEvents, NULL);
-  
+
+  printf("[INIT] Initializing random seed...\n");
+  fflush(stdout);
   RANDOMIZE();
 
+  printf("[INIT] Initializing display (%dx%d)...\n", width, height);
+  fflush(stdout);
   disp_init(width, height, disp_flags);
+  printf("[INIT] Display initialized successfully\n");
+  fflush(stdout);
 
+  printf("[INIT] Initializing timer...\n");
+  fflush(stdout);
   timer_init();
+  printf("[INIT] Timer initialized successfully\n");
+  fflush(stdout);
+
+  printf("[INIT] Entering main loop...\n");
+  fflush(stdout);
   // ReSharper disable once CppDFALoopConditionNotUpdated
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
   while(!QUIT_MAIN_LOOP) {
@@ -193,6 +213,8 @@ int main (int argc, char *argv[])
     timer_wait();
   }
 
+  printf("[EXIT] Exiting main loop\n");
+  fflush(stdout);
   return 0;
 }
 
@@ -205,6 +227,13 @@ static void mainLoop(void)
     STATE_DISPLAY,
     STATE_FADEOUT
   } state = STATE_INITIAL;
+  static int first_iteration = 1;
+
+  if (first_iteration) {
+    printf("[MAIN] First mainLoop iteration\n");
+    fflush(stdout);
+    first_iteration = 0;
+  }
 
   disp_processInput();
 
@@ -229,13 +258,21 @@ static void mainLoop(void)
 
   switch (state) {
   case STATE_INITIAL:
+    printf("[MAIN] STATE_INITIAL: Initializing drawing system\n");
+    fflush(stdout);
     draw_init(draw_flags | (show_logo ? DRAW_LOGO : 0));
+    printf("[MAIN] Drawing system initialized\n");
+    fflush(stdout);
     initRolNFade(show_logo);
 
     /* Fall through */
   case STATE_NEXT:
     /* install a new image */
+    printf("[MAIN] STATE_NEXT: Generating next pattern\n");
+    fflush(stdout);
     draw_next();
+    printf("[MAIN] Pattern generated\n");
+    fflush(stdout);
 
     if (!show_logo) {
       newPalette();

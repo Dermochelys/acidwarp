@@ -401,6 +401,9 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 #endif
   GLint status;
 
+  printf("[GL] Initializing OpenGL...\n");
+  fflush(stdout);
+
   /* Vertices consist of point x, y, z, w followed by texture x and y */
   static const GLfloat vertices[] = {
       -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
@@ -411,61 +414,101 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 
 #ifdef __APPLE__
   if (TARGET_OS_IOS) {
+    printf("[GL] Setting attributes for OpenGL ES\n");
+    fflush(stdout);
     setAttributesForGLES();
   } else {
+    printf("[GL] Setting attributes for OpenGL\n");
+    fflush(stdout);
     setAttributesForGL();
   }
 #elif _WIN32
+  printf("[GL] Setting attributes for OpenGL (Windows)\n");
+  fflush(stdout);
   setAttributesForGL();
 #else
+  printf("[GL] Setting attributes for OpenGL ES\n");
+  fflush(stdout);
   setAttributesForGLES();
 #endif
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+  printf("[GL] Creating SDL window...\n");
+  fflush(stdout);
   window = SDL_CreateWindow("Acid Warp", width, height, videoflags | SDL_WINDOW_OPENGL);
   if (window == NULL) fatalSDLError("creating SDL OpenGL window");
+  printf("[GL] SDL window created successfully\n");
+  fflush(stdout);
 
+  printf("[GL] Creating OpenGL context...\n");
+  fflush(stdout);
   context = SDL_GL_CreateContext(window);
   if (context == NULL) fatalSDLError("creating OpenGL profile");
+  printf("[GL] OpenGL context created successfully\n");
+  fflush(stdout);
 
 #ifdef _WIN32
+  printf("[GL] Initializing GLEW...\n");
+  fflush(stdout);
   GLenum glew_err = glewInit();
   if (glew_err != GLEW_OK) {
     fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
     quit(-1);
   }
+  printf("[GL] GLEW initialized successfully\n");
+  fflush(stdout);
 #endif
 
+  printf("[GL] Creating shader program...\n");
+  fflush(stdout);
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
 
+  printf("[GL] Loading vertex shader...\n");
+  fflush(stdout);
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
 
+  printf("[GL] Loading fragment shader...\n");
+  fflush(stdout);
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
 
+  printf("[GL] Binding attributes...\n");
+  fflush(stdout);
   glBindAttribLocation(glprogram, 0, "Position");
   glBindAttribLocation(glprogram, 1, "TexPos");
 
+  printf("[GL] Linking shader program...\n");
+  fflush(stdout);
   glLinkProgram(glprogram);
   glGetProgramiv(glprogram, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) disp_glerror("glLinkProgram");
 
+  printf("[GL] Using shader program...\n");
+  fflush(stdout);
   glUseProgram(glprogram);
 
 #if TARGET_OS_IOS
   // Must set up branch this way for hybrid iOS/iPadOS/macOS build
 #elif TARGET_OS_MAC
   /* Core Profile requires VAO */
+  printf("[GL] Creating VAO (macOS)...\n");
+  fflush(stdout);
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 #elif _WIN32
   /* Core Profile requires VAO */
+  printf("[GL] Creating VAO (Windows)...\n");
+  fflush(stdout);
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
+  printf("[GL] VAO created and bound\n");
+  fflush(stdout);
 #endif
 
+  printf("[GL] Creating vertex buffers...\n");
+  fflush(stdout);
   glGenBuffers(1, &buffer);
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -477,25 +520,42 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
                         (char *)&vertices[6] - (char *)&vertices[0],
                         /* Why is this parameter declared as a pointer? */
                         (void *)((char *)&vertices[4] - (char *)&vertices[0]));
+  printf("[GL] Vertex buffers configured\n");
+  fflush(stdout);
 
   /* https://www.opengl.org/discussion_boards/showthread.php/163092-Passing-Multiple-Textures-from-OpenGL-to-GLSL-shader */
 
   /* 256 x 1 texture used as palette lookup table */
+  printf("[GL] Creating palette texture...\n");
+  fflush(stdout);
   glUniform1i(glGetUniformLocation(glprogram, "Palette"), 0);
   glActiveTexture(GL_TEXTURE0);
   paltex = disp_newtex();
   glBindTexture(GL_TEXTURE_2D, paltex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0,
                GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  printf("[GL] Palette texture created\n");
+  fflush(stdout);
 
   /* 8 bpp indexed colour texture used for image */
+  printf("[GL] Creating index texture...\n");
+  fflush(stdout);
   glUniform1i(glGetUniformLocation(glprogram, "IndexTexture"), 1);
   glActiveTexture(GL_TEXTURE1);
   indtex = disp_newtex();
+  printf("[GL] Index texture created\n");
+  fflush(stdout);
 
+  printf("[GL] Setting pixel store parameters...\n");
+  fflush(stdout);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+  printf("[GL] Setting clear color...\n");
+  fflush(stdout);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+  printf("[GL] OpenGL initialization complete\n");
+  fflush(stdout);
 }
 
 void disp_init(int newwidth, int newheight, int flags)
@@ -503,28 +563,49 @@ void disp_init(int newwidth, int newheight, int flags)
   Uint32 videoflags;
   static int inited = 0;
 
+  printf("[DISP] disp_init called (%dx%d, flags=%d)\n", newwidth, newheight, flags);
+  fflush(stdout);
+
   width = newwidth;
   height = newheight;
   fullscreen = (flags & DISP_FULLSCREEN) ? 1 : 0;
 
   if (!inited) {
+    printf("[DISP] First time initialization\n");
+    fflush(stdout);
     videoflags = (fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE);
     SDL_ShowCursor(!fullscreen);
     disp_glinit(width, height, videoflags);
+    printf("[DISP] Initializing remote overlay...\n");
+    fflush(stdout);
     remote_overlay_init();
+    printf("[DISP] Remote overlay initialized\n");
+    fflush(stdout);
     inited = 1;
   } /* !inited */
 
   /* Raspberry Pi console will set window to size of full screen,
    * and not give a resize event. */
+  printf("[DISP] Getting window size...\n");
+  fflush(stdout);
   SDL_GetWindowSize(window, &width, &height);
+  printf("[DISP] Window size: %dx%d\n", width, height);
+  fflush(stdout);
 
   /* Create or recreate texture and set viewport, eg. when resizing */
+  printf("[DISP] Setting up textures and viewport...\n");
+  fflush(stdout);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, indtex);
   glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(), width, height, 0,
                getFormat(), GL_UNSIGNED_BYTE, NULL);
   glViewport(0, 0, width, height);
+  printf("[DISP] Textures and viewport configured\n");
+  fflush(stdout);
 
+  printf("[DISP] Allocating offscreen buffer...\n");
+  fflush(stdout);
   disp_allocateOffscreen();
+  printf("[DISP] Offscreen buffer allocated\n");
+  fflush(stdout);
 }

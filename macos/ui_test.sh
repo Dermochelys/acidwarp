@@ -34,6 +34,8 @@ echo "Checking for error dialogs..."
 ERROR_DIALOG=$(osascript -e 'tell application "System Events" to get name of every window of every process whose name contains "SDL Error"' 2>/dev/null || true)
 if [ -n "$ERROR_DIALOG" ]; then
   echo "✗ Found SDL Error dialog!"
+  screencapture "$SCREENSHOT_DIR/error-dialog.png"
+  echo "✓ Captured error dialog screenshot"
   kill $APP_PID || true
   exit 1
 fi

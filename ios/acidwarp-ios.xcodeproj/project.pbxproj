@@ -314,7 +314,7 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
 			shellScript = "dsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3.framework/SDL3\" -o \"${BUILT_PRODUCTS_DIR}/SDL3.framework.dSYM\"\ndsymutil \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDL3_image.framework/SDL3_image\" -o \"${BUILT_PRODUCTS_DIR}/SDL3_image.framework.dSYM\"\n";
 		};
