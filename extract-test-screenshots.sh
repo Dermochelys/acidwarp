@@ -35,13 +35,16 @@ if [ -n "$RESULTS_BUNDLE" ]; then
     find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} "$OUTPUT_DIR/" \; 2>/dev/null || true
   }
 
-  # Rename files if rename script exists
-  RENAME_SCRIPT="$PLATFORM/rename_screenshots.py"
+  # Rename files using the root rename script (which uses suggestedHumanReadableName from manifest.json)
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  RENAME_SCRIPT="$SCRIPT_DIR/rename_screenshots.py"
   if [ -f "$RENAME_SCRIPT" ]; then
     echo "Running rename script: $RENAME_SCRIPT"
     cd "$OUTPUT_DIR"
-    python3 "../$RENAME_SCRIPT"
+    python3 "$RENAME_SCRIPT"
     cd - > /dev/null
+  else
+    echo "Warning: rename_screenshots.py not found at $RENAME_SCRIPT"
   fi
 
   echo "Screenshots extracted:"

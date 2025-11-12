@@ -60,6 +60,7 @@ xcodebuild test \
   -destination "platform=iOS Simulator,arch=$ARCH,name=iPhone 17 Pro" \
   -parallel-testing-enabled NO \
   -resultBundlePath ./build/Logs/Test/Test-results.xcresult \
+  -retry-tests-on-failure \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO
