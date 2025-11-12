@@ -3,6 +3,87 @@ $ErrorActionPreference = "Stop"
 
 $SCREENSHOT_DIR = "screenshots"
 
+# GPU Detection and Driver Installation
+Write-Host "=== GPU Detection Phase ==="
+Write-Host "Checking all display adapters..."
+$videoControllers = Get-WmiObject Win32_VideoController
+$videoControllers | Select-Object Name, DriverVersion, DriverDate, Status | Format-Table -AutoSize
+
+Write-Host "`nChecking PCI devices for GPUs..."
+$pciDevices = Get-PnpDevice -Class Display
+$pciDevices | Format-Table Name, Status, InstanceId -AutoSize
+
+Write-Host "`nChecking for hidden/disabled devices..."
+$allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN
+if ($allDisplayDevices) {
+  Write-Host "Found disabled/error devices:"
+  $allDisplayDevices | Format-Table Name, Status -AutoSize
+}
+
+# Check if NVIDIA GPU exists in PCI devices but not activated
+$nvidiaInPci = $pciDevices | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+$nvidiaInWmi = $videoControllers | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+
+if ($nvidiaInPci -and -not $nvidiaInWmi) {
+  Write-Host "`n[INFO] NVIDIA GPU found in PCI but not active in video controllers"
+  Write-Host "GPU is present but drivers may not be loaded"
+} elseif ($nvidiaInWmi) {
+  Write-Host "`n[SUCCESS] NVIDIA GPU is active: $($nvidiaInWmi.Name)"
+  Write-Host "Driver version: $($nvidiaInWmi.DriverVersion)"
+  Write-Host "No driver installation needed"
+} else {
+  Write-Host "`n[WARNING] No NVIDIA GPU detected in PCI devices"
+  Write-Host "This GitHub GPU runner may not have a physical GPU attached"
+  Write-Host "Continuing with available display adapter: $($videoControllers[0].Name)"
+}
+
+Write-Host "`n=== Driver Installation Phase ==="
+if ($nvidiaInPci -and -not $nvidiaInWmi) {
+  Write-Host "Installing NVIDIA drivers for detected GPU..."
+  
+  # Use latest Game Ready driver (more reliable than GRID)
+  $nvidiaUrl = "https://us.download.nvidia.com/Windows/566.03/566.03-desktop-win10-win11-64bit-international-dch-whql.exe"
+  $installerPath = "$env:TEMP\nvidia-driver.exe"
+  
+  Write-Host "Downloading NVIDIA driver (this may take a few minutes)..."
+  try {
+    Invoke-WebRequest -Uri $nvidiaUrl -OutFile $installerPath -UseBasicParsing -TimeoutSec 300
+    Write-Host "Download completed: $(([System.IO.FileInfo]$installerPath).Length / 1MB) MB"
+  } catch {
+    Write-Host "[ERROR] Failed to download driver: $_"
+    exit 1
+  }
+  
+  Write-Host "Installing NVIDIA driver (this may take 5-10 minutes)..."
+  $process = Start-Process -FilePath $installerPath -ArgumentList "/s", "/noreboot", "/noeula" -Wait -NoNewWindow -PassThru
+  
+  if ($process.ExitCode -eq 0) {
+    Write-Host "[SUCCESS] NVIDIA driver installation completed"
+  } else {
+    Write-Host "[WARNING] Driver installer exit code: $($process.ExitCode)"
+  }
+  
+  # Force driver service restart
+  Write-Host "Restarting display driver service..."
+  Get-Service -Name "nvlddmkm" -ErrorAction SilentlyContinue | Restart-Service -Force -ErrorAction SilentlyContinue
+  
+  Start-Sleep -Seconds 5
+}
+
+Write-Host "`n=== Post-Installation Verification ==="
+Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, Status | Format-Table -AutoSize
+
+# Check if nvidia-smi is available
+Write-Host "`nChecking nvidia-smi..."
+$nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+if ($nvidiaSmi) {
+  Write-Host "Running nvidia-smi:"
+  & nvidia-smi
+} else {
+  Write-Host "nvidia-smi not found in PATH"
+}
+Write-Host ""
+
 # Detect environment: CI (flat structure) vs Local (build/ subdirectory)
 if (Test-Path "acidwarp-windows.exe") {
     # CI mode: all files in current directory
@@ -32,7 +113,8 @@ if (Test-Path "acidwarp-windows.exe") {
 }
 
 # Create screenshot directory
-New-Item -ItemType Directory -Force -Path $SCREENSHOT_DIR | Out-Null
+$SCREENSHOT_DIR_FULL = Join-Path (Get-Location) $SCREENSHOT_DIR
+New-Item -ItemType Directory -Force -Path $SCREENSHOT_DIR_FULL | Out-Null
 
 Write-Host "Launching Acid Warp..."
 # Launch the app in background
@@ -121,7 +203,8 @@ if (-not $PROCESS_FOUND) {
     $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-    $bitmap.Save("$SCREENSHOT_DIR/00-process-not-detected.png")
+    $filepath = Join-Path (Get-Location) "$SCREENSHOT_DIR/00-process-not-detected.png"
+    $bitmap.Save($filepath)
     $graphics.Dispose()
     $bitmap.Dispose()
 
@@ -147,7 +230,8 @@ function Take-Screenshot {
     $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-    $bitmap.Save("$SCREENSHOT_DIR/$name.png")
+    $filepath = Join-Path (Get-Location) "$SCREENSHOT_DIR/$name.png"
+    $bitmap.Save($filepath)
     $graphics.Dispose()
     $bitmap.Dispose()
 }
@@ -155,8 +239,32 @@ function Take-Screenshot {
 # Helper function to send key
 function Send-Key {
     param (
-        [string]$key
+        [string]$key,
+        [System.Diagnostics.Process]$process
     )
+
+    # Bring window to foreground
+    Add-Type @"
+        using System;
+        using System.Runtime.InteropServices;
+        public class WindowHelper {
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool SetForegroundWindow(IntPtr hWnd);
+            
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        }
+"@
+
+    if ($process.MainWindowHandle -ne [IntPtr]::Zero) {
+        # Show and activate window (SW_RESTORE = 9)
+        [WindowHelper]::ShowWindow($process.MainWindowHandle, 9) | Out-Null
+        Start-Sleep -Milliseconds 100
+        [WindowHelper]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+        Start-Sleep -Milliseconds 100
+    }
 
     Add-Type -AssemblyName System.Windows.Forms
     [System.Windows.Forms.SendKeys]::SendWait($key)
@@ -195,7 +303,7 @@ Write-Host "[OK] No error dialogs detected"
 # Fade transition time: (63 fade steps * 30ms timer interval) * 2 (fade-out + fade-in) = 3780ms ~= 3.8s
 for ($i = 1; $i -le 5; $i++) {
     Write-Host "Test $i : Triggering next pattern..."
-    Send-Key "n"
+    Send-Key "n" $appProcess
     Start-Sleep -Seconds 4  # Wait for fade-out + fade-in to complete
     Take-Screenshot "02-pattern-$i"
     Write-Host "[OK] Captured pattern $i screenshot"
@@ -218,7 +326,7 @@ Write-Host "[OK] Captured post-click screenshot"
 
 # Test palette change
 Write-Host "Testing palette change (p key)..."
-Send-Key "p"
+Send-Key "p" $appProcess
 Start-Sleep -Seconds 1
 Take-Screenshot "04-palette-change"
 Write-Host "[OK] Captured palette change screenshot"
@@ -230,7 +338,7 @@ Write-Host "[OK] Captured final screenshot"
 
 # Quit gracefully
 Write-Host "Sending quit signal (q key)..."
-Send-Key "q"
+Send-Key "q" $appProcess
 
 # Wait for app to exit
 Write-Host "Waiting for app to exit..."
