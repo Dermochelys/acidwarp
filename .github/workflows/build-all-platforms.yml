@@ -331,39 +331,59 @@ jobs:
           RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
           if [ -n "$RESULTS_BUNDLE" ]; then
             echo "Found test results: $RESULTS_BUNDLE"
-            # Export screenshots from xcresult bundle
-            # XCTest attachments are in the Attachments subdirectory
-            ATTACHMENTS_DIR="$RESULTS_BUNDLE/Attachments"
-            if [ -d "$ATTACHMENTS_DIR" ]; then
-              # Copy all PNG files from attachments
-              find "$ATTACHMENTS_DIR" -name "*.png" -print0 | while IFS= read -r -d '' file; do
-                # Get the base filename
-                filename=$(basename "$file")
-                # Copy to screenshots directory
-                cp "$file" "screenshots/$filename"
-              done
-
-              # Rename files to match our naming convention
-              cd screenshots
-              # XCTest saves attachments with the name in the filename
-              for file in *.png; do
-                # Try to extract our naming pattern from filename
-                # Files are typically named like "Screenshot_<name>_<uuid>.png"
-                if [[ $file =~ (.+)_[A-Z0-9-]+\.png ]]; then
-                  cleanname="${BASH_REMATCH[1]}"
-                  # Remove "Screenshot_" prefix if present
-                  cleanname="${cleanname#Screenshot_}"
-                  mv "$file" "$cleanname.png" 2>/dev/null || true
-                fi
-              done
-            else
-              echo "No attachments directory found, trying alternative extraction..."
+            # Export attachments from xcresult bundle using xcresulttool
+            # This properly extracts all attachments including screenshots
+            xcrun xcresulttool export attachments \
+              --path "$RESULTS_BUNDLE" \
+              --output-path screenshots || {
+              echo "Failed to export attachments, trying fallback method..."
               # Fallback: search entire bundle for PNGs
               find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
+            }
+
+            # Rename files using manifest.json to get proper names
+            cd screenshots
+            if [ -f manifest.json ]; then
+              # Parse manifest.json and rename files based on suggested names
+              # Extract base name from suggested names (remove UUID suffix)
+              # Suggested names are like "05-final_0_<uuid>.png" or "Launch Screen_0_<uuid>.png"
+              python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import re
+
+with open('manifest.json', 'r') as f:
+    manifest = json.load(f)
+
+for test_result in manifest:
+    for attachment in test_result.get('attachments', []):
+        exported_file = attachment.get('exportedFileName')
+        suggested_name = attachment.get('suggestedHumanReadableName', '')
+        
+        if exported_file and suggested_name and os.path.exists(exported_file):
+            # Extract base name from suggested name (remove _0_<uuid>.png pattern)
+            # Pattern: "name_0_<uuid>.png" -> "name.png"
+            match = re.match(r'^(.+?)_\d+_[A-Z0-9-]+\.png$', suggested_name)
+            if match:
+                clean_name = match.group(1) + '.png'
+            else:
+                # Fallback: just remove extension and add .png
+                clean_name = os.path.splitext(suggested_name)[0] + '.png'
+            
+            # Replace spaces with hyphens for filenames
+            clean_name = clean_name.replace(' ', '-')
+            
+            # Only rename if different and target doesn't exist
+            if clean_name != exported_file and not os.path.exists(clean_name):
+                os.rename(exported_file, clean_name)
+                print(f"Renamed {exported_file} -> {clean_name}")
+PYTHON_SCRIPT
+              # Remove manifest.json after processing
+              rm -f manifest.json
             fi
 
             echo "Screenshots extracted:"
-            ls -lh screenshots/
+            ls -lh . || echo "No screenshots found"
           else
             echo "No xcresult bundle found"
           fi
@@ -439,39 +459,59 @@ jobs:
           RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
           if [ -n "$RESULTS_BUNDLE" ]; then
             echo "Found test results: $RESULTS_BUNDLE"
-            # Export screenshots from xcresult bundle
-            # XCTest attachments are in the Attachments subdirectory
-            ATTACHMENTS_DIR="$RESULTS_BUNDLE/Attachments"
-            if [ -d "$ATTACHMENTS_DIR" ]; then
-              # Copy all PNG files from attachments
-              find "$ATTACHMENTS_DIR" -name "*.png" -print0 | while IFS= read -r -d '' file; do
-                # Get the base filename
-                filename=$(basename "$file")
-                # Copy to screenshots directory
-                cp "$file" "screenshots/$filename"
-              done
-
-              # Rename files to match our naming convention
-              cd screenshots
-              # XCTest saves attachments with the name in the filename
-              for file in *.png; do
-                # Try to extract our naming pattern from filename
-                # Files are typically named like "Screenshot_<name>_<uuid>.png"
-                if [[ $file =~ (.+)_[A-Z0-9-]+\.png ]]; then
-                  cleanname="${BASH_REMATCH[1]}"
-                  # Remove "Screenshot_" prefix if present
-                  cleanname="${cleanname#Screenshot_}"
-                  mv "$file" "$cleanname.png" 2>/dev/null || true
-                fi
-              done
-            else
-              echo "No attachments directory found, trying alternative extraction..."
+            # Export attachments from xcresult bundle using xcresulttool
+            # This properly extracts all attachments including screenshots
+            xcrun xcresulttool export attachments \
+              --path "$RESULTS_BUNDLE" \
+              --output-path screenshots || {
+              echo "Failed to export attachments, trying fallback method..."
               # Fallback: search entire bundle for PNGs
               find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
+            }
+
+            # Rename files using manifest.json to get proper names
+            cd screenshots
+            if [ -f manifest.json ]; then
+              # Parse manifest.json and rename files based on suggested names
+              # Extract base name from suggested names (remove UUID suffix)
+              # Suggested names are like "05-final_0_<uuid>.png" or "Launch Screen_0_<uuid>.png"
+              python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import re
+
+with open('manifest.json', 'r') as f:
+    manifest = json.load(f)
+
+for test_result in manifest:
+    for attachment in test_result.get('attachments', []):
+        exported_file = attachment.get('exportedFileName')
+        suggested_name = attachment.get('suggestedHumanReadableName', '')
+        
+        if exported_file and suggested_name and os.path.exists(exported_file):
+            # Extract base name from suggested name (remove _0_<uuid>.png pattern)
+            # Pattern: "name_0_<uuid>.png" -> "name.png"
+            match = re.match(r'^(.+?)_\d+_[A-Z0-9-]+\.png$', suggested_name)
+            if match:
+                clean_name = match.group(1) + '.png'
+            else:
+                # Fallback: just remove extension and add .png
+                clean_name = os.path.splitext(suggested_name)[0] + '.png'
+            
+            # Replace spaces with hyphens for filenames
+            clean_name = clean_name.replace(' ', '-')
+            
+            # Only rename if different and target doesn't exist
+            if clean_name != exported_file and not os.path.exists(clean_name):
+                os.rename(exported_file, clean_name)
+                print(f"Renamed {exported_file} -> {clean_name}")
+PYTHON_SCRIPT
+              # Remove manifest.json after processing
+              rm -f manifest.json
             fi
 
             echo "Screenshots extracted:"
-            ls -lh screenshots/
+            ls -lh . || echo "No screenshots found"
           else
             echo "No xcresult bundle found"
           fi
