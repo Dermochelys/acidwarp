@@ -249,7 +249,7 @@ jobs:
           name: windows-build
           path: |
             windows/build/*.exe
-            windows/build/*.dll
+            windows/*.dll
             windows/ui_test.ps1
           if-no-files-found: error
 

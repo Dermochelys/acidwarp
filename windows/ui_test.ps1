@@ -2,14 +2,41 @@
 $ErrorActionPreference = "Stop"
 
 $SCREENSHOT_DIR = "screenshots"
-$APP_BINARY = "build/acidwarp-windows.exe"
+
+# Detect environment: CI (flat structure) vs Local (build/ subdirectory)
+if (Test-Path "acidwarp-windows.exe") {
+    # CI mode: all files in current directory
+    $APP_BINARY = Join-Path (Get-Location) "acidwarp-windows.exe"
+    $LOG_DIR = Get-Location
+    Write-Host "Running in CI mode (flat directory structure)"
+} elseif (Test-Path "build/acidwarp-windows.exe") {
+    # Local mode: exe in build/ subdirectory
+    $APP_BINARY = Join-Path (Get-Location) "build/acidwarp-windows.exe"
+    $LOG_DIR = Join-Path (Get-Location) "build"
+    Write-Host "Running in local mode (build/ subdirectory)"
+
+    # Copy required DLLs to build directory if needed
+    $dlls = @("libpng16-16.dll", "zlib1.dll")
+    foreach ($dll in $dlls) {
+        if (Test-Path $dll) {
+            $destPath = "build/$dll"
+            if (-not (Test-Path $destPath)) {
+                Copy-Item $dll $destPath
+                Write-Host "Copied $dll to build directory"
+            }
+        }
+    }
+} else {
+    Write-Host "ERROR: Could not find acidwarp-windows.exe in current directory or build/ subdirectory"
+    exit 1
+}
 
 # Create screenshot directory
 New-Item -ItemType Directory -Force -Path $SCREENSHOT_DIR | Out-Null
 
 Write-Host "Launching Acid Warp..."
 # Launch the app in background
-$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput "build/acidwarp.log" -RedirectStandardError "build/acidwarp-error.log" -NoNewWindow
+$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput "$LOG_DIR/acidwarp.log" -RedirectStandardError "$LOG_DIR/acidwarp-error.log" -NoNewWindow
 
 Write-Host "App launched with PID: $($appProcess.Id)"
 
@@ -18,12 +45,12 @@ Write-Host "Waiting for app initialization..."
 Start-Sleep -Seconds 5
 
 # Check if log file exists and show recent output
-if (Test-Path "build/acidwarp.log") {
+if (Test-Path "$LOG_DIR/acidwarp.log") {
     Write-Host "=== Recent app output ==="
-    Get-Content "build/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
+    Get-Content "$LOG_DIR/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
     Write-Host "=== End of app output ==="
 } else {
-    Write-Host "⚠ Log file not found at build/acidwarp.log"
+    Write-Host "[WARN] Log file not found at $LOG_DIR/acidwarp.log"
 }
 
 # Verify the app process is still running
@@ -74,12 +101,12 @@ if ($windowProcesses) {
 }
 
 if (-not $PROCESS_FOUND) {
-    Write-Host "✗ Acid Warp process is not running!"
+    Write-Host "[ERROR] Acid Warp process is not running!"
     Write-Host "The process may have crashed during initialization."
     Write-Host ""
     Write-Host "=== Full app log (if available) ==="
-    if (Test-Path "build/acidwarp.log") {
-        Get-Content "build/acidwarp.log" -ErrorAction SilentlyContinue
+    if (Test-Path "$LOG_DIR/acidwarp.log") {
+        Get-Content "$LOG_DIR/acidwarp.log" -ErrorAction SilentlyContinue
     } else {
         Write-Host "Log file not found"
     }
@@ -102,7 +129,7 @@ if (-not $PROCESS_FOUND) {
     exit 1
 }
 
-Write-Host "✓ Acid Warp process is running"
+Write-Host "[OK] Acid Warp process is running"
 if ($actualPid) {
     Write-Host "DEBUG: Using actual PID: $actualPid"
     $appProcess = Get-Process -Id $actualPid
@@ -137,7 +164,7 @@ function Send-Key {
 
 # Capture startup screenshot
 Take-Screenshot "01-startup"
-Write-Host "✓ Captured startup screenshot"
+Write-Host "[OK] Captured startup screenshot"
 
 # Check for error dialogs - look for SDL Error window
 Write-Host "Checking for error dialogs..."
@@ -162,16 +189,16 @@ if ($errorWindows) {
     exit 1
 }
 
-Write-Host "✓ No error dialogs detected"
+Write-Host "[OK] No error dialogs detected"
 
 # Test pattern cycling with n key
-# Fade transition time: (63 fade steps * 30ms timer interval) * 2 (fade-out + fade-in) = 3780ms ≈ 3.8s
+# Fade transition time: (63 fade steps * 30ms timer interval) * 2 (fade-out + fade-in) = 3780ms ~= 3.8s
 for ($i = 1; $i -le 5; $i++) {
-    Write-Host "Test ${i}: Triggering next pattern..."
+    Write-Host "Test $i : Triggering next pattern..."
     Send-Key "n"
     Start-Sleep -Seconds 4  # Wait for fade-out + fade-in to complete
     Take-Screenshot "02-pattern-$i"
-    Write-Host "✓ Captured pattern $i screenshot"
+    Write-Host "[OK] Captured pattern $i screenshot"
 }
 
 # Test mouse click - click center of screen
@@ -187,19 +214,19 @@ Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern void 
 
 Start-Sleep -Seconds 1
 Take-Screenshot "03-after-click"
-Write-Host "✓ Captured post-click screenshot"
+Write-Host "[OK] Captured post-click screenshot"
 
 # Test palette change
 Write-Host "Testing palette change (p key)..."
 Send-Key "p"
 Start-Sleep -Seconds 1
 Take-Screenshot "04-palette-change"
-Write-Host "✓ Captured palette change screenshot"
+Write-Host "[OK] Captured palette change screenshot"
 
 # Capture final state
 Start-Sleep -Seconds 2
 Take-Screenshot "05-final"
-Write-Host "✓ Captured final screenshot"
+Write-Host "[OK] Captured final screenshot"
 
 # Quit gracefully
 Write-Host "Sending quit signal (q key)..."
@@ -222,14 +249,14 @@ $SCREENSHOT_COUNT = if ($screenshotFiles) { $screenshotFiles.Count } else { 0 }
 if ($SCREENSHOT_COUNT -ge 9) {
     Write-Host ""
     Write-Host "================================"
-    Write-Host "✓ UI test passed successfully!"
+    Write-Host "[PASS] UI test passed successfully!"
     Write-Host "================================"
     Write-Host "Screenshots captured: $SCREENSHOT_COUNT"
     exit 0
 } else {
     Write-Host ""
     Write-Host "================================"
-    Write-Host "✗ UI test failed!"
+    Write-Host "[FAIL] UI test failed!"
     Write-Host "================================"
     Write-Host "Expected 9 screenshots, got $SCREENSHOT_COUNT"
     exit 1
