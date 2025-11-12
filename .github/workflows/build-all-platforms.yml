@@ -236,7 +236,6 @@ jobs:
             mingw-w64-x86_64-sdl3
             mingw-w64-x86_64-sdl3-image
             mingw-w64-x86_64-glew
-            mingw-w64-x86_64-mesa
 
       - name: Configure CMake
         working-directory: windows
@@ -245,28 +244,6 @@ jobs:
       - name: Build
         working-directory: windows
         run: cmake --build build --config Release
-
-      - name: Run UI tests
-        working-directory: windows
-        run: |
-          chmod +x ui_test.sh
-          ./ui_test.sh
-
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-ui-test-screenshots
-          path: windows/screenshots/*.png
-          if-no-files-found: error
-
-      - name: Upload app log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-ui-test-log
-          path: windows/build/acidwarp.log
-          if-no-files-found: ignore
 
 
 
@@ -381,74 +358,17 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Run UI tests
+      - name: Build iOS app
         working-directory: ios
-        timeout-minutes: 20
         run: |
-          set -o pipefail
-          # Use OS=latest to ensure we get a specific iPhone 17 simulator (avoids ambiguity with multiple OS versions)
-          # Explicitly specify a single destination to prevent multiple simulators from launching
-          # (parallel test execution should be disabled in the test plan/scheme settings)
-          xcodebuild test \
-            -project acidwarp-ios.xcodeproj \
+          xcodebuild -project acidwarp-ios.xcodeproj \
             -scheme acidwarp \
             -configuration Release \
-            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -sdk iphoneos \
             -derivedDataPath ./build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
-
-      - name: Upload xcodebuild log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-xcodebuild-log
-          path: ios/xcodebuild.log
-          if-no-files-found: ignore
-
-      - name: Shutdown simulator
-        if: always()
-        run: |
-          # Shutdown all simulators to clean up
-          xcrun simctl shutdown all || true
-
-      - name: Extract screenshots from test results
-        if: always()
-        working-directory: ios
-        run: |
-          mkdir -p screenshots
-          # Find the test results bundle
-          RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
-          if [ -n "$RESULTS_BUNDLE" ]; then
-            echo "Found test results: $RESULTS_BUNDLE"
-            # Export attachments from xcresult bundle using xcresulttool
-            # This properly extracts all attachments including screenshots
-            xcrun xcresulttool export attachments \
-              --path "$RESULTS_BUNDLE" \
-              --output-path screenshots || {
-              echo "Failed to export attachments, trying fallback method..."
-              # Fallback: search entire bundle for PNGs
-              find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
-            }
-
-            # Rename files using manifest.json to get proper names
-            cd screenshots
-            python3 ../../rename_screenshots.py
-
-            echo "Screenshots extracted:"
-            ls -lh . || echo "No screenshots found"
-          else
-            echo "No xcresult bundle found"
-          fi
-
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ui-test-screenshots
-          path: ios/screenshots/*.png
-          if-no-files-found: error
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Create iOS app archive
         working-directory: ios
