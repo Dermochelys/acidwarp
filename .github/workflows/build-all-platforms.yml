@@ -403,11 +403,14 @@ jobs:
         timeout-minutes: 20
         run: |
           set -o pipefail
+          # Use OS=latest to ensure we get a specific iPhone 17 simulator (avoids ambiguity with multiple OS versions)
+          # Explicitly specify a single destination to prevent multiple simulators from launching
+          # (parallel test execution should be disabled in the test plan/scheme settings)
           xcodebuild test \
             -project acidwarp-ios.xcodeproj \
             -scheme acidwarp \
             -configuration Release \
-            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -derivedDataPath ./build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \

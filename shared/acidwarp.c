@@ -15,7 +15,7 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#if TARGET_OS_MAC
+#if TARGET_OS_MAC || TARGET_OS_IOS
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 #endif
@@ -242,15 +242,13 @@ static void timer_wait(void)
     fflush(stdout);
     
     /* Platform-specific event loop processing:
-     * - macOS: Pump NSRunLoop to allow XCUITest to detect idle state
+     * - macOS/iOS: Pump NSRunLoop to allow XCUITest to detect idle state
      * - Windows: Pump SDL events to process Windows messages (prevents hanging)
      * - Other platforms: Pump SDL events for general responsiveness */
     #ifdef __APPLE__
-    #if TARGET_OS_MAC
+    #if TARGET_OS_MAC || TARGET_OS_IOS
     /* Allow NSRunLoop to process events briefly - this helps XCUITest detect idle state */
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, false);
-    #else
-    SDL_PumpEvents();
     #endif
     #else
     /* Pump SDL events for general responsiveness on other platforms */

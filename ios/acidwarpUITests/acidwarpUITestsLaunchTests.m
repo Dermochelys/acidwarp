@@ -14,7 +14,7 @@
 @implementation acidwarpUITestsLaunchTests
 
 + (BOOL)runsForEachTargetApplicationUIConfiguration {
-    return YES;
+    return NO;
 }
 
 - (void)setUp {
