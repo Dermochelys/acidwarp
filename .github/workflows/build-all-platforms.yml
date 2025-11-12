@@ -343,44 +343,7 @@ jobs:
 
             # Rename files using manifest.json to get proper names
             cd screenshots
-            if [ -f manifest.json ]; then
-              # Parse manifest.json and rename files based on suggested names
-              # Extract base name from suggested names (remove UUID suffix)
-              # Suggested names are like "05-final_0_<uuid>.png" or "Launch Screen_0_<uuid>.png"
-              python3 << 'PYTHON_SCRIPT'
-import json
-import os
-import re
-
-with open('manifest.json', 'r') as f:
-    manifest = json.load(f)
-
-for test_result in manifest:
-    for attachment in test_result.get('attachments', []):
-        exported_file = attachment.get('exportedFileName')
-        suggested_name = attachment.get('suggestedHumanReadableName', '')
-        
-        if exported_file and suggested_name and os.path.exists(exported_file):
-            # Extract base name from suggested name (remove _0_<uuid>.png pattern)
-            # Pattern: "name_0_<uuid>.png" -> "name.png"
-            match = re.match(r'^(.+?)_\d+_[A-Z0-9-]+\.png$', suggested_name)
-            if match:
-                clean_name = match.group(1) + '.png'
-            else:
-                # Fallback: just remove extension and add .png
-                clean_name = os.path.splitext(suggested_name)[0] + '.png'
-            
-            # Replace spaces with hyphens for filenames
-            clean_name = clean_name.replace(' ', '-')
-            
-            # Only rename if different and target doesn't exist
-            if clean_name != exported_file and not os.path.exists(clean_name):
-                os.rename(exported_file, clean_name)
-                print(f"Renamed {exported_file} -> {clean_name}")
-PYTHON_SCRIPT
-              # Remove manifest.json after processing
-              rm -f manifest.json
-            fi
+            python3 ../../rename_screenshots.py
 
             echo "Screenshots extracted:"
             ls -lh . || echo "No screenshots found"
@@ -471,44 +434,7 @@ PYTHON_SCRIPT
 
             # Rename files using manifest.json to get proper names
             cd screenshots
-            if [ -f manifest.json ]; then
-              # Parse manifest.json and rename files based on suggested names
-              # Extract base name from suggested names (remove UUID suffix)
-              # Suggested names are like "05-final_0_<uuid>.png" or "Launch Screen_0_<uuid>.png"
-              python3 << 'PYTHON_SCRIPT'
-import json
-import os
-import re
-
-with open('manifest.json', 'r') as f:
-    manifest = json.load(f)
-
-for test_result in manifest:
-    for attachment in test_result.get('attachments', []):
-        exported_file = attachment.get('exportedFileName')
-        suggested_name = attachment.get('suggestedHumanReadableName', '')
-        
-        if exported_file and suggested_name and os.path.exists(exported_file):
-            # Extract base name from suggested name (remove _0_<uuid>.png pattern)
-            # Pattern: "name_0_<uuid>.png" -> "name.png"
-            match = re.match(r'^(.+?)_\d+_[A-Z0-9-]+\.png$', suggested_name)
-            if match:
-                clean_name = match.group(1) + '.png'
-            else:
-                # Fallback: just remove extension and add .png
-                clean_name = os.path.splitext(suggested_name)[0] + '.png'
-            
-            # Replace spaces with hyphens for filenames
-            clean_name = clean_name.replace(' ', '-')
-            
-            # Only rename if different and target doesn't exist
-            if clean_name != exported_file and not os.path.exists(clean_name):
-                os.rename(exported_file, clean_name)
-                print(f"Renamed {exported_file} -> {clean_name}")
-PYTHON_SCRIPT
-              # Remove manifest.json after processing
-              rm -f manifest.json
-            fi
+            python3 ../../rename_screenshots.py
 
             echo "Screenshots extracted:"
             ls -lh . || echo "No screenshots found"
