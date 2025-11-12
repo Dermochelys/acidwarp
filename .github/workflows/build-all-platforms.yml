@@ -269,35 +269,12 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Build for testing
-        working-directory: macos
-        run: |
-          xcodebuild build-for-testing \
-            -project acidwarp-macos.xcodeproj \
-            -scheme acidwarp-macos \
-            -configuration Release \
-            -destination 'platform=macOS' \
-            -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Sign test runner
-        working-directory: macos
-        run: |
-          codesign --force --deep --sign - build/Build/Products/Release/acidwarp-macosUITests-Runner.app || true
-
       - name: Run UI tests
         working-directory: macos
         timeout-minutes: 20
         run: |
-          set -o pipefail
-          xcodebuild test-without-building \
-            -project acidwarp-macos.xcodeproj \
-            -scheme acidwarp-macos \
-            -configuration Release \
-            -destination 'platform=macOS' \
-            -derivedDataPath ./build | tee xcodebuild.log
+          chmod +x run-uitests.sh
+          ./run-uitests.sh
 
       - name: Upload xcodebuild log
         if: failure()
@@ -309,32 +286,9 @@ jobs:
 
       - name: Extract screenshots from test results
         if: always()
-        working-directory: macos
         run: |
-          mkdir -p screenshots
-          # Find the test results bundle
-          RESULTS_BUNDLE=$(find build/Logs/Test -name "*.xcresult" | head -1)
-          if [ -n "$RESULTS_BUNDLE" ]; then
-            echo "Found test results: $RESULTS_BUNDLE"
-            # Export attachments from xcresult bundle using xcresulttool
-            # This properly extracts all attachments including screenshots
-            xcrun xcresulttool export attachments \
-              --path "$RESULTS_BUNDLE" \
-              --output-path screenshots || {
-              echo "Failed to export attachments, trying fallback method..."
-              # Fallback: search entire bundle for PNGs
-              find "$RESULTS_BUNDLE" -name "*.png" -exec cp {} screenshots/ \; 2>/dev/null || true
-            }
-
-            # Rename files using manifest.json to get proper names
-            cd screenshots
-            python3 ../../rename_screenshots.py
-
-            echo "Screenshots extracted:"
-            ls -lh . || echo "No screenshots found"
-          else
-            echo "No xcresult bundle found"
-          fi
+          chmod +x extract-test-screenshots.sh
+          ./extract-test-screenshots.sh macos macos/build macos/screenshots
 
       - name: Upload screenshots
         if: always()
@@ -383,6 +337,27 @@ jobs:
         run: |
           cd build/Build/Products/Release-iphoneos
           zip -r ../../../../acidwarp-ios.zip acidwarp.app
+
+      - name: Run UI tests
+        working-directory: ios
+        timeout-minutes: 20
+        run: |
+          chmod +x run-uitests.sh
+          ./run-uitests.sh
+
+      - name: Extract screenshots from test results
+        if: always()
+        run: |
+          chmod +x extract-test-screenshots.sh
+          ./extract-test-screenshots.sh ios ios/build ios/screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-screenshots
+          path: ios/screenshots/*.png
+          if-no-files-found: error
 
 
 
