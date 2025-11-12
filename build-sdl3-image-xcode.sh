@@ -53,6 +53,31 @@ echo "Cloning SDL_image..."
 git clone --depth 1 --branch "release-${SDL_IMAGE_VERSION}" https://github.com/libsdl-org/SDL_image.git
 cd SDL_image
 
+# Initialize submodules if they exist (jxl might be a submodule)
+# CRITICAL: JXL is required for App Store compliance, so submodules must initialize
+if [ -f .gitmodules ]; then
+    echo "Initializing git submodules (required for JXL support)..."
+    if ! git submodule update --init --recursive --depth 1; then
+        echo "ERROR: Failed to initialize git submodules!"
+        echo "JXL support requires submodules to be initialized."
+        echo "Trying without depth limit..."
+        git submodule update --init --recursive || {
+            echo "ERROR: Submodule initialization failed completely!"
+            exit 1
+        }
+    fi
+    echo "Submodules initialized successfully"
+fi
+
+# Verify jxl directory exists (either as submodule or regular directory)
+if [ ! -d "Xcode/jxl" ]; then
+    echo "ERROR: Xcode/jxl directory not found!"
+    echo "This is required for JXL symbol renaming (App Store compliance)."
+    echo "Checking if it's in a different location..."
+    find . -name "jxl" -type d 2>/dev/null | head -5
+    exit 1
+fi
+
 # Configure the build to rename JXL symbols for App Store compliance
 echo "Configuring build to rename JXL symbols..."
 
@@ -84,19 +109,41 @@ fi
 
 # Modify the jxl library build to export symbols with prefix
 # We need to add -alias or -reexport flags to rename symbols in the built library
+# CRITICAL: This modification is required for App Store compliance
 echo "Configuring JXL library build with symbol prefixes..."
 python3 <<'PYTHON_SCRIPT'
 import sys
 import re
+import os
 
 project_file = "Xcode/jxl/jxl.xcodeproj/project.pbxproj"
 
+# Check if the file exists
+if not os.path.exists(project_file):
+    print(f"ERROR: {project_file} not found! JXL symbol renaming is REQUIRED for App Store compliance.")
+    print("This build will fail App Store validation without JXL symbol renaming.")
+    sys.exit(1)
+
 # Read the project file
-with open(project_file, 'r') as f:
-    content = f.read()
+try:
+    with open(project_file, 'r') as f:
+        content = f.read()
+except Exception as e:
+    print(f"ERROR: Failed to read {project_file}: {e}")
+    print("JXL symbol renaming is REQUIRED for App Store compliance.")
+    sys.exit(1)
+
+# Verify file is not empty and looks like a valid project file
+if len(content.strip()) == 0:
+    print(f"ERROR: {project_file} is empty!")
+    sys.exit(1)
+
+# Check if symbols are already added to avoid duplicates
+if 'SDL_JxlDecoderCreate' in content:
+    print("JXL symbols already renamed in project file")
+    sys.exit(0)
 
 # Add preprocessor macros to rename JXL symbols during compilation
-# Find the GCC_PREPROCESSOR_DEFINITIONS line and add our macros
 symbols_to_rename = [
     'JxlDecoderCreate=SDL_JxlDecoderCreate',
     'JxlDecoderDestroy=SDL_JxlDecoderDestroy',
@@ -108,21 +155,49 @@ symbols_to_rename = [
     'JxlDecoderSubscribeEvents=SDL_JxlDecoderSubscribeEvents',
 ]
 
-# Add the defines to the preprocessor definitions
-for symbol in symbols_to_rename:
-    # This will add them to both debug and release configs
-    content = re.sub(
-        r'(GCC_PREPROCESSOR_DEFINITIONS = \()',
-        r'\1\n\t\t\t\t\t' + symbol + ',',
-        content
-    )
+# Use the same simple approach as the original macOS/iOS script
+# but fix it to add all symbols at once per block (not once per symbol)
+# This matches the original behavior but prevents corruption from multiple additions
+
+# Build all symbols as a single insertion
+symbols_insertion = ',\n\t\t\t\t\t'.join(symbols_to_rename) + ','
+
+# Add all symbols at once after each GCC_PREPROCESSOR_DEFINITIONS = ( line
+# This is the same pattern as the original, but we add all symbols in one go
+def add_symbols_block(match):
+    opening = match.group(1)  # "GCC_PREPROCESSOR_DEFINITIONS = ("
+    # Add all symbols after the opening paren
+    return opening + '\n\t\t\t\t\t' + symbols_insertion
+
+# Match the opening line: GCC_PREPROCESSOR_DEFINITIONS = (
+pattern = r'(GCC_PREPROCESSOR_DEFINITIONS\s*=\s*\()'
+
+# Only modify if symbols aren't already present
+if 'SDL_JxlDecoderCreate' not in content:
+    # Replace all occurrences - this will add symbols to each block
+    content = re.sub(pattern, add_symbols_block, content)
+
+# Verify the modification worked
+if 'SDL_JxlDecoderCreate' not in content:
+    print("ERROR: Failed to add JXL symbol renaming to project file!")
+    print("The regex replacement did not work as expected.")
+    sys.exit(1)
 
 # Write back
-with open(project_file, 'w') as f:
-    f.write(content)
-
-print("Modified JXL library project to rename symbols")
+try:
+    with open(project_file, 'w') as f:
+        f.write(content)
+    print("Successfully modified JXL library project to rename symbols")
+except Exception as e:
+    print(f"ERROR: Failed to write {project_file}: {e}")
+    sys.exit(1)
 PYTHON_SCRIPT
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: JXL symbol renaming failed! This is REQUIRED for App Store compliance."
+    echo "The build cannot proceed without JXL symbol renaming."
+    exit 1
+fi
 
 # Disable code signing and fix deployment target in the SDL_image Xcode project
 echo "Configuring Xcode project settings..."
