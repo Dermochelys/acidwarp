@@ -62,12 +62,14 @@ scrot "$SCREENSHOT_DIR/05-final.png"
 echo "✓ Captured final screenshot"
 
 # Quit gracefully
-echo "Sending quit signal (Escape key)..."
-xdotool key Escape
+echo "Sending quit signal (q key)..."
+xdotool key q
 
-# Wait for app to exit
+# Wait for app to exit (disable set -e to capture exit code)
+set +e
 wait $APP_PID
 EXIT_CODE=$?
+set -e
 
 # Cleanup Xvfb
 kill $XVFB_PID || true

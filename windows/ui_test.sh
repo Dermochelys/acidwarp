@@ -284,11 +284,16 @@ take_screenshot "05-final"
 echo "✓ Captured final screenshot"
 
 # Quit gracefully
-echo "Sending quit signal (Escape key)..."
-send_key "{ESC}"
+echo "Sending quit signal (q key)..."
+send_key "q"
 
-# Wait for app to exit
-sleep 1
+# Wait for app to exit (disable set -e to capture exit code)
+set +e
+wait $APP_PID 2>/dev/null
+EXIT_CODE=$?
+set -e
+
+# Force kill if still running
 taskkill //PID $APP_PID //F 2>/dev/null || true
 
 # Verify screenshots were created
