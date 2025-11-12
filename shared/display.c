@@ -690,6 +690,18 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   }
   printf("[GL] OpenGL context verification complete\n");
   fflush(stdout);
+
+  /* Disable VSync if using Microsoft Basic Render Driver to prevent SDL_GL_SwapWindow hanging */
+  if (renderer && strstr((const char*)renderer, "Microsoft Basic Render Driver")) {
+    printf("[GL] Detected Microsoft Basic Render Driver - disabling VSync...\n");
+    fflush(stdout);
+    if (SDL_GL_SetSwapInterval(0) < 0) {
+      printf("[GL] Warning: Failed to disable VSync: %s\n", SDL_GetError());
+    } else {
+      printf("[GL] VSync disabled successfully\n");
+    }
+    fflush(stdout);
+  }
 #endif
 
 #ifdef _WIN32
