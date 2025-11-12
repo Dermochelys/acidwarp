@@ -62,50 +62,66 @@ static void mainLoop(void);
 
 bool HandleAppEvents(void *userdata, SDL_Event *event)
 {
+#ifdef _WIN32
     printf("[EVENT_FILTER] HandleAppEvents() called, event type=%u\n", (unsigned int)event->type);
     fflush(stdout);
+#endif
     switch (event->type)
     {
     case SDL_EVENT_TERMINATING:
+#ifdef _WIN32
         printf("[EVENT_FILTER] SDL_EVENT_TERMINATING, calling quit(0)\n");
         fflush(stdout);
+#endif
         quit(0);
         return false;
     case SDL_EVENT_WILL_ENTER_BACKGROUND:
+#ifdef _WIN32
         printf("[EVENT_FILTER] SDL_EVENT_WILL_ENTER_BACKGROUND, pausing\n");
         fflush(stdout);
+#endif
         handleinput(CMD_PAUSE);
         return false;
     case SDL_EVENT_WILL_ENTER_FOREGROUND:
+#ifdef _WIN32
         printf("[EVENT_FILTER] SDL_EVENT_WILL_ENTER_FOREGROUND, pausing\n");
         fflush(stdout);
+#endif
         handleinput(CMD_PAUSE);
         return false;
     default:
         /* No special processing, add it to the event queue */
+#ifdef _WIN32
         printf("[EVENT_FILTER] Event type %u passed through to event queue\n", (unsigned int)event->type);
         fflush(stdout);
+#endif
         return true;
     }
 }
 
 void quit(int retcode)
 {
+#ifdef _WIN32
   printf("[QUIT] quit() called with retcode=%d\n", retcode);
   fflush(stdout);
   printf("[QUIT] Setting QUIT_MAIN_LOOP=TRUE\n");
   fflush(stdout);
+#endif
   QUIT_MAIN_LOOP = TRUE;
+#ifdef _WIN32
   printf("[QUIT] QUIT_MAIN_LOOP set, quit() returning\n");
   fflush(stdout);
+#endif
 }
 
 void fatalSDLError(const char *msg)
 {
   fprintf(stderr, "[FATAL] SDL error while %s: %s\n", msg, SDL_GetError());
   fflush(stderr);
+#ifdef _WIN32
   printf("[FATAL] Calling quit(-1) due to SDL error\n");
   fflush(stdout);
+#endif
   quit(-1);
 }
 
@@ -137,28 +153,40 @@ static struct {
 
 static void timer_lock(void)
 {
+#ifdef _WIN32
   printf("[TIMER] timer_lock() called\n");
   fflush(stdout);
+#endif
   if (SDL_LockMutex(timer_data.mutex) != 0) {
+#ifdef _WIN32
     printf("[TIMER] ERROR: Failed to lock mutex\n");
     fflush(stderr);
+#endif
     fatalSDLError("locking timer mutex");
   }
+#ifdef _WIN32
   printf("[TIMER] timer_lock() succeeded\n");
   fflush(stdout);
+#endif
 }
 
 static void timer_unlock(void)
 {
+#ifdef _WIN32
   printf("[TIMER] timer_unlock() called\n");
   fflush(stdout);
+#endif
   if (SDL_UnlockMutex(timer_data.mutex) != 0) {
+#ifdef _WIN32
     printf("[TIMER] ERROR: Failed to unlock mutex\n");
     fflush(stderr);
+#endif
     fatalSDLError("unlocking timer mutex");
   }
+#ifdef _WIN32
   printf("[TIMER] timer_unlock() succeeded\n");
   fflush(stdout);
+#endif
 }
 
 static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
@@ -167,11 +195,13 @@ static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
   unsigned int tmint = TIMER_INTERVAL;
 
   /* Only log first few calls to avoid spam */
+#ifdef _WIN32
   if (call_count < 5) {
     printf("[TIMER] timer_proc() called (count=%d)\n", call_count);
     fflush(stdout);
     call_count++;
   }
+#endif
 
   timer_lock();
   timer_data.flag = true;
@@ -182,65 +212,87 @@ static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
 
 static void timer_init(void)
 {
+#ifdef _WIN32
   printf("[TIMER] timer_init() called\n");
   fflush(stdout);
   printf("[TIMER] Creating mutex...\n");
   fflush(stdout);
+#endif
   timer_data.mutex = SDL_CreateMutex();
   if (timer_data.mutex == NULL) {
+#ifdef _WIN32
     printf("[TIMER] ERROR: Failed to create mutex\n");
     fflush(stderr);
+#endif
     fatalSDLError("creating timer mutex");
   }
+#ifdef _WIN32
   printf("[TIMER] Mutex created successfully\n");
   fflush(stdout);
   printf("[TIMER] Creating condition variable...\n");
   fflush(stdout);
+#endif
   timer_data.cond = SDL_CreateCondition();
   if (timer_data.cond == NULL) {
+#ifdef _WIN32
     printf("[TIMER] ERROR: Failed to create condition variable\n");
     fflush(stderr);
+#endif
     fatalSDLError("creating timer condition variable");
   }
+#ifdef _WIN32
   printf("[TIMER] Condition variable created successfully\n");
   fflush(stdout);
   printf("[TIMER] Adding timer (interval=%u)...\n", TIMER_INTERVAL);
   fflush(stdout);
+#endif
   timer_data.timer_id = SDL_AddTimer(TIMER_INTERVAL, timer_proc,
                                      timer_data.cond);
   if (timer_data.timer_id == 0) {
+#ifdef _WIN32
     printf("[TIMER] ERROR: Failed to add timer\n");
     fflush(stderr);
+#endif
     fatalSDLError("adding timer");
   }
+#ifdef _WIN32
   printf("[TIMER] Timer added successfully (timer_id=%u)\n", timer_data.timer_id);
   fflush(stdout);
+#endif
 }
 
 static void timer_wait(void)
 {
+#ifdef _WIN32
   printf("[TIMER] timer_wait() entered\n");
   fflush(stdout);
   printf("[TIMER] timer_data.flag=%d before lock\n", timer_data.flag);
   fflush(stdout);
+#endif
   timer_lock();
+#ifdef _WIN32
   printf("[TIMER] timer_lock() acquired\n");
   fflush(stdout);
   printf("[TIMER] Checking flag: timer_data.flag=%d\n", timer_data.flag);
   fflush(stdout);
+#endif
   while (!timer_data.flag) {
+#ifdef _WIN32
     printf("[TIMER] Flag is false, waiting on condition variable with timeout...\n");
     fflush(stdout);
     printf("[TIMER] About to call SDL_WaitConditionTimeout()\n");
     fflush(stdout);
-    
+#endif
+
     /* Use timeout-based waiting (16ms ~= 60fps) to allow event processing */
     const Uint32 timeout_ms = 16;
     int wait_result = SDL_WaitConditionTimeout(timer_data.cond, timer_data.mutex, timeout_ms);
-    
+
+#ifdef _WIN32
     printf("[TIMER] SDL_WaitConditionTimeout() returned: %d\n", wait_result);
     fflush(stdout);
-    
+#endif
+
     /* Platform-specific event loop processing:
      * - macOS/iOS: Pump NSRunLoop to allow XCUITest to detect idle state
      * - Windows: Pump SDL events to process Windows messages (prevents hanging)
@@ -254,36 +306,50 @@ static void timer_wait(void)
     /* Pump SDL events for general responsiveness on other platforms */
     SDL_PumpEvents();
     #endif
-    
+
+#ifdef _WIN32
     printf("[TIMER] timer_data.flag=%d after wait\n", timer_data.flag);
     fflush(stdout);
+#endif
   }
+#ifdef _WIN32
   printf("[TIMER] Flag is true, clearing it\n");
   fflush(stdout);
+#endif
   timer_data.flag = false;
+#ifdef _WIN32
   printf("[TIMER] Unlocking mutex\n");
   fflush(stdout);
+#endif
   timer_unlock();
+#ifdef _WIN32
   printf("[TIMER] timer_wait() exiting\n");
   fflush(stdout);
+#endif
 }
 
 int main (int argc, char *argv[])
 {
+#ifdef _WIN32
   printf("[INIT] Starting Acid Warp...\n");
   fflush(stdout);
+#endif
 
   /* Initialize SDL */
+#ifdef _WIN32
   printf("[INIT] Initializing SDL...\n");
   fflush(stdout);
+#endif
   if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0 ) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     /* SDL 2 docs say this is safe, but SDL 1 docs don't. */
     SDL_Quit();
     return -1;
   }
+#ifdef _WIN32
   printf("[INIT] SDL initialized successfully\n");
   fflush(stdout);
+#endif
 
 #ifdef __ANDROID__
   // Trap the Android back button, only works on API 30 (Android 11) and earlier
@@ -296,47 +362,69 @@ int main (int argc, char *argv[])
 
   SDL_SetEventFilter(HandleAppEvents, NULL);
 
+#ifdef _WIN32
   printf("[INIT] Initializing random seed...\n");
   fflush(stdout);
+#endif
   RANDOMIZE();
 
+#ifdef _WIN32
   printf("[INIT] Initializing display (%dx%d)...\n", width, height);
   fflush(stdout);
+#endif
   disp_init(width, height, disp_flags);
+#ifdef _WIN32
   printf("[INIT] Display initialized successfully\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[INIT] Initializing timer...\n");
   fflush(stdout);
+#endif
   timer_init();
+#ifdef _WIN32
   printf("[INIT] Timer initialized successfully\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[INIT] Entering main loop...\n");
   fflush(stdout);
+#endif
   // ReSharper disable once CppDFALoopConditionNotUpdated
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
   int loop_iteration = 0;
   while(!QUIT_MAIN_LOOP) {
     loop_iteration++;
+#ifdef _WIN32
     printf("[MAIN] === Main loop iteration %d ===\n", loop_iteration);
     fflush(stdout);
     printf("[MAIN] QUIT_MAIN_LOOP=%d\n", QUIT_MAIN_LOOP);
     fflush(stdout);
+#endif
     mainLoop();
+#ifdef _WIN32
     printf("[MAIN] mainLoop() returned\n");
     fflush(stdout);
     printf("[MAIN] About to call timer_wait()\n");
     fflush(stdout);
+#endif
     timer_wait();
+#ifdef _WIN32
     printf("[MAIN] timer_wait() completed\n");
     fflush(stdout);
+#endif
   }
+#ifdef _WIN32
   printf("[MAIN] Exited main loop after %d iterations\n", loop_iteration);
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[EXIT] Exiting main loop\n");
   fflush(stdout);
+#endif
   return 0;
 }
 
@@ -352,160 +440,226 @@ static void mainLoop(void)
   static int first_iteration = 1;
 
   if (first_iteration) {
+#ifdef _WIN32
     printf("[MAIN] First mainLoop iteration\n");
     fflush(stdout);
+#endif
     first_iteration = 0;
   }
 
+#ifdef _WIN32
   printf("[MAIN] Current state: %d\n", state);
   fflush(stdout);
   printf("[MAIN] About to call disp_processInput()\n");
   fflush(stdout);
+#endif
   disp_processInput();
+#ifdef _WIN32
   printf("[MAIN] disp_processInput() completed\n");
   fflush(stdout);
+#endif
 
-  printf("[MAIN] Checking flags: RESIZE=%d, SKIP=%d, NP=%d, GO=%d, LOCK=%d\n", 
+#ifdef _WIN32
+  printf("[MAIN] Checking flags: RESIZE=%d, SKIP=%d, NP=%d, GO=%d, LOCK=%d\n",
          RESIZE, SKIP, NP, GO, LOCK);
   fflush(stdout);
+#endif
 
   if (RESIZE) {
+#ifdef _WIN32
     printf("[MAIN] Handling RESIZE flag\n");
     fflush(stdout);
+#endif
     RESIZE = FALSE;
     if (state != STATE_INITIAL) {
+#ifdef _WIN32
       printf("[MAIN] Calling draw_same() and applyPalette()\n");
       fflush(stdout);
+#endif
       draw_same();
       applyPalette();
+#ifdef _WIN32
       printf("[MAIN] draw_same() and applyPalette() completed\n");
       fflush(stdout);
+#endif
     }
   }
 
   if (SKIP) {
+#ifdef _WIN32
     printf("[MAIN] Checking SKIP flag (state=%d)\n", state);
     fflush(stdout);
+#endif
     if (state != STATE_DISPLAY) {
+#ifdef _WIN32
       printf("[MAIN] Clearing SKIP flag\n");
       fflush(stdout);
+#endif
       SKIP = FALSE;
     }
   }
 
   if(NP) {
+#ifdef _WIN32
     printf("[MAIN] Handling NP flag (show_logo=%d)\n", show_logo);
     fflush(stdout);
+#endif
     if (!show_logo) {
+#ifdef _WIN32
       printf("[MAIN] Calling newPalette()\n");
       fflush(stdout);
+#endif
       newPalette();
+#ifdef _WIN32
       printf("[MAIN] newPalette() completed\n");
       fflush(stdout);
+#endif
     }
     NP = FALSE;
   }
 
+#ifdef _WIN32
   printf("[MAIN] Entering state machine switch (state=%d)\n", state);
   fflush(stdout);
+#endif
   switch (state) {
   case STATE_INITIAL:
+#ifdef _WIN32
     printf("[MAIN] STATE_INITIAL: Initializing drawing system\n");
     fflush(stdout);
     printf("[MAIN] About to call draw_init()\n");
     fflush(stdout);
+#endif
     draw_init(draw_flags | (show_logo ? DRAW_LOGO : 0));
+#ifdef _WIN32
     printf("[MAIN] Drawing system initialized\n");
     fflush(stdout);
     printf("[MAIN] About to call initRolNFade()\n");
     fflush(stdout);
+#endif
     initRolNFade(show_logo);
+#ifdef _WIN32
     printf("[MAIN] initRolNFade() completed\n");
     fflush(stdout);
+#endif
 
     /* Fall through */
   case STATE_NEXT:
     /* install a new image */
+#ifdef _WIN32
     printf("[MAIN] STATE_NEXT: Generating next pattern\n");
     fflush(stdout);
     printf("[MAIN] About to call draw_next()\n");
     fflush(stdout);
+#endif
     draw_next();
+#ifdef _WIN32
     printf("[MAIN] Pattern generated\n");
     fflush(stdout);
+#endif
 
     if (!show_logo) {
+#ifdef _WIN32
       printf("[MAIN] Calling newPalette() in STATE_NEXT\n");
       fflush(stdout);
+#endif
       newPalette();
+#ifdef _WIN32
       printf("[MAIN] newPalette() completed\n");
       fflush(stdout);
+#endif
     }
 
     ltime = time(NULL);
     mtime = ltime + image_time;
-    printf("[MAIN] Setting display time: ltime=%ld, mtime=%ld, image_time=%d\n", 
+#ifdef _WIN32
+    printf("[MAIN] Setting display time: ltime=%ld, mtime=%ld, image_time=%d\n",
            (long)ltime, (long)mtime, image_time);
     fflush(stdout);
+#endif
     state = STATE_DISPLAY;
+#ifdef _WIN32
     printf("[MAIN] Transitioned to STATE_DISPLAY\n");
     fflush(stdout);
+#endif
     /* Fall through */
   case STATE_DISPLAY:
     /* rotate the palette for a while */
+#ifdef _WIN32
     printf("[MAIN] STATE_DISPLAY: GO=%d\n", GO);
     fflush(stdout);
+#endif
     if(GO) {
+#ifdef _WIN32
       printf("[MAIN] Calling fadeInAndRotate()\n");
       fflush(stdout);
+#endif
       fadeInAndRotate();
+#ifdef _WIN32
       printf("[MAIN] fadeInAndRotate() completed\n");
       fflush(stdout);
+#endif
     }
 
     time_t current_time = time(NULL);
     int should_skip = SKIP || (current_time > mtime && !LOCK);
+#ifdef _WIN32
     printf("[MAIN] Checking transition: SKIP=%d, current_time=%ld, mtime=%ld, LOCK=%d, should_skip=%d\n",
            SKIP, (long)current_time, (long)mtime, LOCK, should_skip);
     fflush(stdout);
+#endif
     if(should_skip) {
+#ifdef _WIN32
       printf("[MAIN] Transitioning to STATE_FADEOUT\n");
       fflush(stdout);
+#endif
       /* Transition from logo only fades to black,
        * like the first transition in Acidwarp 4.10.
        */
       beginFadeOut(show_logo);
       state = STATE_FADEOUT;
+#ifdef _WIN32
       printf("[MAIN] Transitioned to STATE_FADEOUT\n");
       fflush(stdout);
+#endif
     }
     break;
 
   case STATE_FADEOUT:
     /* fade out */
+#ifdef _WIN32
     printf("[MAIN] STATE_FADEOUT: GO=%d\n", GO);
     fflush(stdout);
+#endif
     if(GO) {
+#ifdef _WIN32
       printf("[MAIN] Calling fadeOut()\n");
       fflush(stdout);
+#endif
       if (fadeOut()) {
+#ifdef _WIN32
         printf("[MAIN] fadeOut() returned true, transitioning to STATE_NEXT\n");
         fflush(stdout);
+#endif
         show_logo = 0;
         image_time = PATTERN_TIME;
         state = STATE_NEXT;
       } else {
+#ifdef _WIN32
         printf("[MAIN] fadeOut() returned false, staying in STATE_FADEOUT\n");
         fflush(stdout);
+#endif
       }
     }
     break;
   }
 
+#ifdef _WIN32
   printf("[MAIN] State machine switch completed, new state=%d\n", state);
   fflush(stdout);
   printf("[MAIN] mainLoop() completing\n");
   fflush(stdout);
+#endif
 }
 
 /* ------------------------END MAIN----------------------------------------- */

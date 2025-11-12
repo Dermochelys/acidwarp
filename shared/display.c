@@ -232,25 +232,35 @@ static void display_redraw(void)
 void disp_processInput(void) {
   SDL_Event event;
 
+#ifdef _WIN32
   printf("[INPUT] disp_processInput() entered\n");
   fflush(stdout);
+#endif
 
   /* Check if pending single click should be processed */
   if (pending_click_time != 0) {
+#ifdef _WIN32
     printf("[INPUT] Checking pending click (time=%llu)\n", (unsigned long long)pending_click_time);
     fflush(stdout);
     printf("[INPUT] About to call SDL_GetTicks() for pending click check\n");
     fflush(stdout);
+#endif
     Uint64 current_time = SDL_GetTicks();
+#ifdef _WIN32
     printf("[INPUT] SDL_GetTicks() returned: %llu\n", (unsigned long long)current_time);
     fflush(stdout);
+#endif
     if (current_time - pending_click_time >= DOUBLE_CLICK_DELAY_MS) {
+#ifdef _WIN32
       printf("[INPUT] Processing pending single click\n");
       fflush(stdout);
+#endif
       /* Enough time has passed - process as single click */
       if (remote_overlay_is_visible()) {
+#ifdef _WIN32
         printf("[INPUT] Remote overlay is visible, handling click\n");
         fflush(stdout);
+#endif
         int result = remote_overlay_handle_click(pending_click_x, pending_click_y, width, height);
         if (result == -1) {
           /* Click was outside remote bounds - hide it */
@@ -259,111 +269,155 @@ void disp_processInput(void) {
         /* result == 0: click on remote but not button, keep showing */
         /* result == 1: button clicked, keep showing */
       } else {
+#ifdef _WIN32
         printf("[INPUT] Remote overlay not visible, showing it\n");
         fflush(stdout);
+#endif
         /* Overlay not visible - show it on click */
         remote_overlay_show();
       }
       pending_click_time = 0; /* Clear pending click */
+#ifdef _WIN32
       printf("[INPUT] Pending click processed\n");
       fflush(stdout);
+#endif
     }
   } else {
+#ifdef _WIN32
     printf("[INPUT] No pending click to process\n");
     fflush(stdout);
+#endif
   }
 
+#ifdef _WIN32
   printf("[INPUT] Starting SDL_PollEvent() loop\n");
   fflush(stdout);
+#endif
   int event_count = 0;
   while ( SDL_PollEvent(&event) > 0 ) {
     event_count++;
+#ifdef _WIN32
     printf("[INPUT] SDL_PollEvent() returned event #%d, type=%u\n", event_count, (unsigned int)event.type);
     fflush(stdout);
+#endif
     switch (event.type) {
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
+#ifdef _WIN32
         printf("[INPUT] Processing SDL_EVENT_MOUSE_BUTTON_DOWN\n");
         fflush(stdout);
+#endif
         if (event.button.button == SDL_BUTTON_LEFT) {
+#ifdef _WIN32
           printf("[INPUT] Left mouse button, clicks=%d\n", event.button.clicks);
           fflush(stdout);
+#endif
           if (event.button.clicks == 2) {
+#ifdef _WIN32
             printf("[INPUT] Double click detected\n");
             fflush(stdout);
+#endif
             /* Double click detected - cancel pending single click and toggle fullscreen */
             pending_click_time = 0; /* Cancel pending single click */
             /* Prevent fullscreen toggle if clicking within remote overlay bounds */
-            if (!remote_overlay_is_visible() || 
+            if (!remote_overlay_is_visible() ||
                 !remote_overlay_is_point_inside(event.button.x, event.button.y, width, height)) {
+#ifdef _WIN32
               printf("[INPUT] Toggling fullscreen\n");
               fflush(stdout);
+#endif
               disp_toggleFullscreen();
             }
           } else if (event.button.clicks == 1) {
+#ifdef _WIN32
             printf("[INPUT] Single click, storing pending state\n");
             fflush(stdout);
             /* Single click - store in pending state and wait for potential double-click */
             printf("[INPUT] About to call SDL_GetTicks() for single click\n");
             fflush(stdout);
+#endif
             pending_click_time = SDL_GetTicks();
+#ifdef _WIN32
             printf("[INPUT] SDL_GetTicks() returned: %llu\n", (unsigned long long)pending_click_time);
             fflush(stdout);
+#endif
             pending_click_x = event.button.x;
             pending_click_y = event.button.y;
           }
         }
         break;
       case SDL_EVENT_KEY_DOWN:
+#ifdef _WIN32
         printf("[INPUT] Processing SDL_EVENT_KEY_DOWN, key=%d\n", (int)event.key.key);
         fflush(stdout);
+#endif
         disp_processKey(event.key.key);
+#ifdef _WIN32
         printf("[INPUT] disp_processKey() completed\n");
         fflush(stdout);
+#endif
         break;
       case SDL_EVENT_DISPLAY_ORIENTATION:
       case SDL_EVENT_WINDOW_RESIZED:
+#ifdef _WIN32
         printf("[INPUT] Processing window resize event\n");
         fflush(stdout);
+#endif
         disp_init(event.window.data1,event.window.data2,fullscreen);
         handleinput(CMD_RESIZE);
+#ifdef _WIN32
         printf("[INPUT] Window resize handled\n");
         fflush(stdout);
+#endif
         break;
       case SDL_EVENT_WINDOW_EXPOSED:
+#ifdef _WIN32
         printf("[INPUT] Processing SDL_EVENT_WINDOW_EXPOSED\n");
         fflush(stdout);
+#endif
         display_redraw();
+#ifdef _WIN32
         printf("[INPUT] display_redraw() completed\n");
         fflush(stdout);
+#endif
         break;
       case SDL_EVENT_QUIT:
+#ifdef _WIN32
         printf("[INPUT] Processing SDL_EVENT_QUIT\n");
         fflush(stdout);
+#endif
         handleinput(CMD_QUIT);
+#ifdef _WIN32
         printf("[INPUT] CMD_QUIT handled\n");
         fflush(stdout);
+#endif
         break;
 #if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
       /* Only quit on background/termination events on mobile platforms */
       case SDL_EVENT_TERMINATING:
       case SDL_EVENT_WILL_ENTER_BACKGROUND:
       case SDL_EVENT_DID_ENTER_BACKGROUND:
+#ifdef _WIN32
         printf("[INPUT] Processing mobile platform termination event\n");
         fflush(stdout);
+#endif
         handleinput(CMD_QUIT);
         break;
 #endif
 
       default:
+#ifdef _WIN32
         printf("[INPUT] Unknown event type: %u\n", (unsigned int)event.type);
         fflush(stdout);
+#endif
         break;
     }
   }
+#ifdef _WIN32
   printf("[INPUT] SDL_PollEvent() loop completed, processed %d events\n", event_count);
   fflush(stdout);
   printf("[INPUT] disp_processInput() exiting\n");
   fflush(stdout);
+#endif
 }
 
 
@@ -470,8 +524,10 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 #endif
   GLint status;
 
+#ifdef _WIN32
   printf("[GL] Initializing OpenGL...\n");
   fflush(stdout);
+#endif
 
   /* Vertices consist of point x, y, z, w followed by texture x and y */
   static const GLfloat vertices[] = {
@@ -483,12 +539,16 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 
 #ifdef __APPLE__
   if (TARGET_OS_IOS) {
+#ifdef _WIN32
     printf("[GL] Setting attributes for OpenGL ES\n");
     fflush(stdout);
+#endif
     setAttributesForGLES();
   } else {
+#ifdef _WIN32
     printf("[GL] Setting attributes for OpenGL\n");
     fflush(stdout);
+#endif
     setAttributesForGL();
   }
 #elif _WIN32
@@ -496,35 +556,49 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   fflush(stdout);
   setAttributesForGL();
 #else
+#ifdef _WIN32
   printf("[GL] Setting attributes for OpenGL ES\n");
   fflush(stdout);
+#endif
   setAttributesForGLES();
 #endif
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+#ifdef _WIN32
   printf("[GL] Creating SDL window...\n");
   fflush(stdout);
+#endif
   window = SDL_CreateWindow("Acid Warp", width, height, videoflags | SDL_WINDOW_OPENGL);
   if (window == NULL) fatalSDLError("creating SDL OpenGL window");
+#ifdef _WIN32
   printf("[GL] SDL window created successfully\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[GL] Creating OpenGL context...\n");
   fflush(stdout);
+#endif
   context = SDL_GL_CreateContext(window);
   if (context == NULL) fatalSDLError("creating OpenGL profile");
+#ifdef _WIN32
   printf("[GL] OpenGL context created successfully\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[GL] Making OpenGL context current...\n");
   fflush(stdout);
+#endif
   if (SDL_GL_MakeCurrent(window, context) < 0) {
     fatalSDLError("making OpenGL context current");
   }
+#ifdef _WIN32
   printf("[GL] OpenGL context is now current\n");
   fflush(stdout);
+#endif
 
 #ifdef _WIN32
   printf("[GL] Initializing GLEW...\n");
@@ -563,32 +637,44 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   fflush(stdout);
 #endif
 
+#ifdef _WIN32
   printf("[GL] Creating shader program...\n");
   fflush(stdout);
+#endif
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
 
+#ifdef _WIN32
   printf("[GL] Loading vertex shader...\n");
   fflush(stdout);
+#endif
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
 
+#ifdef _WIN32
   printf("[GL] Loading fragment shader...\n");
   fflush(stdout);
+#endif
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
 
+#ifdef _WIN32
   printf("[GL] Binding attributes...\n");
   fflush(stdout);
+#endif
   glBindAttribLocation(glprogram, 0, "Position");
   glBindAttribLocation(glprogram, 1, "TexPos");
 
+#ifdef _WIN32
   printf("[GL] Linking shader program...\n");
   fflush(stdout);
+#endif
   glLinkProgram(glprogram);
   glGetProgramiv(glprogram, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) disp_glerror("glLinkProgram");
 
+#ifdef _WIN32
   printf("[GL] Using shader program...\n");
   fflush(stdout);
+#endif
   glUseProgram(glprogram);
 
 #if TARGET_OS_IOS
@@ -603,8 +689,10 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   glBindVertexArray(vao);
 #endif
 
+#ifdef _WIN32
   printf("[GL] Creating vertex buffers...\n");
   fflush(stdout);
+#endif
   glGenBuffers(1, &buffer);
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -616,42 +704,58 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
                         (char *)&vertices[6] - (char *)&vertices[0],
                         /* Why is this parameter declared as a pointer? */
                         (void *)((char *)&vertices[4] - (char *)&vertices[0]));
+#ifdef _WIN32
   printf("[GL] Vertex buffers configured\n");
   fflush(stdout);
+#endif
 
   /* https://www.opengl.org/discussion_boards/showthread.php/163092-Passing-Multiple-Textures-from-OpenGL-to-GLSL-shader */
 
   /* 256 x 1 texture used as palette lookup table */
+#ifdef _WIN32
   printf("[GL] Creating palette texture...\n");
   fflush(stdout);
+#endif
   glUniform1i(glGetUniformLocation(glprogram, "Palette"), 0);
   glActiveTexture(GL_TEXTURE0);
   paltex = disp_newtex();
   glBindTexture(GL_TEXTURE_2D, paltex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0,
                GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+#ifdef _WIN32
   printf("[GL] Palette texture created\n");
   fflush(stdout);
+#endif
 
   /* 8 bpp indexed colour texture used for image */
+#ifdef _WIN32
   printf("[GL] Creating index texture...\n");
   fflush(stdout);
+#endif
   glUniform1i(glGetUniformLocation(glprogram, "IndexTexture"), 1);
   glActiveTexture(GL_TEXTURE1);
   indtex = disp_newtex();
+#ifdef _WIN32
   printf("[GL] Index texture created\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[GL] Setting pixel store parameters...\n");
   fflush(stdout);
+#endif
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+#ifdef _WIN32
   printf("[GL] Setting clear color...\n");
   fflush(stdout);
+#endif
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+#ifdef _WIN32
   printf("[GL] OpenGL initialization complete\n");
   fflush(stdout);
+#endif
 }
 
 void disp_init(int newwidth, int newheight, int flags)
@@ -659,49 +763,69 @@ void disp_init(int newwidth, int newheight, int flags)
   Uint32 videoflags;
   static int inited = 0;
 
+#ifdef _WIN32
   printf("[DISP] disp_init called (%dx%d, flags=%d)\n", newwidth, newheight, flags);
   fflush(stdout);
+#endif
 
   width = newwidth;
   height = newheight;
   fullscreen = (flags & DISP_FULLSCREEN) ? 1 : 0;
 
   if (!inited) {
+#ifdef _WIN32
     printf("[DISP] First time initialization\n");
     fflush(stdout);
+#endif
     videoflags = (fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE);
     SDL_ShowCursor(!fullscreen);
     disp_glinit(width, height, videoflags);
+#ifdef _WIN32
     printf("[DISP] Initializing remote overlay...\n");
     fflush(stdout);
+#endif
     remote_overlay_init();
+#ifdef _WIN32
     printf("[DISP] Remote overlay initialized\n");
     fflush(stdout);
+#endif
     inited = 1;
   } /* !inited */
 
   /* Raspberry Pi console will set window to size of full screen,
    * and not give a resize event. */
+#ifdef _WIN32
   printf("[DISP] Getting window size...\n");
   fflush(stdout);
+#endif
   SDL_GetWindowSize(window, &width, &height);
+#ifdef _WIN32
   printf("[DISP] Window size: %dx%d\n", width, height);
   fflush(stdout);
+#endif
 
   /* Create or recreate texture and set viewport, eg. when resizing */
+#ifdef _WIN32
   printf("[DISP] Setting up textures and viewport...\n");
   fflush(stdout);
+#endif
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, indtex);
   glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(), width, height, 0,
                getFormat(), GL_UNSIGNED_BYTE, NULL);
   glViewport(0, 0, width, height);
+#ifdef _WIN32
   printf("[DISP] Textures and viewport configured\n");
   fflush(stdout);
+#endif
 
+#ifdef _WIN32
   printf("[DISP] Allocating offscreen buffer...\n");
   fflush(stdout);
+#endif
   disp_allocateOffscreen();
+#ifdef _WIN32
   printf("[DISP] Offscreen buffer allocated\n");
   fflush(stdout);
+#endif
 }
