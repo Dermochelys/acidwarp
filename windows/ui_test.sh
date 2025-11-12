@@ -244,11 +244,13 @@ send_key() {
   "
 }
 
-# Test pattern cycling with space key
+# Test pattern cycling with n key
+# Fade transition time: (63 fade steps * 30ms timer interval) * 2 (fade-out + fade-in) = 3780ms ≈ 3.8s
+# Note: Timer interval is 30ms (ROTATION_DELAY=30000/1000), not the 16ms event processing timeout
 for i in {1..5}; do
   echo "Test $i: Triggering next pattern..."
-  send_key " "
-  sleep 2
+  send_key "n"
+  sleep 4  # Wait for fade-out + fade-in to complete
   take_screenshot "02-pattern-$i"
   echo "✓ Captured pattern $i screenshot"
 done

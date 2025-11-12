@@ -75,10 +75,10 @@ class ActivityUITest {
             }
         }
 
-        // Test pattern cycling with space key
+        // Test pattern cycling with n key
         for (i in 1..5) {
-            device.pressKeyCode(KeyEvent.KEYCODE_SPACE)
-            Thread.sleep(2.seconds.inWholeMilliseconds)
+            device.pressKeyCode(KeyEvent.KEYCODE_N)
+            Thread.sleep(4.seconds.inWholeMilliseconds)  // Wait for fade-out + fade-in to complete
             takeScreenshot("02-pattern-$i")
         }
 

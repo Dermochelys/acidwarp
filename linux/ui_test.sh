@@ -33,11 +33,11 @@ if [ -n "$ERROR_WINDOWS" ]; then
 fi
 echo "✓ No error dialogs detected"
 
-# Test pattern cycling with space key
+# Test pattern cycling with n key
 for i in {1..5}; do
   echo "Test $i: Triggering next pattern..."
-  xdotool key space
-  sleep 2
+  xdotool key n
+  sleep 4  # Wait for fade-out + fade-in to complete
   scrot "$SCREENSHOT_DIR/02-pattern-$i.png"
   echo "✓ Captured pattern $i screenshot"
 done

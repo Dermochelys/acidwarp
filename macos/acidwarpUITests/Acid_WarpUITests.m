@@ -48,10 +48,10 @@
     XCUIElement *alert = app.alerts[@"SDL Error"];
     XCTAssertFalse(alert.exists, @"SDL Error dialog should not appear on launch");
 
-    // Test pattern cycling with space key
+    // Test pattern cycling with n key
     for (int i = 1; i <= 5; i++) {
-        [app typeKey:@" " modifierFlags:XCUIKeyModifierNone];
-        sleep(2);
+        [app typeKey:@"n" modifierFlags:XCUIKeyModifierNone];
+        sleep(4); // Wait for fade-out + fade-in to complete
 
         // Capture screenshot
         NSString *screenshotName = [NSString stringWithFormat:@"02-pattern-%d", i];
@@ -59,7 +59,17 @@
     }
 
     // Test mouse click in center of window
-    XCUICoordinate *centerCoordinate = [app coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
+    // Get the main window first - on macOS we need to access the window element
+    XCUIElement *window = app.windows.firstMatch;
+    XCTAssertTrue(window.exists, @"Window should exist");
+    
+    // Wait for window to be hittable/accessible
+    NSPredicate *existsPredicate = [NSPredicate predicateWithFormat:@"exists == YES"];
+    [self expectationForPredicate:existsPredicate evaluatedWithObject:window handler:nil];
+    [self waitForExpectationsWithTimeout:5.0 handler:nil];
+    
+    // Create coordinate relative to the window
+    XCUICoordinate *centerCoordinate = [window coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
     [centerCoordinate click];
     sleep(1);
     [self takeScreenshotNamed:@"03-after-click"];

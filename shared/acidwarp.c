@@ -13,6 +13,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if TARGET_OS_MAC
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+#endif
+
 /* SDL 3 compatibility fixes */
 #define SDL_INIT_TIMER 0x00000001u
 /* SDL 3 changed mutex and condition functions to return void, so we need wrappers */
@@ -222,13 +229,34 @@ static void timer_wait(void)
   printf("[TIMER] Checking flag: timer_data.flag=%d\n", timer_data.flag);
   fflush(stdout);
   while (!timer_data.flag) {
-    printf("[TIMER] Flag is false, waiting on condition variable...\n");
+    printf("[TIMER] Flag is false, waiting on condition variable with timeout...\n");
     fflush(stdout);
-    printf("[TIMER] About to call SDL_WaitCondition()\n");
+    printf("[TIMER] About to call SDL_WaitConditionTimeout()\n");
     fflush(stdout);
-    SDL_WaitCondition(timer_data.cond, timer_data.mutex);
-    printf("[TIMER] Woke up from SDL_WaitCondition(), checking flag again\n");
+    
+    /* Use timeout-based waiting (16ms ~= 60fps) to allow event processing */
+    const Uint32 timeout_ms = 16;
+    int wait_result = SDL_WaitConditionTimeout(timer_data.cond, timer_data.mutex, timeout_ms);
+    
+    printf("[TIMER] SDL_WaitConditionTimeout() returned: %d\n", wait_result);
     fflush(stdout);
+    
+    /* Platform-specific event loop processing:
+     * - macOS: Pump NSRunLoop to allow XCUITest to detect idle state
+     * - Windows: Pump SDL events to process Windows messages (prevents hanging)
+     * - Other platforms: Pump SDL events for general responsiveness */
+    #ifdef __APPLE__
+    #if TARGET_OS_MAC
+    /* Allow NSRunLoop to process events briefly - this helps XCUITest detect idle state */
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, false);
+    #else
+    SDL_PumpEvents();
+    #endif
+    #else
+    /* Pump SDL events for general responsiveness on other platforms */
+    SDL_PumpEvents();
+    #endif
+    
     printf("[TIMER] timer_data.flag=%d after wait\n", timer_data.flag);
     fflush(stdout);
   }
