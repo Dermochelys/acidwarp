@@ -36,6 +36,8 @@
 - (void)testAppLaunchAndInteraction {
     // Launch the application
     XCUIApplication *app = [[XCUIApplication alloc] init];
+    // Disable idle waiting since Acid Warp continuously animates
+    app.waitForIdleTimeout = 0;
     [app launch];
 
     // Wait for app initialization
@@ -77,7 +79,10 @@
 - (void)testLaunchPerformance {
     // This measures how long it takes to launch your application.
     [self measureWithMetrics:@[[[XCTApplicationLaunchMetric alloc] init]] block:^{
-        [[[XCUIApplication alloc] init] launch];
+        XCUIApplication *app = [[XCUIApplication alloc] init];
+        // Disable idle waiting since Acid Warp continuously animates
+        app.waitForIdleTimeout = 0;
+        [app launch];
     }];
 }
 

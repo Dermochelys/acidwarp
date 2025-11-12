@@ -23,6 +23,8 @@
 
 - (void)testLaunch {
     XCUIApplication *app = [[XCUIApplication alloc] init];
+    // Disable idle waiting since Acid Warp continuously animates
+    app.waitForIdleTimeout = 0;
     [app launch];
 
     // Insert steps here to perform after app launch but before taking a screenshot,

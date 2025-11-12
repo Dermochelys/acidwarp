@@ -361,17 +361,6 @@ jobs:
           path: macos/screenshots/*.png
           if-no-files-found: error
 
-      - name: Build macOS app
-        working-directory: macos
-        run: |
-          xcodebuild -project acidwarp-macos.xcodeproj \
-            -scheme acidwarp-macos \
-            -configuration Release \
-            -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
       - name: Create macOS app archive
         working-directory: macos
         run: |
@@ -403,7 +392,7 @@ jobs:
             -project acidwarp-ios.xcodeproj \
             -scheme acidwarp \
             -configuration Release \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
             -derivedDataPath ./build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -476,18 +465,6 @@ jobs:
           name: ios-ui-test-screenshots
           path: ios/screenshots/*.png
           if-no-files-found: error
-
-      - name: Build iOS app
-        working-directory: ios
-        run: |
-          xcodebuild -project acidwarp-ios.xcodeproj \
-            -scheme acidwarp \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
 
       - name: Create iOS app archive
         working-directory: ios

@@ -43,6 +43,9 @@ static SDL_Window *window = NULL;
 
 SDL_GLContext context;
 GLuint indtex, paltex, glprogram;
+#if !TARGET_OS_IOS
+static GLuint vao = 0;  /* VAO for Core Profile (Windows/macOS) */
+#endif
 
 const GLchar vertex[] =
     "#version 100\n"
@@ -132,6 +135,12 @@ void disp_setPalette(unsigned char *palette)
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
                   GL_UNSIGNED_BYTE, glcolors);
 
+#if !TARGET_OS_IOS
+  /* Ensure VAO is bound for Core Profile (Windows/macOS) */
+  if (vao != 0) {
+    glBindVertexArray(vao);
+  }
+#endif
   glClear(GL_COLOR_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -221,6 +230,12 @@ static void disp_processKey(
 
 static void display_redraw(void)
 {
+#if !TARGET_OS_IOS
+  /* Ensure VAO is bound for Core Profile (Windows/macOS) */
+  if (vao != 0) {
+    glBindVertexArray(vao);
+  }
+#endif
   glClear(GL_COLOR_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   remote_overlay_render_if_visible(width, height);
@@ -465,9 +480,6 @@ static void setAttributesForGL(void) {
 static void disp_glinit(int width, int height, Uint32 videoflags)
 {
   GLuint buffer;
-#if !TARGET_OS_IOS
-  GLuint vao;
-#endif
   GLint status;
 
   printf("[GL] Initializing OpenGL...\n");
@@ -599,6 +611,8 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   fflush(stdout);
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
+  printf("[GL] VAO created and bound\n");
+  fflush(stdout);
 #elif _WIN32
   /* Core Profile requires VAO */
   printf("[GL] Creating VAO (Windows)...\n");
