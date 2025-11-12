@@ -250,7 +250,7 @@ jobs:
           path: |
             windows/build/*.exe
             windows/build/*.dll
-            windows/ui_test.sh
+            windows/ui_test.ps1
           if-no-files-found: error
 
 
@@ -400,7 +400,7 @@ jobs:
 
     defaults:
       run:
-        shell: bash
+        shell: powershell
 
     steps:
       - name: Download Windows build artifacts
@@ -409,10 +409,7 @@ jobs:
           name: windows-build
 
       - name: Run UI tests
-        run: |
-          chmod +x ui_test.sh
-          chmod +x build/acidwarp-windows.exe
-          ./ui_test.sh
+        run: .\ui_test.ps1
 
       - name: Upload screenshots
         if: always()
