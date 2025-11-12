@@ -359,47 +359,87 @@ jobs:
         with:
           name: windows-build
 
-      - name: Install GPU drivers
+      - name: Detect and Install GPU drivers
         run: |
-          Write-Host "Checking GPU information..."
-          Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, DriverDate, Status | Format-List
+          Write-Host "=== GPU Detection Phase ==="
+          Write-Host "Checking all display adapters..."
+          $videoControllers = Get-WmiObject Win32_VideoController
+          $videoControllers | Select-Object Name, DriverVersion, DriverDate, Status | Format-Table -AutoSize
           
-          # Check if this is an NVIDIA GPU
-          $gpu = Get-WmiObject Win32_VideoController | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" }
+          Write-Host "`nChecking PCI devices for GPUs..."
+          $pciDevices = Get-PnpDevice -Class Display
+          $pciDevices | Format-Table Name, Status, InstanceId -AutoSize
           
-          if ($gpu) {
-            Write-Host "NVIDIA GPU detected: $($gpu.Name)"
-            Write-Host "Installing NVIDIA GPU drivers..."
-            
-            # Download and install NVIDIA drivers (using Grid drivers for datacenter GPUs)
-            # For Azure NC-series VMs with Tesla GPUs, use the datacenter/GRID driver
-            $nvidiaUrl = "https://download.microsoft.com/download/9/3/4/9340b7f1-aa10-4e14-9f85-3d94c0920c16/537.13_grid_win10_win11_server2019_server2022_dch_64bit_international.exe"
-            $installerPath = "$env:TEMP\nvidia-driver.exe"
-            
-            Write-Host "Downloading NVIDIA driver..."
-            Invoke-WebRequest -Uri $nvidiaUrl -OutFile $installerPath -UseBasicParsing
-            
-            Write-Host "Installing NVIDIA driver (this may take several minutes)..."
-            Start-Process -FilePath $installerPath -ArgumentList "/s", "/noreboot", "/noeula" -Wait -NoNewWindow
-            
-            Write-Host "NVIDIA driver installation completed"
-          } else {
-            Write-Host "No NVIDIA GPU detected, checking for other GPUs..."
-            $allGpus = Get-WmiObject Win32_VideoController
-            foreach ($g in $allGpus) {
-              Write-Host "GPU: $($g.Name)"
-            }
-            
-            # Try to update all GPU drivers using Windows Update
-            Write-Host "Attempting to install drivers via Windows Update..."
-            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ErrorAction SilentlyContinue
-            Install-Module PSWindowsUpdate -Force -ErrorAction SilentlyContinue
-            Import-Module PSWindowsUpdate -ErrorAction SilentlyContinue
-            Get-WindowsUpdate -Install -AcceptAll -IgnoreReboot -ErrorAction SilentlyContinue
+          Write-Host "`nChecking for hidden/disabled devices..."
+          $allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN
+          if ($allDisplayDevices) {
+            Write-Host "Found disabled/error devices:"
+            $allDisplayDevices | Format-Table Name, Status -AutoSize
           }
           
-          Write-Host "Verifying GPU status after driver installation..."
-          Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, DriverDate, Status | Format-List
+          # Check if NVIDIA GPU exists in PCI devices but not activated
+          $nvidiaInPci = $pciDevices | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+          $nvidiaInWmi = $videoControllers | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+          
+          if ($nvidiaInPci -and -not $nvidiaInWmi) {
+            Write-Host "`n[INFO] NVIDIA GPU found in PCI but not active in video controllers"
+            Write-Host "GPU is present but drivers may not be loaded"
+          } elseif ($nvidiaInWmi) {
+            Write-Host "`n[SUCCESS] NVIDIA GPU is active: $($nvidiaInWmi.Name)"
+            Write-Host "Driver version: $($nvidiaInWmi.DriverVersion)"
+            Write-Host "No driver installation needed"
+            exit 0
+          } else {
+            Write-Host "`n[WARNING] No NVIDIA GPU detected in PCI devices"
+            Write-Host "This GitHub GPU runner may not have a physical GPU attached"
+            Write-Host "Continuing with available display adapter: $($videoControllers[0].Name)"
+          }
+          
+          Write-Host "`n=== Driver Installation Phase ==="
+          if ($nvidiaInPci) {
+            Write-Host "Installing NVIDIA drivers for detected GPU..."
+            
+            # Use latest Game Ready driver (more reliable than GRID)
+            $nvidiaUrl = "https://us.download.nvidia.com/Windows/566.03/566.03-desktop-win10-win11-64bit-international-dch-whql.exe"
+            $installerPath = "$env:TEMP\nvidia-driver.exe"
+            
+            Write-Host "Downloading NVIDIA driver (this may take a few minutes)..."
+            try {
+              Invoke-WebRequest -Uri $nvidiaUrl -OutFile $installerPath -UseBasicParsing -TimeoutSec 300
+              Write-Host "Download completed: $(([System.IO.FileInfo]$installerPath).Length / 1MB) MB"
+            } catch {
+              Write-Host "[ERROR] Failed to download driver: $_"
+              exit 1
+            }
+            
+            Write-Host "Installing NVIDIA driver (this may take 5-10 minutes)..."
+            $process = Start-Process -FilePath $installerPath -ArgumentList "/s", "/noreboot", "/noeula" -Wait -NoNewWindow -PassThru
+            
+            if ($process.ExitCode -eq 0) {
+              Write-Host "[SUCCESS] NVIDIA driver installation completed"
+            } else {
+              Write-Host "[WARNING] Driver installer exit code: $($process.ExitCode)"
+            }
+            
+            # Force driver service restart
+            Write-Host "Restarting display driver service..."
+            Get-Service -Name "nvlddmkm" -ErrorAction SilentlyContinue | Restart-Service -Force -ErrorAction SilentlyContinue
+            
+            Start-Sleep -Seconds 5
+          }
+          
+          Write-Host "`n=== Post-Installation Verification ==="
+          Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, Status | Format-Table -AutoSize
+          
+          # Check if nvidia-smi is available
+          Write-Host "`nChecking nvidia-smi..."
+          $nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+          if ($nvidiaSmi) {
+            Write-Host "Running nvidia-smi:"
+            & nvidia-smi
+          } else {
+            Write-Host "nvidia-smi not found in PATH"
+          }
 
       - name: Run UI tests
         run: .\ui_test.ps1
