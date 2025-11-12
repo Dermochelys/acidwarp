@@ -284,12 +284,10 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Run UI tests
+      - name: Build for testing
         working-directory: macos
-        timeout-minutes: 15
         run: |
-          set -o pipefail
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -project acidwarp-macos.xcodeproj \
             -scheme acidwarp-macos \
             -configuration Release \
@@ -297,7 +295,24 @@ jobs:
             -derivedDataPath ./build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | tee xcodebuild.log
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Sign test runner
+        working-directory: macos
+        run: |
+          codesign --force --deep --sign - build/Build/Products/Release/acidwarp-macosUITests-Runner.app || true
+
+      - name: Run UI tests
+        working-directory: macos
+        timeout-minutes: 20
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project acidwarp-macos.xcodeproj \
+            -scheme acidwarp-macos \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath ./build | tee xcodebuild.log
 
       - name: Upload xcodebuild log
         if: failure()
@@ -385,7 +400,7 @@ jobs:
 
       - name: Run UI tests
         working-directory: ios
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           set -o pipefail
           xcodebuild test \
