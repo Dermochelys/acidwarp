@@ -143,7 +143,7 @@ void disp_setPalette(unsigned char *palette)
   remote_overlay_render_dim(width, height);
 
   if (is_software_renderer) {
-    glFlush();  /* For software renderers, just flush commands instead of swapping */
+    glFinish();  /* For software renderers, wait for all commands to complete */
   } else {
     SDL_GL_SwapWindow(window);
   }
@@ -250,20 +250,21 @@ static void display_redraw(void)
   printf("[REDRAW] remote_overlay_render_dim() completed\n");
   fflush(stdout);
   if (is_software_renderer) {
-    printf("[REDRAW] Using glFlush() for software renderer...\n");
+    printf("[REDRAW] About to call glFinish() for software renderer...\n");
+    fflush(stdout);
   } else {
-    printf("[REDRAW] Using SDL_GL_SwapWindow()...\n");
+    printf("[REDRAW] About to call SDL_GL_SwapWindow()...\n");
+    fflush(stdout);
   }
-  fflush(stdout);
 #endif
   if (is_software_renderer) {
-    glFlush();  /* For software renderers, just flush commands instead of swapping */
+    glFinish();  /* For software renderers, wait for all commands to complete */
   } else {
     SDL_GL_SwapWindow(window);
   }
 #ifdef _WIN32
   if (is_software_renderer) {
-    printf("[REDRAW] glFlush() completed\n");
+    printf("[REDRAW] glFinish() completed\n");
   } else {
     printf("[REDRAW] SDL_GL_SwapWindow() completed\n");
   }
@@ -716,7 +717,7 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
                    strstr((const char*)renderer, "softpipe") ||
                    strstr((const char*)renderer, "Software Rasterizer"))) {
     is_software_renderer = 1;
-    printf("[GL] Detected software renderer - disabling VSync and will use glFlush() instead of buffer swap...\n");
+    printf("[GL] Detected software renderer - will use glFinish() instead of buffer swap...\n");
     fflush(stdout);
     if (SDL_GL_SetSwapInterval(0) < 0) {
       printf("[GL] Warning: Failed to disable VSync: %s\n", SDL_GetError());
