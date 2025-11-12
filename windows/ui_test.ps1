@@ -167,7 +167,7 @@ Write-Host "✓ No error dialogs detected"
 # Test pattern cycling with n key
 # Fade transition time: (63 fade steps * 30ms timer interval) * 2 (fade-out + fade-in) = 3780ms ≈ 3.8s
 for ($i = 1; $i -le 5; $i++) {
-    Write-Host "Test $i`: Triggering next pattern..."
+    Write-Host "Test ${i}: Triggering next pattern..."
     Send-Key "n"
     Start-Sleep -Seconds 4  # Wait for fade-out + fade-in to complete
     Take-Screenshot "02-pattern-$i"
