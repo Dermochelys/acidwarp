@@ -14,10 +14,12 @@ $pciDevices = Get-PnpDevice -Class Display
 $pciDevices | Format-Table Name, Status, InstanceId -AutoSize
 
 Write-Host "`nChecking for hidden/disabled devices..."
-$allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN
+$allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN -ErrorAction SilentlyContinue
 if ($allDisplayDevices) {
   Write-Host "Found disabled/error devices:"
   $allDisplayDevices | Format-Table Name, Status -AutoSize
+} else {
+  Write-Host "No disabled/error display devices found"
 }
 
 # Check if NVIDIA GPU exists in PCI devices but not activated
@@ -32,9 +34,11 @@ if ($nvidiaInPci -and -not $nvidiaInWmi) {
   Write-Host "Driver version: $($nvidiaInWmi.DriverVersion)"
   Write-Host "No driver installation needed"
 } else {
-  Write-Host "`n[WARNING] No NVIDIA GPU detected in PCI devices"
-  Write-Host "This GitHub GPU runner may not have a physical GPU attached"
-  Write-Host "Continuing with available display adapter: $($videoControllers[0].Name)"
+  Write-Host "`n[ERROR] No NVIDIA GPU detected"
+  Write-Host "This runner does not have a suitable GPU for UI testing"
+  Write-Host "Available adapters:"
+  $videoControllers | Format-Table Name -AutoSize
+  exit 1
 }
 
 Write-Host "`n=== Driver Installation Phase ==="
