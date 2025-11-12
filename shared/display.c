@@ -221,11 +221,35 @@ static void disp_processKey(
 
 static void display_redraw(void)
 {
+#ifdef _WIN32
+  printf("[REDRAW] display_redraw() started\n");
+  fflush(stdout);
+#endif
   glClear(GL_COLOR_BUFFER_BIT);
+#ifdef _WIN32
+  printf("[REDRAW] glClear() completed\n");
+  fflush(stdout);
+#endif
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#ifdef _WIN32
+  printf("[REDRAW] glDrawArrays() completed\n");
+  fflush(stdout);
+#endif
   remote_overlay_render_if_visible(width, height);
+#ifdef _WIN32
+  printf("[REDRAW] remote_overlay_render_if_visible() completed\n");
+  fflush(stdout);
+#endif
   remote_overlay_render_dim(width, height);
+#ifdef _WIN32
+  printf("[REDRAW] remote_overlay_render_dim() completed\n");
+  fflush(stdout);
+#endif
   SDL_GL_SwapWindow(window);
+#ifdef _WIN32
+  printf("[REDRAW] SDL_GL_SwapWindow() completed\n");
+  fflush(stdout);
+#endif
 }
 
 
@@ -379,6 +403,37 @@ void disp_processInput(void) {
         printf("[INPUT] display_redraw() completed\n");
         fflush(stdout);
 #endif
+        break;
+      case SDL_EVENT_WINDOW_HIDDEN:
+#ifdef _WIN32
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_HIDDEN\n");
+        fflush(stdout);
+#endif
+        break;
+      case SDL_EVENT_WINDOW_SHOWN:
+#ifdef _WIN32
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_SHOWN\n");
+        fflush(stdout);
+#endif
+        break;
+      case SDL_EVENT_WINDOW_MINIMIZED:
+#ifdef _WIN32
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_MINIMIZED\n");
+        fflush(stdout);
+#endif
+        break;
+      case SDL_EVENT_WINDOW_DESTROYED:
+#ifdef _WIN32
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_DESTROYED\n");
+        fflush(stdout);
+#endif
+        break;
+      case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+#ifdef _WIN32
+        printf("[INPUT] Processing SDL_EVENT_WINDOW_CLOSE_REQUESTED\n");
+        fflush(stdout);
+#endif
+        handleinput(CMD_QUIT);
         break;
       case SDL_EVENT_QUIT:
 #ifdef _WIN32
