@@ -66,3 +66,9 @@ xcodebuild test \
 
 echo ""
 echo "=== UI Tests Completed ==="
+
+# Shutdown the simulator
+echo ""
+echo "Shutting down simulator..."
+xcrun simctl shutdown "$DEVICE_UUID" || true
+echo "Simulator shut down"
