@@ -75,6 +75,7 @@ const GLchar fragment[] =
 static UCHAR *draw_buf = NULL;
 static int fullscreen = 0;
 static int width, height;
+static int is_software_renderer = 0;
 
 /* Single click debouncing - delay processing until double-click window expires */
 static Uint64 pending_click_time = 0;
@@ -137,11 +138,15 @@ void disp_setPalette(unsigned char *palette)
 
   /* Render remote overlay on top if visible */
   remote_overlay_render_if_visible(width, height);
-  
+
   /* Render dim feedback if active */
   remote_overlay_render_dim(width, height);
 
-  SDL_GL_SwapWindow(window);
+  if (is_software_renderer) {
+    glFlush();  /* For software renderers, just flush commands instead of swapping */
+  } else {
+    SDL_GL_SwapWindow(window);
+  }
 }
 
 void disp_beginUpdate(UCHAR **p, unsigned int *pitch,
@@ -244,10 +249,24 @@ static void display_redraw(void)
 #ifdef _WIN32
   printf("[REDRAW] remote_overlay_render_dim() completed\n");
   fflush(stdout);
+  if (is_software_renderer) {
+    printf("[REDRAW] Using glFlush() for software renderer...\n");
+  } else {
+    printf("[REDRAW] Using SDL_GL_SwapWindow()...\n");
+  }
+  fflush(stdout);
 #endif
-  SDL_GL_SwapWindow(window);
+  if (is_software_renderer) {
+    glFlush();  /* For software renderers, just flush commands instead of swapping */
+  } else {
+    SDL_GL_SwapWindow(window);
+  }
 #ifdef _WIN32
-  printf("[REDRAW] SDL_GL_SwapWindow() completed\n");
+  if (is_software_renderer) {
+    printf("[REDRAW] glFlush() completed\n");
+  } else {
+    printf("[REDRAW] SDL_GL_SwapWindow() completed\n");
+  }
   fflush(stdout);
 #endif
 }
@@ -691,9 +710,13 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   printf("[GL] OpenGL context verification complete\n");
   fflush(stdout);
 
-  /* Disable VSync if using Microsoft Basic Render Driver to prevent SDL_GL_SwapWindow hanging */
-  if (renderer && strstr((const char*)renderer, "Microsoft Basic Render Driver")) {
-    printf("[GL] Detected Microsoft Basic Render Driver - disabling VSync...\n");
+  /* Detect software renderers to work around swap buffer issues in headless/CI environments */
+  if (renderer && (strstr((const char*)renderer, "Microsoft Basic Render Driver") ||
+                   strstr((const char*)renderer, "llvmpipe") ||
+                   strstr((const char*)renderer, "softpipe") ||
+                   strstr((const char*)renderer, "Software Rasterizer"))) {
+    is_software_renderer = 1;
+    printf("[GL] Detected software renderer - disabling VSync and will use glFlush() instead of buffer swap...\n");
     fflush(stdout);
     if (SDL_GL_SetSwapInterval(0) < 0) {
       printf("[GL] Warning: Failed to disable VSync: %s\n", SDL_GetError());
