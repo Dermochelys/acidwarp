@@ -43,6 +43,13 @@ if [ "$DEVICE_STATE" != "Booted" ]; then
     fi
     echo "Still waiting... ($i/30)"
   done
+
+  # Verify the simulator actually booted
+  FINAL_STATE=$(xcrun simctl list devices | grep "$DEVICE_UUID" | grep -oE '\((Booted|Shutdown|Shutting Down)\)' | tr -d '()')
+  if [ "$FINAL_STATE" != "Booted" ]; then
+    echo "Error: Simulator failed to boot within 60 seconds (final state: $FINAL_STATE)"
+    exit 1
+  fi
 else
   echo "Simulator is already booted"
 fi
