@@ -13,6 +13,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if TARGET_OS_MAC || TARGET_OS_IOS
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+#endif
+
 /* SDL 3 compatibility fixes */
 #define SDL_INIT_TIMER 0x00000001u
 /* SDL 3 changed mutex and condition functions to return void, so we need wrappers */
@@ -79,7 +86,8 @@ void quit(int retcode)
 
 void fatalSDLError(const char *msg)
 {
-  fprintf(stderr, "SDL error while %s: %s", msg, SDL_GetError());
+  fprintf(stderr, "[FATAL] SDL error while %s: %s\n", msg, SDL_GetError());
+  fflush(stderr);
   quit(-1);
 }
 
@@ -126,6 +134,7 @@ static void timer_unlock(void)
 static Uint32 timer_proc(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
   unsigned int tmint = TIMER_INTERVAL;
+
   timer_lock();
   timer_data.flag = true;
   SDL_SignalCondition(timer_data.cond);
@@ -154,7 +163,23 @@ static void timer_wait(void)
 {
   timer_lock();
   while (!timer_data.flag) {
-    SDL_WaitCondition(timer_data.cond, timer_data.mutex);
+    /* Use timeout-based waiting (16ms ~= 60fps) to allow event processing */
+    const Uint32 timeout_ms = 16;
+    SDL_WaitConditionTimeout(timer_data.cond, timer_data.mutex, timeout_ms);
+
+    /* Platform-specific event loop processing:
+     * - macOS/iOS: Pump NSRunLoop to allow XCUITest to detect idle state
+     * - Windows: Pump SDL events to process Windows messages (prevents hanging)
+     * - Other platforms: Pump SDL events for general responsiveness */
+    #ifdef __APPLE__
+    #if TARGET_OS_MAC || TARGET_OS_IOS
+    /* Allow NSRunLoop to process events briefly - this helps XCUITest detect idle state */
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, false);
+    #endif
+    #else
+    /* Pump SDL events for general responsiveness on other platforms */
+    SDL_PumpEvents();
+    #endif
   }
   timer_data.flag = false;
   timer_unlock();
@@ -180,12 +205,13 @@ int main (int argc, char *argv[])
 #endif
 
   SDL_SetEventFilter(HandleAppEvents, NULL);
-  
+
   RANDOMIZE();
 
   disp_init(width, height, disp_flags);
 
   timer_init();
+
   // ReSharper disable once CppDFALoopConditionNotUpdated
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
   while(!QUIT_MAIN_LOOP) {

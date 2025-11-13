@@ -82,7 +82,23 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: cd android && ./gradlew build connectedCheck
+          working-directory: ./android
+          script: |
+            ./gradlew build
+            ./gradlew :app:installDebug :app:installDebugAndroidTest
+            adb shell am instrument -w -r -e debug false com.dermochelys.acidwarp.test/androidx.test.runner.AndroidJUnitRunner
+            mkdir -p screenshots
+            adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots screenshots/ || echo "No screenshots found"
+            adb uninstall com.dermochelys.acidwarp || true
+            adb uninstall com.dermochelys.acidwarp.test || true
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ui-test-screenshots
+          path: android/screenshots/screenshots/*.png
+          if-no-files-found: error
 
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
@@ -171,6 +187,24 @@ jobs:
         working-directory: linux
         run: cmake --build build --config Release
 
+      - name: Install test dependencies
+        run: |
+          sudo apt-get install -y xvfb scrot xdotool
+
+      - name: Run UI tests
+        working-directory: linux
+        run: |
+          chmod +x ui_test.sh
+          ./ui_test.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-ui-test-screenshots
+          path: linux/screenshots/*.png
+          if-no-files-found: error
+
 
 
   # ============================================================================
@@ -187,8 +221,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          symlinks: true
 
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
@@ -211,6 +243,16 @@ jobs:
         working-directory: windows
         run: cmake --build build --config Release
 
+      - name: Upload Windows build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            windows/build/*.exe
+            windows/*.dll
+            windows/ui_test.ps1
+          if-no-files-found: error
+
 
 
   # ============================================================================
@@ -227,22 +269,34 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Build macOS app
+      - name: Run UI tests
         working-directory: macos
+        timeout-minutes: 20
         run: |
-          xcodebuild -project acidwarp-macos.xcodeproj \
-            -scheme acidwarp-macos \
-            -configuration Release \
-            -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+          chmod +x run-uitests.sh
+          ./run-uitests.sh
 
-      - name: Create macOS app archive
-        working-directory: macos
+      - name: Upload xcodebuild log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-xcodebuild-log
+          path: macos/xcodebuild.log
+          if-no-files-found: ignore
+
+      - name: Extract screenshots from test results
+        if: always()
         run: |
-          cd build/Build/Products/Release
-          zip -r ../../../../acidwarp-macos.zip "Acid Warp.app"
+          chmod +x extract-test-screenshots.sh
+          ./extract-test-screenshots.sh macos macos/build macos/screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-ui-test-screenshots
+          path: macos/screenshots/*.png
+          if-no-files-found: error
 
 
 
@@ -260,23 +314,61 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Build iOS app
+      - name: Build app and run UI tests
         working-directory: ios
+        timeout-minutes: 20
         run: |
-          xcodebuild -project acidwarp-ios.xcodeproj \
-            -scheme acidwarp \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+          chmod +x run-uitests.sh
+          ./run-uitests.sh
 
-      - name: Create iOS app archive
-        working-directory: ios
+      - name: Extract screenshots from test results
+        if: always()
         run: |
-          cd build/Build/Products/Release-iphoneos
-          zip -r ../../../../acidwarp-ios.zip acidwarp.app
+          chmod +x extract-test-screenshots.sh
+          ./extract-test-screenshots.sh ios ios/build ios/screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-screenshots
+          path: ios/screenshots/*.png
+          if-no-files-found: error
+
+
+
+  # ============================================================================
+  # WINDOWS UI TEST (GPU RUNNER)
+  #
+  # Note: Only runs if all other builds pass, to avoid wasted compute spend
+  # ============================================================================
+  windows-ui-test:
+    name: Windows UI Test
+    runs-on: windows-x64-2019-gpu
+    needs: [android, linux, windows, macos, ios]
+    if: success()
+    environment: gpu-testing
+
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - name: Download Windows build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+
+      - name: Run UI tests
+        run: .\ui_test.ps1
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test-screenshots
+          path: screenshots/*.png
+          if-no-files-found: error
 
 
 
@@ -286,7 +378,7 @@ jobs:
   build-summary:
     name: Build Summary
     runs-on: ubuntu-latest
-    needs: [android, linux, windows, macos, ios]
+    needs: [android, linux, windows, macos, ios, windows-ui-test]
     if: always()
 
     steps:
@@ -294,18 +386,20 @@ jobs:
         run: |
           echo "Build Summary:"
           echo "============================================"
-          echo "Android: ${{ needs.android.result }}"
-          echo "Linux:   ${{ needs.linux.result }}"
-          echo "Windows: ${{ needs.windows.result }}"
-          echo "macOS:   ${{ needs.macos.result }}"
-          echo "iOS:     ${{ needs.ios.result }}"
+          echo "Android:         ${{ needs.android.result }}"
+          echo "Linux:           ${{ needs.linux.result }}"
+          echo "Windows:         ${{ needs.windows.result }}"
+          echo "macOS:           ${{ needs.macos.result }}"
+          echo "iOS:             ${{ needs.ios.result }}"
+          echo "Windows UI Test: ${{ needs.windows-ui-test.result }}"
           echo "============================================"
 
           if [[ "${{ needs.android.result }}" == "failure" ]] || \
              [[ "${{ needs.linux.result }}" == "failure" ]] || \
              [[ "${{ needs.windows.result }}" == "failure" ]] || \
              [[ "${{ needs.macos.result }}" == "failure" ]] || \
-             [[ "${{ needs.ios.result }}" == "failure" ]]; then
+             [[ "${{ needs.ios.result }}" == "failure" ]] || \
+             [[ "${{ needs.windows-ui-test.result }}" == "failure" ]]; then
             echo "? One or more builds failed"
             exit 1
           else

@@ -1,4 +1,5 @@
 *.o
+*.log
 ./acidwarp
 acidwarp.exe
 acidwarp.js

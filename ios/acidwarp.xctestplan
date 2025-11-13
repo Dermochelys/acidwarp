@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "60092D8E-4FDF-4B71-9A20-1B7044A171A9",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:acidwarp-ios.xcodeproj",
+      "identifier" : "502A14FB2E70BBC000BA2A0F",
+      "name" : "acidwarp"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:acidwarp-ios.xcodeproj",
+        "identifier" : "502A15182E70BBC100BA2A0F",
+        "name" : "acidwarpTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:acidwarp-ios.xcodeproj",
+        "identifier" : "502A15222E70BBC100BA2A0F",
+        "name" : "acidwarpUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

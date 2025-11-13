@@ -2,3 +2,5 @@ SDL3.xcframework/**
 CLAUDE.md
 **/.DS_Store
 **/xcuserdata
+build/**
+screenshots
