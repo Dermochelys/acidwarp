@@ -1,6 +1,6 @@
 # Acid Warp for iOS / iPadOS
 
-Not in iOS App Store yet, stay tuned!
+<a href="https://apps.apple.com/us/app/acid-warp/id6753610977?mt=12&itscg=30200&itsct=apps_box_badge&mttnsubad=6753610977" style="display: inline-block;"><img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1760486400" alt="Download on the App Store" style="width: 123px; height: 41px; vertical-align: middle; object-fit: contain;" /></a>
 
 Supports devices running iOS / iPadOS 15.6 or later.
 
