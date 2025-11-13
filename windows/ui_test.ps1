@@ -83,6 +83,55 @@ $nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
 if ($nvidiaSmi) {
   Write-Host "Running nvidia-smi:"
   & nvidia-smi
+
+  # Check driver model (WDDM vs TCC)
+  Write-Host "`n=== Driver Model Check ==="
+  # Query driver model: WDDM (supports displays) or TCC (compute-only)
+  $driverModel = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
+  Write-Host "Current driver model: $driverModel"
+
+  if ($driverModel -match "TCC") {
+    Write-Host "[WARN] GPU is in TCC mode (compute-only, no display support)"
+    Write-Host "Switching to WDDM mode (required for display support)..."
+
+    # Switch to WDDM mode (0 = WDDM, 1 = TCC)
+    # Note: Requires administrator privileges and may require reboot
+    $dmResult = & nvidia-smi -i 0 -dm 0 2>&1
+    Write-Host $dmResult
+
+    if ($dmResult -match "reboot" -or $dmResult -match "restart") {
+      Write-Host "[ERROR] Driver model change requires a system reboot"
+      Write-Host "The GPU runner needs to be rebooted for WDDM mode to take effect"
+      exit 1
+    }
+
+    Start-Sleep -Seconds 2
+
+    # Re-check driver model
+    $driverModelNew = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
+    Write-Host "Driver model after change: $driverModelNew"
+  } elseif ($driverModel -match "WDDM") {
+    Write-Host "[OK] GPU is already in WDDM mode (display support enabled)"
+  } else {
+    Write-Host "[INFO] Driver model query returned: $driverModel"
+  }
+
+  # Check display status
+  Write-Host "`n=== Display Status Check ==="
+  $displayStatus = & nvidia-smi --query-gpu=display_active,display_mode --format=csv 2>&1
+  Write-Host $displayStatus
+
+  # Enable persistence mode (helps with driver stability)
+  Write-Host "`nEnabling NVIDIA persistence mode..."
+  $pmResult = & nvidia-smi -pm 1 2>&1
+  Write-Host $pmResult
+
+  Start-Sleep -Seconds 2
+
+  # Verify final state
+  Write-Host "`n=== Final GPU State ==="
+  & nvidia-smi
+  Write-Host ""
 } else {
   Write-Host "nvidia-smi not found in PATH"
 }
