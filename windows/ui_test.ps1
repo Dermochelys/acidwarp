@@ -46,11 +46,28 @@ if ($hardwareGpu) {
   }
 
   # Copy Mesa DLLs from MSYS2 installation
-  # MSYS2 is installed at C:\msys64 by the GitHub Actions msys2/setup-msys2 action
-  $msys2MesaPath = "C:\msys64\mingw64\bin"
+  # Detect MSYS2 installation path (varies between local and CI environments)
+  $msys2Paths = @(
+    "D:\a\_temp\msys64\mingw64\bin",  # GitHub Actions default
+    "C:\msys64\mingw64\bin",           # Local installation default
+    "$env:RUNNER_TEMP\msys64\mingw64\bin"  # Alternative CI path
+  )
 
-  if (-not (Test-Path "$msys2MesaPath\opengl32.dll")) {
-    Write-Host "[ERROR] Mesa DLLs not found in MSYS2 at $msys2MesaPath"
+  $msys2MesaPath = $null
+  foreach ($path in $msys2Paths) {
+    if (Test-Path "$path\opengl32.dll") {
+      $msys2MesaPath = $path
+      Write-Host "Found MSYS2 Mesa installation at: $msys2MesaPath"
+      break
+    }
+  }
+
+  if (-not $msys2MesaPath) {
+    Write-Host "[ERROR] Mesa DLLs not found in any expected MSYS2 location"
+    Write-Host "Searched paths:"
+    foreach ($path in $msys2Paths) {
+      Write-Host "  - $path $(if (Test-Path (Split-Path $path -Parent)) { '(directory exists but no opengl32.dll)' } else { '(directory does not exist)' })"
+    }
     Write-Host "Make sure mingw-w64-x86_64-mesa is installed in the workflow"
     exit 1
   }
