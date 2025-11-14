@@ -71,28 +71,18 @@ echo "Waiting 5 more seconds for the emulator to finish initializing..."
 sleep 5
 
 echo ""
-echo "Building for testing..."
-xcodebuild build-for-testing \
-  -project acidwarp-ios.xcodeproj \
-  -scheme acidwarpUITests \
-  -configuration Release \
-  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
-  -derivedDataPath ./build \
-  CODE_SIGN_IDENTITY="" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO
-
-echo ""
-echo "Running UI tests..."
-xcodebuild test-without-building \
+echo "Building and running UI tests..."
+xcodebuild test \
   -project acidwarp-ios.xcodeproj \
   -scheme acidwarpUITests \
   -configuration Release \
   -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
   -derivedDataPath ./build \
   -parallel-testing-enabled NO \
-  -resultBundlePath ./build/Logs/Test/Test-results.xcresult \
-  -retry-tests-on-failure
+  -retry-tests-on-failure \
+  CODE_SIGN_IDENTITY="" \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=NO
 
 echo ""
 echo "=== UI Tests Completed ==="

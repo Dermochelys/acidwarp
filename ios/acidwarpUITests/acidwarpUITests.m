@@ -24,26 +24,35 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    
-    // Ensure app is properly terminated to avoid termination failures
-    // This helps prevent "Failed to terminate" errors in CI, especially for performance tests
-    @try {
-        XCUIApplication *app = [[XCUIApplication alloc] init];
-        if (app.exists && app.state != XCUIApplicationStateNotRunning) {
-            [app terminate];
-            // Give the app a moment to terminate gracefully
-            NSPredicate *terminatedPredicate = [NSPredicate predicateWithFormat:@"state == %d", XCUIApplicationStateNotRunning];
-            [self expectationForPredicate:terminatedPredicate evaluatedWithObject:app handler:nil];
-            [self waitForExpectationsWithTimeout:5.0 handler:nil];
-        }
-    } @catch (NSException *exception) {
-        // Silently handle termination errors - retry mechanism will handle test failures
-    }
 }
 
 - (void)takeScreenshotNamed:(NSString *)name {
+    // Get current orientation
+    XCUIApplication *app = [[XCUIApplication alloc] init];
+    UIInterfaceOrientation orientation = app.interfaceOrientation;
+    NSString *orientationStr;
+
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            orientationStr = @"portrait";
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            orientationStr = @"portrait-upside-down";
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+            orientationStr = @"landscape-left";
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            orientationStr = @"landscape-right";
+            break;
+        default:
+            orientationStr = @"unknown";
+            break;
+    }
+
+    NSString *fullName = [NSString stringWithFormat:@"%@-%@", name, orientationStr];
     XCTAttachment *attachment = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];
-    attachment.name = name;
+    attachment.name = fullName;
     attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
     [self addAttachment:attachment];
 }
