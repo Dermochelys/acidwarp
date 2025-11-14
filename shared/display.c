@@ -368,10 +368,16 @@ static GLuint loadShader(GLuint program, GLenum type,
     if (compile_status != GL_TRUE) {
       GLsizei loglen = 0;
       GLchar infolog[1024];
-      printf("OpenGL error: %s shader failed to compile. Info log follows:\n",
+      fprintf(stderr, "OpenGL error: %s shader failed to compile. Info log follows:\n",
              (type == GL_VERTEX_SHADER) ? "vertex" : "fragment");
+      fflush(stderr);
       glGetShaderInfoLog(shader, sizeof(infolog), &loglen, infolog);
+      fprintf(stderr, "Shader info log (%d bytes):\n", loglen);
+      fflush(stderr);
       fwrite(infolog, loglen, 1, stderr);
+      fflush(stderr);
+      fprintf(stderr, "\nShader source was:\n%s\n", shaderSrc);
+      fflush(stderr);
       quit(-1);
     }
     glAttachShader(program, shader);
@@ -458,9 +464,18 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
 
+  fprintf(stderr, "[DISP] Compiling vertex shader...\n");
+  fflush(stderr);
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
+  fprintf(stderr, "[DISP] Vertex shader compiled successfully\n");
+  fflush(stderr);
 
+  fprintf(stderr, "[DISP] Compiling fragment shader...\n");
+  fflush(stderr);
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
+  fprintf(stderr, "[DISP] Fragment shader compiled successfully\n");
+  fflush(stderr);
+
   fprintf(stderr, "[DISP] Shaders compiled successfully\n");
   fflush(stderr);
 
