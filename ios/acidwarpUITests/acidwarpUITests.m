@@ -27,22 +27,21 @@
 }
 
 - (void)takeScreenshotNamed:(NSString *)name {
-    // Get current orientation
-    XCUIApplication *app = [[XCUIApplication alloc] init];
-    UIInterfaceOrientation orientation = app.interfaceOrientation;
+    // Get current orientation from device
+    UIDeviceOrientation orientation = [[XCUIDevice sharedDevice] orientation];
     NSString *orientationStr;
 
     switch (orientation) {
-        case UIInterfaceOrientationPortrait:
+        case UIDeviceOrientationPortrait:
             orientationStr = @"portrait";
             break;
-        case UIInterfaceOrientationPortraitUpsideDown:
+        case UIDeviceOrientationPortraitUpsideDown:
             orientationStr = @"portrait-upside-down";
             break;
-        case UIInterfaceOrientationLandscapeLeft:
+        case UIDeviceOrientationLandscapeLeft:
             orientationStr = @"landscape-left";
             break;
-        case UIInterfaceOrientationLandscapeRight:
+        case UIDeviceOrientationLandscapeRight:
             orientationStr = @"landscape-right";
             break;
         default:
