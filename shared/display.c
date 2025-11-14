@@ -407,8 +407,8 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 #endif
   GLint status;
 
-  fprintf(stderr, "[DISP] Starting OpenGL initialization (%dx%d)\n", width, height);
-  fflush(stderr);
+  printf("[DISP] Starting OpenGL initialization (%dx%d)\n", width, height);
+  fflush(stdout);
 
   /* Vertices consist of point x, y, z, w followed by texture x and y */
   static const GLfloat vertices[] = {
@@ -433,51 +433,57 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-  fprintf(stderr, "[DISP] Creating SDL window...\n");
-  fflush(stderr);
+  printf("[DISP] Creating SDL window...\n");
+  fflush(stdout);
   window = SDL_CreateWindow("Acid Warp", width, height, videoflags | SDL_WINDOW_OPENGL);
+  printf("[DISP] SDL_CreateWindow returned, window=%p\n", (void*)window);
+  fflush(stdout);
   if (window == NULL) fatalSDLError("creating SDL OpenGL window");
-  fprintf(stderr, "[DISP] SDL window created\n");
-  fflush(stderr);
+  printf("[DISP] SDL window created successfully\n");
+  fflush(stdout);
 
-  fprintf(stderr, "[DISP] Creating OpenGL context...\n");
-  fflush(stderr);
+  printf("[DISP] Creating OpenGL context...\n");
+  fflush(stdout);
   context = SDL_GL_CreateContext(window);
+  printf("[DISP] SDL_GL_CreateContext returned, context=%p\n", (void*)context);
+  fflush(stdout);
   if (context == NULL) fatalSDLError("creating OpenGL profile");
-  fprintf(stderr, "[DISP] OpenGL context created\n");
-  fflush(stderr);
+  printf("[DISP] OpenGL context created successfully\n");
+  fflush(stdout);
 
 #ifdef _WIN32
-  fprintf(stderr, "[DISP] Initializing GLEW...\n");
-  fflush(stderr);
+  printf("[DISP] Initializing GLEW...\n");
+  fflush(stdout);
   GLenum glew_err = glewInit();
+  printf("[DISP] glewInit returned, status=%u\n", glew_err);
+  fflush(stdout);
   if (glew_err != GLEW_OK) {
     fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
     quit(-1);
   }
-  fprintf(stderr, "[DISP] GLEW initialized\n");
-  fflush(stderr);
+  printf("[DISP] GLEW initialized successfully\n");
+  fflush(stdout);
 #endif
 
-  fprintf(stderr, "[DISP] Compiling shaders...\n");
-  fflush(stderr);
+  printf("[DISP] Compiling shaders...\n");
+  fflush(stdout);
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
 
-  fprintf(stderr, "[DISP] Compiling vertex shader...\n");
-  fflush(stderr);
+  printf("[DISP] Compiling vertex shader...\n");
+  fflush(stdout);
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
-  fprintf(stderr, "[DISP] Vertex shader compiled successfully\n");
-  fflush(stderr);
+  printf("[DISP] Vertex shader compiled successfully\n");
+  fflush(stdout);
 
-  fprintf(stderr, "[DISP] Compiling fragment shader...\n");
-  fflush(stderr);
+  printf("[DISP] Compiling fragment shader...\n");
+  fflush(stdout);
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
-  fprintf(stderr, "[DISP] Fragment shader compiled successfully\n");
-  fflush(stderr);
+  printf("[DISP] Fragment shader compiled successfully\n");
+  fflush(stdout);
 
-  fprintf(stderr, "[DISP] Shaders compiled successfully\n");
-  fflush(stderr);
+  printf("[DISP] Shaders compiled successfully\n");
+  fflush(stdout);
 
   glBindAttribLocation(glprogram, 0, "Position");
   glBindAttribLocation(glprogram, 1, "TexPos");
@@ -531,8 +537,8 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-  fprintf(stderr, "[DISP] OpenGL initialization complete\n");
-  fflush(stderr);
+  printf("[DISP] OpenGL initialization complete\n");
+  fflush(stdout);
 }
 
 void disp_init(int newwidth, int newheight, int flags)

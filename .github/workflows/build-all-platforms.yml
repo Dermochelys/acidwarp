@@ -72,6 +72,7 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: assemble, lint, run unit tests, run instrumented tests
+        id: build-and-test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -83,9 +84,13 @@ jobs:
           disable-animations: true
           working-directory: ./android
           script: |
+            adb logcat -c  # Clear logcat before build
             ./gradlew build
             ./gradlew :app:installDebug :app:installDebugAndroidTest
+            adb logcat -d > logcat-build.txt  # Dump logcat after build
+            adb logcat -c  # Clear logcat before test run
             adb shell am instrument -w -r -e debug false com.dermochelys.acidwarp.test/androidx.test.runner.AndroidJUnitRunner
+            adb logcat -d > logcat-test.txt  # Dump logcat after test run
             mkdir -p screenshots
             adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots screenshots/ || echo "No screenshots found"
             adb uninstall com.dermochelys.acidwarp || true
@@ -98,6 +103,16 @@ jobs:
           name: android-ui-test-screenshots
           path: android/screenshots/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload logcat
+        if: always() && steps.build-and-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-logcat
+          path: |
+            android/logcat-build.txt
+            android/logcat-test.txt
+          if-no-files-found: ignore
 
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
@@ -290,12 +305,13 @@ jobs:
           key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
       - name: Run UI tests
+        id: run-ui-tests
         working-directory: macos
         timeout-minutes: 20
         run: ./run-uitests.sh
 
       - name: Upload xcodebuild log
-        if: failure()
+        if: always() && steps.run-ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: macos-xcodebuild-log
@@ -475,8 +491,8 @@ jobs:
         with:
           name: windows-ui-test-logs
           path: |
-            acidwarp.log
-            acidwarp-error.log
+            **/acidwarp.log
+            **/acidwarp-error.log
           if-no-files-found: ignore
 
       - name: Delete windows-build artifact

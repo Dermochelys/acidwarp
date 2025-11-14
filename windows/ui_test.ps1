@@ -169,9 +169,34 @@ if (Test-Path "acidwarp-windows.exe") {
 $SCREENSHOT_DIR_FULL = Join-Path (Get-Location) $SCREENSHOT_DIR
 New-Item -ItemType Directory -Force -Path $SCREENSHOT_DIR_FULL | Out-Null
 
-Write-Host "Launching Acid Warp..."
+Write-Host "`n=== Environment Cleanup ==="
+# Close any distracting windows that might interfere
+Write-Host "Closing Visual Studio Code windows if open..."
+$vscodeProcesses = Get-Process -Name "Code" -ErrorAction SilentlyContinue
+if ($vscodeProcesses) {
+  foreach ($proc in $vscodeProcesses) {
+    Write-Host "  Closing VS Code process (PID: $($proc.Id))"
+    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+  }
+  Start-Sleep -Seconds 2
+  Write-Host "[OK] Closed Visual Studio Code"
+} else {
+  Write-Host "[INFO] No Visual Studio Code windows found"
+}
+
+# Give the system time to settle after GPU initialization and cleanup
+Write-Host "`nWaiting 10 seconds for environment to settle..."
+Start-Sleep -Seconds 10
+Write-Host "[OK] Environment ready"
+
+Write-Host "`nLaunching Acid Warp..."
 # Launch the app in background
-$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput "$LOG_DIR/acidwarp.log" -RedirectStandardError "$LOG_DIR/acidwarp-error.log" -NoNewWindow
+$LOG_STDOUT = Join-Path $LOG_DIR "acidwarp.log"
+$LOG_STDERR = Join-Path $LOG_DIR "acidwarp-error.log"
+Write-Host "Log files will be written to:"
+Write-Host "  stdout: $LOG_STDOUT"
+Write-Host "  stderr: $LOG_STDERR"
+$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput $LOG_STDOUT -RedirectStandardError $LOG_STDERR -NoNewWindow
 
 Write-Host "App launched with PID: $($appProcess.Id)"
 
@@ -180,20 +205,20 @@ Write-Host "Waiting for app initialization..."
 Start-Sleep -Seconds 5
 
 # Check if log files exist and show recent output
-if (Test-Path "$LOG_DIR/acidwarp-error.log") {
+if (Test-Path $LOG_STDERR) {
     Write-Host "=== Recent app stderr output ==="
-    Get-Content "$LOG_DIR/acidwarp-error.log" -Tail 50 -ErrorAction SilentlyContinue
+    Get-Content $LOG_STDERR -Tail 50 -ErrorAction SilentlyContinue
     Write-Host "=== End of stderr output ==="
 } else {
-    Write-Host "[WARN] Error log file not found at $LOG_DIR/acidwarp-error.log"
+    Write-Host "[WARN] Error log file not found at $LOG_STDERR"
 }
 
-if (Test-Path "$LOG_DIR/acidwarp.log") {
+if (Test-Path $LOG_STDOUT) {
     Write-Host "=== Recent app stdout output ==="
-    Get-Content "$LOG_DIR/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
+    Get-Content $LOG_STDOUT -Tail 50 -ErrorAction SilentlyContinue
     Write-Host "=== End of stdout output ==="
 } else {
-    Write-Host "[WARN] Output log file not found at $LOG_DIR/acidwarp.log"
+    Write-Host "[WARN] Output log file not found at $LOG_STDOUT"
 }
 
 # Verify the app process is still running
@@ -297,16 +322,16 @@ if (-not $PROCESS_FOUND) {
     Write-Host "The process may have crashed during initialization."
     Write-Host ""
     Write-Host "=== Full app stderr log (if available) ==="
-    if (Test-Path "$LOG_DIR/acidwarp-error.log") {
-        Get-Content "$LOG_DIR/acidwarp-error.log" -ErrorAction SilentlyContinue
+    if (Test-Path $LOG_STDERR) {
+        Get-Content $LOG_STDERR -ErrorAction SilentlyContinue
     } else {
         Write-Host "Error log file not found"
     }
     Write-Host "=== End of stderr log ==="
     Write-Host ""
     Write-Host "=== Full app stdout log (if available) ==="
-    if (Test-Path "$LOG_DIR/acidwarp.log") {
-        Get-Content "$LOG_DIR/acidwarp.log" -ErrorAction SilentlyContinue
+    if (Test-Path $LOG_STDOUT) {
+        Get-Content $LOG_STDOUT -ErrorAction SilentlyContinue
     } else {
         Write-Host "Output log file not found"
     }
@@ -334,6 +359,33 @@ Write-Host "[OK] Acid Warp process is running"
 if ($actualPid) {
     Write-Host "DEBUG: Using actual PID: $actualPid"
     $appProcess = Get-Process -Id $actualPid
+}
+
+# Helper function to check if process is still alive
+function Test-ProcessAlive {
+    param (
+        [System.Diagnostics.Process]$process
+    )
+
+    $isAlive = -not $process.HasExited
+    if (-not $isAlive) {
+        Write-Host "[ERROR] Acid Warp process has exited unexpectedly!"
+        Write-Host "Exit code: $($process.ExitCode)"
+        Write-Host ""
+        Write-Host "=== Full app stderr log ==="
+        if (Test-Path $LOG_STDERR) {
+            Get-Content $LOG_STDERR -ErrorAction SilentlyContinue
+        }
+        Write-Host "=== End of stderr log ==="
+        Write-Host ""
+        Write-Host "=== Full app stdout log ==="
+        if (Test-Path $LOG_STDOUT) {
+            Get-Content $LOG_STDOUT -ErrorAction SilentlyContinue
+        }
+        Write-Host "=== End of stdout log ==="
+        exit 1
+    }
+    return $isAlive
 }
 
 # Helper function to take screenshot
@@ -390,6 +442,9 @@ function Send-Key {
 Take-Screenshot "01-startup"
 Write-Host "[OK] Captured startup screenshot"
 
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
+
 # Check for error dialogs - look for SDL Error window
 Write-Host "Checking for error dialogs..."
 Write-Host "DEBUG: Listing all windows with titles at $(Get-Date -Format 'HH:mm:ss')..."
@@ -423,6 +478,9 @@ for ($i = 1; $i -le 5; $i++) {
     Start-Sleep -Seconds 4  # Wait for fade-out + fade-in to complete
     Take-Screenshot "02-pattern-$i"
     Write-Host "[OK] Captured pattern $i screenshot"
+
+    # Check process is still alive
+    Test-ProcessAlive $appProcess | Out-Null
 }
 
 # Test mouse click - click center of screen
@@ -440,6 +498,9 @@ Start-Sleep -Seconds 1
 Take-Screenshot "03-after-click"
 Write-Host "[OK] Captured post-click screenshot"
 
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
+
 # Test palette change
 Write-Host "Testing palette change (p key)..."
 Send-Key "p" $appProcess
@@ -447,10 +508,16 @@ Start-Sleep -Seconds 1
 Take-Screenshot "04-palette-change"
 Write-Host "[OK] Captured palette change screenshot"
 
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
+
 # Capture final state
 Start-Sleep -Seconds 2
 Take-Screenshot "05-final"
 Write-Host "[OK] Captured final screenshot"
+
+# Final process check
+Test-ProcessAlive $appProcess | Out-Null
 
 # Quit gracefully
 Write-Host "Sending quit signal (q key)..."
