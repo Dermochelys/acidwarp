@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  actions: write  # Required to delete artifacts
+
 jobs:
   # ============================================================================
   # ANDROID BUILD
@@ -213,6 +216,8 @@ jobs:
   windows:
     name: Windows
     runs-on: windows-latest
+    outputs:
+      artifact-id: ${{ steps.windows-build-upload.outputs.artifact-id }}
 
     defaults:
       run:
@@ -244,6 +249,7 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Upload Windows build artifacts
+        id: windows-build-upload
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
@@ -353,7 +359,7 @@ jobs:
           ./build-uitests.sh
 
       - name: Upload build-without-testing log
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-xcodebuild-build-without-testing-log
@@ -369,7 +375,7 @@ jobs:
           ./test-uitests.sh
 
       - name: Upload test-without-building log
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-xcodebuild-test-without-building-log
@@ -408,7 +414,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO | tee xcodebuild-release.log
 
       - name: Upload Release build xcodebuild log
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-xcodebuild-log
@@ -460,6 +466,17 @@ jobs:
           name: windows-ui-test-screenshots
           path: screenshots/*.png
           if-no-files-found: error
+
+      - name: Delete windows-build artifact
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: ${{ needs.windows.outputs.artifact-id }}
+            });
 
 
 
