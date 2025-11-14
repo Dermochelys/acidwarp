@@ -13,12 +13,20 @@ export DISPLAY
 sleep 2
 
 echo "Launching Acid Warp..."
-timeout 30s ./build/acidwarp-linux &
+timeout 30s ./build/acidwarp-linux > acidwarp.log 2> acidwarp-error.log &
 APP_PID=$!
 
 # Test sequence
 echo "Waiting for app initialization..."
 sleep 5
+
+# Check if log files exist and show recent output
+if [ -f acidwarp-error.log ]; then
+  echo "=== Recent app stderr output ==="
+  tail -n 50 acidwarp-error.log
+  echo "=== End of stderr output ==="
+fi
+
 scrot "$SCREENSHOT_DIR/01-startup.png"
 echo "✓ Captured startup screenshot"
 

@@ -27,6 +27,7 @@ xcodebuild build-for-testing \
   -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
   -derivedDataPath ./build \
   -showBuildTimingSummary \
+  ONLY_ACTIVE_ARCH=YES \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO | tee xcodebuild-build-without-testing.log

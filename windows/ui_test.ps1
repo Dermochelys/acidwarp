@@ -179,13 +179,21 @@ Write-Host "App launched with PID: $($appProcess.Id)"
 Write-Host "Waiting for app initialization..."
 Start-Sleep -Seconds 5
 
-# Check if log file exists and show recent output
-if (Test-Path "$LOG_DIR/acidwarp.log") {
-    Write-Host "=== Recent app output ==="
-    Get-Content "$LOG_DIR/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
-    Write-Host "=== End of app output ==="
+# Check if log files exist and show recent output
+if (Test-Path "$LOG_DIR/acidwarp-error.log") {
+    Write-Host "=== Recent app stderr output ==="
+    Get-Content "$LOG_DIR/acidwarp-error.log" -Tail 50 -ErrorAction SilentlyContinue
+    Write-Host "=== End of stderr output ==="
 } else {
-    Write-Host "[WARN] Log file not found at $LOG_DIR/acidwarp.log"
+    Write-Host "[WARN] Error log file not found at $LOG_DIR/acidwarp-error.log"
+}
+
+if (Test-Path "$LOG_DIR/acidwarp.log") {
+    Write-Host "=== Recent app stdout output ==="
+    Get-Content "$LOG_DIR/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
+    Write-Host "=== End of stdout output ==="
+} else {
+    Write-Host "[WARN] Output log file not found at $LOG_DIR/acidwarp.log"
 }
 
 # Verify the app process is still running
@@ -288,13 +296,21 @@ if (-not $PROCESS_FOUND) {
     Write-Host "[ERROR] Acid Warp process is not running!"
     Write-Host "The process may have crashed during initialization."
     Write-Host ""
-    Write-Host "=== Full app log (if available) ==="
+    Write-Host "=== Full app stderr log (if available) ==="
+    if (Test-Path "$LOG_DIR/acidwarp-error.log") {
+        Get-Content "$LOG_DIR/acidwarp-error.log" -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "Error log file not found"
+    }
+    Write-Host "=== End of stderr log ==="
+    Write-Host ""
+    Write-Host "=== Full app stdout log (if available) ==="
     if (Test-Path "$LOG_DIR/acidwarp.log") {
         Get-Content "$LOG_DIR/acidwarp.log" -ErrorAction SilentlyContinue
     } else {
-        Write-Host "Log file not found"
+        Write-Host "Output log file not found"
     }
-    Write-Host "=== End of app log ==="
+    Write-Host "=== End of stdout log ==="
     Write-Host ""
     Write-Host "Capturing screenshot to check if app window is visible..."
 

@@ -202,6 +202,16 @@ jobs:
           path: linux/screenshots/*.png
           if-no-files-found: error
 
+      - name: Upload application logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-ui-test-logs
+          path: |
+            linux/acidwarp.log
+            linux/acidwarp-error.log
+          if-no-files-found: ignore
+
 
 
   # ============================================================================
@@ -458,6 +468,16 @@ jobs:
           name: windows-ui-test-screenshots
           path: screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload application logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test-logs
+          path: |
+            acidwarp.log
+            acidwarp-error.log
+          if-no-files-found: ignore
 
       - name: Delete windows-build artifact
         if: always()
