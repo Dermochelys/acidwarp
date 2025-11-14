@@ -50,7 +50,6 @@ SDL3.xcframework/
 SDL3_image.xcframework/
 android/app/libs/SDL3*.aar
 
-CLAUDE.md
 .claude/**
 
 GEMINI.md

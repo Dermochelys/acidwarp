@@ -30,6 +30,37 @@ SDL3 and SDL3_image are automatically downloaded during the build via Run Script
 
 - This is done via C preprocessor macros added during SDL3_image's build process.
 
+## UI Testing
+
+Automated UI tests use XCTest's UI testing framework to verify the app works correctly on macOS.
+
+**Running UI tests:**
+```bash
+./run-uitests.sh
+```
+
+**Test Framework:**
+- **Location**: `acidwarp-macosUITests/` (Swift UI tests)
+- **Framework**: XCTest with XCUIApplication and XCUIElement APIs
+- **Environment**: macOS 14+ (Sonoma or later)
+
+**Key Features:**
+- **Native UI Testing**: Uses XCTest's built-in UI automation APIs
+- **Hardware Acceleration**: Uses native macOS OpenGL with Metal translation layer
+- **Input Simulation**: XCTest's native keyboard and mouse event injection
+- **Screenshot Capture**: `XCUIScreen.main.screenshot()` with XCTest attachments API
+- **Build/Test Separation**: `build-for-testing` then `test-without-building` for faster iterations
+- **Code Signing**: Ad-hoc signing (`codesign --sign -`) applied to test runner
+
+**Screenshot Extraction:**
+Screenshots are embedded in `.xcresult` bundles and extracted using:
+```bash
+../extract-test-screenshots.sh macos ./build ./screenshots
+```
+This uses `xcresulttool export attachments` and renames files based on xcresult manifest metadata for human-readable names.
+
+CI uploads screenshots (PNG files), xcodebuild logs, and .xcresult bundles as artifacts.
+
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too

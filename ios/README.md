@@ -29,6 +29,47 @@ Supports devices running iOS / iPadOS 15.6 or later.
 
 - This is done via C preprocessor macros added during SDL3_image's build process.
 
+## UI Testing
+
+Automated UI tests use XCTest's UI testing framework to verify the app works correctly on iOS and iPadOS simulators.
+
+**Running UI tests:**
+```bash
+# Start simulator in background (parallel with build)
+./start-simulator-background.sh
+
+# Build tests (can run while simulator boots)
+./build-uitests.sh
+
+# Wait for simulator to be ready
+./wait-for-simulator.sh
+
+# Run tests
+./test-uitests.sh
+```
+
+**Test Framework:**
+- **Location**: `acidwarp-iosUITests/` (Swift UI tests)
+- **Framework**: XCTest with XCUIApplication and XCUIElement APIs
+- **Simulator**: iPhone 17 Pro (iOS 18.2+)
+
+**Key Features:**
+- **Split Build/Test Phases**: Separate build and test scripts improve reliability and allow parallel simulator startup
+- **Simulator Warmup**: Background simulator start runs parallel to test build for faster CI runs
+- **Simulator Wait Logic**: `wait-for-simulator.sh` polls for "Booted" state before running tests
+- **Screenshot Handling**: Same extraction as macOS using `xcresulttool` and rename script
+- **Network Blocking**: Blocks `developerservices2.apple.com` to prevent Xcode activation delays in CI
+- **Graceful Cleanup**: Simulator shutdown after tests complete
+- **Device Selection**: Uses iPhone 17 Pro simulator by UUID lookup
+
+**Screenshot Extraction:**
+Screenshots are embedded in `.xcresult` bundles and extracted using:
+```bash
+../extract-test-screenshots.sh ios ./build ./screenshots
+```
+
+CI uploads screenshots (PNG files), xcodebuild logs (build-without-testing and test-without-building), and .xcresult bundles as artifacts.
+
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too

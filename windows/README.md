@@ -26,6 +26,46 @@ These DLLs are available in the MSYS2 environment at `/mingw64/bin/` and should 
 
 The `signexe.bat` script is used to sign the `acidwarp-windows.exe` file using Microsoft's Azure Code Signing service. The script uses `signtool.exe` with SHA256 hashing and timestamping to ensure the executable is properly signed for distribution.
 
+## UI Testing
+
+Automated UI tests run via PowerShell script (`ui_test.ps1`) to verify the application works correctly. The tests:
+
+1. Launch the application
+2. Capture screenshots of startup and various states
+3. Simulate keyboard input (n=next pattern, p=change palette, q=quit)
+4. Simulate mouse clicks
+5. Verify the process stays alive throughout testing
+6. Validate that expected screenshots were captured
+
+**Running UI tests locally:**
+```powershell
+cd windows
+.\ui_test.ps1
+```
+
+**OpenGL Rendering in CI:**
+
+GitHub Actions Windows runners don't have hardware GPUs, so the test script uses Mesa3D for software OpenGL rendering:
+
+- **Automatic GPU Detection**: The script detects if a hardware GPU is present
+- **Mesa3D Installation**: If no GPU found, automatically installs Mesa from MSYS2 (`mingw-w64-x86_64-mesa`)
+- **Required Mesa DLLs**: Copies `opengl32.dll` and `libgallium_wgl.dll` to the app directory
+- **Mesa Configuration**: Sets environment variables for software rendering:
+  - `GALLIUM_DRIVER=llvmpipe` - Use llvmpipe software renderer
+  - `MESA_GL_VERSION_OVERRIDE=4.1COMPAT` - Report OpenGL 4.1 compatibility
+  - `MESA_GLSL_VERSION_OVERRIDE=410` - Report GLSL version 4.1
+  - Adds MSYS2 bin directory to PATH for Mesa dependencies (LLVM libraries)
+
+The script works identically on CI (software rendering) and local machines (hardware GPU), automatically adapting to the environment.
+
+**Troubleshooting UI Tests:**
+
+If UI tests fail, check:
+- Screenshot artifacts (uploaded even on failure)
+- `acidwarp.log` and `acidwarp-error.log` for application output
+- Process list output to verify window creation
+- Mesa environment configuration if running without hardware GPU
+
 ## Release Process
 
 Follow these steps to create a new release:

@@ -13,6 +13,38 @@ Most build dependencies are dynamically loaded, however, you must also ensure th
 - `cmake` with version matching that inside of [build.gradle](app/build.gradle)
 - `Android SDK Tools` with version matching that of `buildToolsVersion`, found in [build.gradle](app/build.gradle)
 
+## UI Testing
+
+Automated UI tests use Android Instrumentation testing with UiAutomator to verify the app works correctly on Android devices and emulators.
+
+**Running UI tests:**
+```bash
+./gradlew :app:connectedDebugAndroidTest
+```
+
+**Test Framework:**
+- **Location**: `app/src/androidTest/java/com/dermochelys/acidwarp/ActivityUITest.kt`
+- **Framework**: JUnit4 with UiAutomator for device control
+- **Emulator**: API 36, x86_64, Nexus 6 profile (in CI)
+
+**Key Features:**
+- **Input Simulation**: `UiDevice.pressKeyCode()` for keyboard (KeyEvent.KEYCODE_N), `device.click()` for touch
+- **Screenshot Capture**: `device.takeScreenshot()` saves screenshots to app's external files directory
+- **Screenshot Retrieval**: `adb pull` copies screenshots from emulator to local machine
+- **Error Detection**: Checks for SDL error dialogs during app launch
+- **GPU Rendering**: Uses swiftshader_indirect for software GPU emulation in CI
+
+**Test Sequence:**
+1. Launch app and wait for initialization
+2. Capture startup screenshot
+3. Verify no SDL error dialogs appear
+4. Test pattern cycling (5 iterations, 'n' key with 4s fade delay)
+5. Test touch input (center screen tap)
+6. Test palette change ('p' key)
+7. Capture final screenshot
+
+Screenshots are pulled to `screenshots/screenshots/` directory. CI uploads screenshots, logcat (build and test phases), and test result XMLs as artifacts.
+
 ## License
 
 As this is a descendent of Steven Will's `AcidWarp for Linux` which was GPL licensed, this too
