@@ -9,7 +9,7 @@ SDL_IMAGE_URL="https://github.com/libsdl-org/SDL_image/releases/download/release
 
 # Target location for SDL3_image.xcframework (repo root)
 TARGET_FRAMEWORK="$SCRIPT_DIR/SDL3_image.xcframework"
-SDL_IMAGE_HEADER="$TARGET_FRAMEWORK/ios-arm64/SDL3_image.framework/Headers/SDL_image.h"
+SDL_IMAGE_PLIST="$TARGET_FRAMEWORK/ios-arm64/SDL3_image.framework/Info.plist"
 
 echo "Checking for SDL3_image.xcframework..."
 
@@ -17,15 +17,12 @@ echo "Checking for SDL3_image.xcframework..."
 if [ -d "$TARGET_FRAMEWORK" ]; then
     echo "SDL3_image.xcframework found. Checking version..."
 
-    # Check if SDL_image.h exists
-    if [ -f "$SDL_IMAGE_HEADER" ]; then
-        # Extract version from header macros (SDL_IMAGE_MAJOR_VERSION, SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_MICRO_VERSION)
-        MAJOR=$(grep "^#define SDL_IMAGE_MAJOR_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
-        MINOR=$(grep "^#define SDL_IMAGE_MINOR_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
-        MICRO=$(grep "^#define SDL_IMAGE_MICRO_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
-        INSTALLED_VERSION="${MAJOR}.${MINOR}.${MICRO}"
+    # Check if Info.plist exists
+    if [ -f "$SDL_IMAGE_PLIST" ]; then
+        # Extract version from Info.plist using PlistBuddy
+        INSTALLED_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$SDL_IMAGE_PLIST" 2>/dev/null || echo "")
 
-        if [ "$INSTALLED_VERSION" = "$SDL_IMAGE_VERSION" ]; then
+        if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" = "$SDL_IMAGE_VERSION" ]; then
             echo "SDL3_image version $INSTALLED_VERSION matches required version $SDL_IMAGE_VERSION"
             exit 0
         else
@@ -34,7 +31,7 @@ if [ -d "$TARGET_FRAMEWORK" ]; then
             rm -rf "$TARGET_FRAMEWORK"
         fi
     else
-        echo "Warning: SDL_image.h not found in framework, will re-download"
+        echo "Warning: Info.plist not found in framework, will re-download"
         rm -rf "$TARGET_FRAMEWORK"
     fi
 fi
