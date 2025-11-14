@@ -3,138 +3,95 @@ $ErrorActionPreference = "Stop"
 
 $SCREENSHOT_DIR = "screenshots"
 
-# GPU Detection and Driver Installation
+# GPU Detection and Mesa3d Installation
 Write-Host "=== GPU Detection Phase ==="
-Write-Host "Checking all display adapters..."
+Write-Host "Checking for hardware GPU..."
 $videoControllers = Get-WmiObject Win32_VideoController
 $videoControllers | Select-Object Name, DriverVersion, DriverDate, Status | Format-Table -AutoSize
 
-Write-Host "`nChecking PCI devices for GPUs..."
-$pciDevices = Get-PnpDevice -Class Display
-$pciDevices | Format-Table Name, Status, InstanceId -AutoSize
-
-Write-Host "`nChecking for hidden/disabled devices..."
-$allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN -ErrorAction SilentlyContinue
-if ($allDisplayDevices) {
-  Write-Host "Found disabled/error devices:"
-  $allDisplayDevices | Format-Table Name, Status -AutoSize
-} else {
-  Write-Host "No disabled/error display devices found"
+# Check for any hardware GPU (NVIDIA, AMD, Intel)
+$hardwareGpu = $videoControllers | Where-Object {
+  $_.Name -like "*NVIDIA*" -or
+  $_.Name -like "*GeForce*" -or
+  $_.Name -like "*Tesla*" -or
+  $_.Name -like "*AMD*" -or
+  $_.Name -like "*Radeon*" -or
+  $_.Name -like "*Intel*HD*" -or
+  $_.Name -like "*Intel*UHD*" -or
+  $_.Name -like "*Intel*Iris*"
 }
 
-# Check if NVIDIA GPU exists in PCI devices but not activated
-$nvidiaInPci = $pciDevices | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
-$nvidiaInWmi = $videoControllers | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+$USING_MESA = $false
 
-if ($nvidiaInPci -and -not $nvidiaInWmi) {
-  Write-Host "`n[INFO] NVIDIA GPU found in PCI but not active in video controllers"
-  Write-Host "GPU is present but drivers may not be loaded"
-} elseif ($nvidiaInWmi) {
-  Write-Host "`n[SUCCESS] NVIDIA GPU is active: $($nvidiaInWmi.Name)"
-  Write-Host "Driver version: $($nvidiaInWmi.DriverVersion)"
-  Write-Host "No driver installation needed"
+if ($hardwareGpu) {
+  Write-Host "`n[SUCCESS] Hardware GPU detected: $($hardwareGpu.Name)"
+  Write-Host "Driver version: $($hardwareGpu.DriverVersion)"
+  Write-Host "Will use hardware acceleration"
 } else {
-  Write-Host "`n[ERROR] No NVIDIA GPU detected"
-  Write-Host "This runner does not have a suitable GPU for UI testing"
+  Write-Host "`n[INFO] No hardware GPU detected"
   Write-Host "Available adapters:"
   $videoControllers | Format-Table Name -AutoSize
-  exit 1
-}
+  Write-Host "Will install Mesa3d for software rendering"
 
-Write-Host "`n=== Driver Installation Phase ==="
-if ($nvidiaInPci -and -not $nvidiaInWmi) {
-  Write-Host "Installing NVIDIA drivers for detected GPU..."
-  
-  # Use latest Game Ready driver (more reliable than GRID)
-  $nvidiaUrl = "https://us.download.nvidia.com/Windows/566.03/566.03-desktop-win10-win11-64bit-international-dch-whql.exe"
-  $installerPath = "$env:TEMP\nvidia-driver.exe"
-  
-  Write-Host "Downloading NVIDIA driver (this may take a few minutes)..."
+  Write-Host "`n=== Mesa3d Installation Phase ==="
+
+  # Download Mesa3d
+  $mesaUrl = "https://github.com/pal1000/mesa-dist-win/releases/download/24.3.1/mesa3d-24.3.1-release-msvc.7z"
+  $mesaArchive = "$env:TEMP\mesa3d.7z"
+  $mesaExtractDir = "$env:TEMP\mesa3d"
+
+  Write-Host "Downloading Mesa3d from $mesaUrl..."
   try {
-    Invoke-WebRequest -Uri $nvidiaUrl -OutFile $installerPath -UseBasicParsing -TimeoutSec 300
-    Write-Host "Download completed: $(([System.IO.FileInfo]$installerPath).Length / 1MB) MB"
+    Invoke-WebRequest -Uri $mesaUrl -OutFile $mesaArchive -UseBasicParsing -TimeoutSec 300
+    Write-Host "Download completed: $(([System.IO.FileInfo]$mesaArchive).Length / 1MB) MB"
   } catch {
-    Write-Host "[ERROR] Failed to download driver: $_"
+    Write-Host "[ERROR] Failed to download Mesa3d: $_"
     exit 1
   }
-  
-  Write-Host "Installing NVIDIA driver (this may take 5-10 minutes)..."
-  $process = Start-Process -FilePath $installerPath -ArgumentList "/s", "/noreboot", "/noeula" -Wait -NoNewWindow -PassThru
-  
-  if ($process.ExitCode -eq 0) {
-    Write-Host "[SUCCESS] NVIDIA driver installation completed"
+
+  # Extract Mesa3d (requires 7-Zip)
+  Write-Host "Extracting Mesa3d..."
+  if (Test-Path "C:\Program Files\7-Zip\7z.exe") {
+    & "C:\Program Files\7-Zip\7z.exe" x $mesaArchive -o"$mesaExtractDir" -y
   } else {
-    Write-Host "[WARNING] Driver installer exit code: $($process.ExitCode)"
-  }
-  
-  # Force driver service restart
-  Write-Host "Restarting display driver service..."
-  Get-Service -Name "nvlddmkm" -ErrorAction SilentlyContinue | Restart-Service -Force -ErrorAction SilentlyContinue
-  
-  Start-Sleep -Seconds 5
-}
-
-Write-Host "`n=== Post-Installation Verification ==="
-Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, Status | Format-Table -AutoSize
-
-# Check if nvidia-smi is available
-Write-Host "`nChecking nvidia-smi..."
-$nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-if ($nvidiaSmi) {
-  Write-Host "Running nvidia-smi:"
-  & nvidia-smi
-
-  # Check driver model (WDDM vs TCC)
-  Write-Host "`n=== Driver Model Check ==="
-  # Query driver model: WDDM (supports displays) or TCC (compute-only)
-  $driverModel = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
-  Write-Host "Current driver model: $driverModel"
-
-  if ($driverModel -match "TCC") {
-    Write-Host "[WARN] GPU is in TCC mode (compute-only, no display support)"
-    Write-Host "Switching to WDDM mode (required for display support)..."
-
-    # Switch to WDDM mode (0 = WDDM, 1 = TCC)
-    # Note: Requires administrator privileges and may require reboot
-    $dmResult = & nvidia-smi -i 0 -dm 0 2>&1
-    Write-Host $dmResult
-
-    if ($dmResult -match "reboot" -or $dmResult -match "restart") {
-      Write-Host "[ERROR] Driver model change requires a system reboot"
-      Write-Host "The GPU runner needs to be rebooted for WDDM mode to take effect"
-      exit 1
-    }
-
-    Start-Sleep -Seconds 2
-
-    # Re-check driver model
-    $driverModelNew = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
-    Write-Host "Driver model after change: $driverModelNew"
-  } elseif ($driverModel -match "WDDM") {
-    Write-Host "[OK] GPU is already in WDDM mode (display support enabled)"
-  } else {
-    Write-Host "[INFO] Driver model query returned: $driverModel"
+    Write-Host "[ERROR] 7-Zip not found. Installing 7-Zip..."
+    choco install 7zip -y
+    & "C:\Program Files\7-Zip\7z.exe" x $mesaArchive -o"$mesaExtractDir" -y
   }
 
-  # Check display status
-  Write-Host "`n=== Display Status Check ==="
-  $displayStatus = & nvidia-smi --query-gpu=display_active,display_mode --format=csv 2>&1
-  Write-Host $displayStatus
+  # Copy Mesa3d OpenGL DLLs to application directory
+  Write-Host "Installing Mesa3d OpenGL drivers..."
 
-  # Enable persistence mode (helps with driver stability)
-  Write-Host "`nEnabling NVIDIA persistence mode..."
-  $pmResult = & nvidia-smi -pm 1 2>&1
-  Write-Host $pmResult
+  # Determine if we're in CI or local mode to find the right directory
+  if (Test-Path "acidwarp-windows.exe") {
+    $appDir = Get-Location
+  } elseif (Test-Path "build/acidwarp-windows.exe") {
+    $appDir = Join-Path (Get-Location) "build"
+  } else {
+    Write-Host "[ERROR] Could not find acidwarp-windows.exe"
+    exit 1
+  }
 
-  Start-Sleep -Seconds 2
+  # Copy required Mesa DLLs for desktop OpenGL software rendering
+  # - opengl32.dll: WGL runtime loader for desktop OpenGL
+  # - libgallium_wgl.dll: Gallium OpenGL megadriver (contains llvmpipe)
+  Copy-Item "$mesaExtractDir\x64\opengl32.dll" "$appDir\opengl32.dll" -Force
+  Copy-Item "$mesaExtractDir\x64\libgallium_wgl.dll" "$appDir\libgallium_wgl.dll" -Force
 
-  # Verify final state
-  Write-Host "`n=== Final GPU State ==="
-  & nvidia-smi
-  Write-Host ""
-} else {
-  Write-Host "nvidia-smi not found in PATH"
+  Write-Host "[SUCCESS] Mesa3d installed for software rendering"
+  $USING_MESA = $true
+
+  # Set environment variables to use Mesa llvmpipe software renderer
+  $env:GALLIUM_DRIVER = "llvmpipe"
+  $env:MESA_GL_VERSION_OVERRIDE = "4.1COMPAT"
+  $env:MESA_GLSL_VERSION_OVERRIDE = "410"
+
+  Write-Host "Mesa environment configured:"
+  Write-Host "  GALLIUM_DRIVER=llvmpipe (software rendering)"
+  Write-Host "  MESA_GL_VERSION_OVERRIDE=4.1COMPAT"
+  Write-Host "  MESA_GLSL_VERSION_OVERRIDE=410"
 }
+
 Write-Host ""
 
 # Detect environment: CI (flat structure) vs Local (build/ subdirectory)
