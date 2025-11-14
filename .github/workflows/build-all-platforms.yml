@@ -114,6 +114,16 @@ jobs:
             android/logcat-test.txt
           if-no-files-found: ignore
 
+      - name: Upload test results
+        if: always() && steps.build-and-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-results
+          path: |
+            android/app/build/test-results/**/*.xml
+            android/app/build/outputs/androidTest-results/**/*.xml
+          if-no-files-found: ignore
+
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
 
@@ -217,11 +227,11 @@ jobs:
           path: linux/screenshots/*.png
           if-no-files-found: error
 
-      - name: Upload application logs
+      - name: Upload ui test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: linux-ui-test-logs
+          name: linux-ui-test-log
           path: |
             linux/acidwarp.log
             linux/acidwarp-error.log
@@ -330,6 +340,14 @@ jobs:
           path: macos/screenshots/*.png
           if-no-files-found: error
 
+      - name: Upload test results
+        if: always() && steps.run-ui-tests.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-results
+          path: macos/build/**/*.xcresult
+          if-no-files-found: ignore
+
 
 
   # ============================================================================
@@ -396,7 +414,7 @@ jobs:
         if: always() && steps.ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: ios-xcodebuild-test-without-building-log
+          name: ios-ui-test-log
           path: ios/xcodebuild-test-without-building.log
           if-no-files-found: ignore
 
@@ -412,6 +430,14 @@ jobs:
           name: ios-ui-test-screenshots
           path: ios/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload test results
+        if: always() && steps.ui-tests.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: ios/build/**/*.xcresult
+          if-no-files-found: ignore
 
       - name: Build Release for physical device
         id: release-build
@@ -435,7 +461,7 @@ jobs:
         if: always() && steps.release-build.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: ios-release-xcodebuild-log
+          name: ios-xcodebuild-release-log
           path: ios/xcodebuild-release.log
           if-no-files-found: ignore
 
@@ -485,11 +511,11 @@ jobs:
           path: screenshots/*.png
           if-no-files-found: error
 
-      - name: Upload application logs
+      - name: Upload ui test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: windows-ui-test-logs
+          name: windows-ui-test-log
           path: |
             **/acidwarp.log
             **/acidwarp-error.log
