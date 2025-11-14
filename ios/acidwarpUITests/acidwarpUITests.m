@@ -8,7 +8,7 @@
 #import <XCTest/XCTest.h>
 
 @interface acidwarpUITests : XCTestCase
-
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *screenshotCounts;
 @end
 
 @implementation acidwarpUITests
@@ -19,31 +19,31 @@
     // In UI tests it is usually best to stop immediately when a failure occurs.
     self.continueAfterFailure = NO;
 
+    // Initialize screenshot counter
+    self.screenshotCounts = [NSMutableDictionary dictionary];
+
     // In UI tests it's important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    
-    // Ensure app is properly terminated to avoid termination failures
-    // This helps prevent "Failed to terminate" errors in CI, especially for performance tests
-    @try {
-        XCUIApplication *app = [[XCUIApplication alloc] init];
-        if (app.exists && app.state != XCUIApplicationStateNotRunning) {
-            [app terminate];
-            // Give the app a moment to terminate gracefully
-            NSPredicate *terminatedPredicate = [NSPredicate predicateWithFormat:@"state == %d", XCUIApplicationStateNotRunning];
-            [self expectationForPredicate:terminatedPredicate evaluatedWithObject:app handler:nil];
-            [self waitForExpectationsWithTimeout:5.0 handler:nil];
-        }
-    } @catch (NSException *exception) {
-        // Silently handle termination errors - retry mechanism will handle test failures
-    }
 }
 
 - (void)takeScreenshotNamed:(NSString *)name {
+    // Increment counter for this screenshot name
+    NSNumber *count = self.screenshotCounts[name];
+    if (count == nil) {
+        count = @1;
+    } else {
+        count = @([count intValue] + 1);
+    }
+    self.screenshotCounts[name] = count;
+
+    // Create filename with incremented suffix
+    NSString *fullName = [NSString stringWithFormat:@"%@-%d", name, [count intValue]];
+
     XCTAttachment *attachment = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];
-    attachment.name = name;
+    attachment.name = fullName;
     attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
     [self addAttachment:attachment];
 }

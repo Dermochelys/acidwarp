@@ -30,15 +30,15 @@
 
     // This test runs for each UI configuration (Light/Dark mode) due to
     // runsForEachTargetApplicationUIConfiguration returning YES.
-    // Use a static counter to distinguish between runs and create unique names.
-    static int launchScreenCount = 0;
-    launchScreenCount++;
+    // Use a static counter to handle multiple test runs
+    static int screenshotCounter = 0;
+    screenshotCounter++;
 
     NSString *screenshotName;
-    if (launchScreenCount == 1) {
-        screenshotName = @"Launch Screen Light";
+    if (screenshotCounter == 1) {
+        screenshotName = @"Launch Screen";
     } else {
-        screenshotName = @"Launch Screen Dark";
+        screenshotName = [NSString stringWithFormat:@"Launch Screen %d", screenshotCounter];
     }
 
     XCTAttachment *attachment = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];

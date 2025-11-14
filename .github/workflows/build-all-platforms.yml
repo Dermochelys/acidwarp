@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  actions: write  # Required to delete artifacts
+
 jobs:
   # ============================================================================
   # ANDROID BUILD
@@ -24,10 +27,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-
-      - name: Grant execute permission for gradlew
-        working-directory: android
-        run: chmod +x gradlew
 
       - name: Enable KVM group perms
         run: |
@@ -73,6 +72,7 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: assemble, lint, run unit tests, run instrumented tests
+        id: build-and-test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -84,9 +84,13 @@ jobs:
           disable-animations: true
           working-directory: ./android
           script: |
+            adb logcat -c  # Clear logcat before build
             ./gradlew build
             ./gradlew :app:installDebug :app:installDebugAndroidTest
+            adb logcat -d > logcat-build.txt  # Dump logcat after build
+            adb logcat -c  # Clear logcat before test run
             adb shell am instrument -w -r -e debug false com.dermochelys.acidwarp.test/androidx.test.runner.AndroidJUnitRunner
+            adb logcat -d > logcat-test.txt  # Dump logcat after test run
             mkdir -p screenshots
             adb pull /storage/emulated/0/Android/data/com.dermochelys.acidwarp/files/screenshots screenshots/ || echo "No screenshots found"
             adb uninstall com.dermochelys.acidwarp || true
@@ -99,6 +103,26 @@ jobs:
           name: android-ui-test-screenshots
           path: android/screenshots/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload logcat
+        if: always() && steps.build-and-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-logcat
+          path: |
+            android/logcat-build.txt
+            android/logcat-test.txt
+          if-no-files-found: ignore
+
+      - name: Upload test results
+        if: always() && steps.build-and-test.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-results
+          path: |
+            android/app/build/test-results/**/*.xml
+            android/app/build/outputs/androidTest-results/**/*.xml
+          if-no-files-found: ignore
 
       - name: Check Android ELF Alignment
         uses: Dermochelys/check-android-elf-alignment@v2
@@ -193,9 +217,7 @@ jobs:
 
       - name: Run UI tests
         working-directory: linux
-        run: |
-          chmod +x ui_test.sh
-          ./ui_test.sh
+        run: ./ui_test.sh
 
       - name: Upload screenshots
         if: always()
@@ -204,6 +226,16 @@ jobs:
           name: linux-ui-test-screenshots
           path: linux/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload ui test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-ui-test-log
+          path: |
+            linux/acidwarp.log
+            linux/acidwarp-error.log
+          if-no-files-found: ignore
 
 
 
@@ -234,6 +266,8 @@ jobs:
             mingw-w64-x86_64-sdl3
             mingw-w64-x86_64-sdl3-image
             mingw-w64-x86_64-glew
+            mingw-w64-x86_64-mesa
+            mingw-w64-x86_64-llvm
 
       - name: Configure CMake
         working-directory: windows
@@ -243,15 +277,28 @@ jobs:
         working-directory: windows
         run: cmake --build build --config Release
 
-      - name: Upload Windows build artifacts
+      - name: Run UI tests
+        working-directory: windows
+        shell: pwsh
+        run: .\ui_test.ps1
+
+      - name: Upload screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: |
-            windows/build/*.exe
-            windows/*.dll
-            windows/ui_test.ps1
+          name: windows-ui-test-screenshots
+          path: windows/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload ui test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test-log
+          path: |
+            windows/acidwarp.log
+            windows/acidwarp-error.log
+          if-no-files-found: ignore
 
 
 
@@ -280,14 +327,13 @@ jobs:
           key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
       - name: Run UI tests
+        id: run-ui-tests
         working-directory: macos
         timeout-minutes: 20
-        run: |
-          chmod +x run-uitests.sh
-          ./run-uitests.sh
+        run: ./run-uitests.sh
 
       - name: Upload xcodebuild log
-        if: failure()
+        if: always() && steps.run-ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: macos-xcodebuild-log
@@ -296,9 +342,7 @@ jobs:
 
       - name: Extract screenshots from test results
         if: always()
-        run: |
-          chmod +x extract-test-screenshots.sh
-          ./extract-test-screenshots.sh macos macos/build macos/screenshots
+        run: ./extract-test-screenshots.sh macos macos/build macos/screenshots
 
       - name: Upload screenshots
         if: always()
@@ -307,6 +351,14 @@ jobs:
           name: macos-ui-test-screenshots
           path: macos/screenshots/*.png
           if-no-files-found: error
+
+      - name: Upload test results
+        if: always() && steps.run-ui-tests.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-results
+          path: macos/build/**/*.xcresult
+          if-no-files-found: ignore
 
 
 
@@ -329,66 +381,112 @@ jobs:
         run: echo "SDL3_IMAGE_VERSION=$(cat SDL3_IMAGE_VERSION)" >> $GITHUB_ENV
 
       - name: Cache SDL3_image.xcframework
+        id: cache-sdl3-image
         uses: actions/cache@v4
         with:
           path: SDL3_image.xcframework
           key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
-      - name: Build app and run UI tests
+      - name: Block Apple developer services
+        run: sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
+
+      - name: Start iOS simulator (background)
         working-directory: ios
-        timeout-minutes: 20
-        run: |
-          chmod +x run-uitests.sh
-          ./run-uitests.sh
+        timeout-minutes: 2
+        run: ./start-simulator-background.sh
+
+      - name: Build UI tests
+        id: build-ui-tests
+        working-directory: ios
+        timeout-minutes: 10
+        run: ./build-uitests.sh
+
+      - name: Upload build-without-testing log
+        if: always() && steps.build-ui-tests.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcodebuild-build-without-testing-log
+          path: ios/xcodebuild-build-without-testing.log
+          if-no-files-found: ignore
+
+      - name: Wait for iOS simulator to be ready
+        if: success()
+        working-directory: ios
+        timeout-minutes: 5
+        run: ./wait-for-simulator.sh
+
+      - name: Run UI tests
+        id: ui-tests
+        if: success()
+        working-directory: ios
+        timeout-minutes: 10
+        run: ./test-uitests.sh
+
+      - name: Upload test-without-building log
+        if: always() && steps.ui-tests.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ui-test-log
+          path: ios/xcodebuild-test-without-building.log
+          if-no-files-found: ignore
 
       - name: Extract screenshots from test results
-        if: always()
-        run: |
-          chmod +x extract-test-screenshots.sh
-          ./extract-test-screenshots.sh ios ios/build ios/screenshots
+        id: extract-screenshots
+        if: always() && steps.ui-tests.outcome != 'skipped'
+        run: ./extract-test-screenshots.sh ios ios/build ios/screenshots
 
       - name: Upload screenshots
-        if: always()
+        if: always() && steps.extract-screenshots.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: ios-ui-test-screenshots
           path: ios/screenshots/*.png
           if-no-files-found: error
 
-
-
-  # ============================================================================
-  # WINDOWS UI TEST (GPU RUNNER)
-  #
-  # Note: Only runs if all other builds pass, to avoid wasted compute spend
-  # ============================================================================
-  windows-ui-test:
-    name: Windows UI Test
-    runs-on: windows-x64-2019-gpu
-    needs: [android, linux, windows, macos, ios]
-    if: success()
-    environment: gpu-testing
-
-    defaults:
-      run:
-        shell: powershell
-
-    steps:
-      - name: Download Windows build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build
-
-      - name: Run UI tests
-        run: .\ui_test.ps1
-
-      - name: Upload screenshots
-        if: always()
+      - name: Upload test results
+        if: always() && steps.ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: windows-ui-test-screenshots
-          path: screenshots/*.png
-          if-no-files-found: error
+          name: ios-test-results
+          path: ios/build/**/*.xcresult
+          if-no-files-found: ignore
+
+      - name: Build Release for physical device
+        id: release-build
+        if: success() && steps.ui-tests.outcome == 'success'
+        working-directory: ios
+        timeout-minutes: 15
+        run: |
+          echo "Building Release configuration for physical device..."
+          xcodebuild build \
+            -project acidwarp-ios.xcodeproj \
+            -scheme acidwarp \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ./build-release \
+            -showBuildTimingSummary \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | tee xcodebuild-release.log
+
+      - name: Upload Release build xcodebuild log
+        if: always() && steps.release-build.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcodebuild-release-log
+          path: ios/xcodebuild-release.log
+          if-no-files-found: ignore
+
+      - name: Unblock Apple developer services
+        if: always()
+        run: sudo sed -i '' '/developerservices2\.apple\.com/d' /etc/hosts
+
+      - name: Save SDL3_image cache
+        if: success() && steps.ui-tests.outcome == 'success' && steps.cache-sdl3-image.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: SDL3_image.xcframework
+          key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
 
 
@@ -398,7 +496,7 @@ jobs:
   build-summary:
     name: Build Summary
     runs-on: ubuntu-latest
-    needs: [android, linux, windows, macos, ios, windows-ui-test]
+    needs: [android, linux, windows, macos, ios]
     if: always()
 
     steps:
@@ -406,20 +504,18 @@ jobs:
         run: |
           echo "Build Summary:"
           echo "============================================"
-          echo "Android:         ${{ needs.android.result }}"
-          echo "Linux:           ${{ needs.linux.result }}"
-          echo "Windows:         ${{ needs.windows.result }}"
-          echo "macOS:           ${{ needs.macos.result }}"
-          echo "iOS:             ${{ needs.ios.result }}"
-          echo "Windows UI Test: ${{ needs.windows-ui-test.result }}"
+          echo "Android: ${{ needs.android.result }}"
+          echo "Linux:   ${{ needs.linux.result }}"
+          echo "Windows: ${{ needs.windows.result }}"
+          echo "macOS:   ${{ needs.macos.result }}"
+          echo "iOS:     ${{ needs.ios.result }}"
           echo "============================================"
 
           if [[ "${{ needs.android.result }}" == "failure" ]] || \
              [[ "${{ needs.linux.result }}" == "failure" ]] || \
              [[ "${{ needs.windows.result }}" == "failure" ]] || \
              [[ "${{ needs.macos.result }}" == "failure" ]] || \
-             [[ "${{ needs.ios.result }}" == "failure" ]] || \
-             [[ "${{ needs.windows-ui-test.result }}" == "failure" ]]; then
+             [[ "${{ needs.ios.result }}" == "failure" ]]; then
             echo "? One or more builds failed"
             exit 1
           else

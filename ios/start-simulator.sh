@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Running iOS UI Tests ==="
+echo "=== Starting iOS Simulator ==="
 echo ""
 
 cd "$(dirname "$0")"
@@ -55,28 +55,8 @@ else
 fi
 
 # Give it a bit more time to fully initialize
+echo "Waiting 5 more seconds for the emulator to finish initializing..."
 sleep 5
 
 echo ""
-echo "Running tests..."
-
-xcodebuild test \
-  -project acidwarp-ios.xcodeproj \
-  -scheme acidwarpUITests \
-  -configuration Release \
-  -destination "platform=iOS Simulator,arch=$ARCH,name=iPhone 17 Pro" \
-  -parallel-testing-enabled NO \
-  -resultBundlePath ./build/Logs/Test/Test-results.xcresult \
-  -retry-tests-on-failure \
-  CODE_SIGN_IDENTITY="" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO
-
-echo ""
-echo "=== UI Tests Completed ==="
-
-# Shutdown the simulator
-echo ""
-echo "Shutting down simulator..."
-xcrun simctl shutdown "$DEVICE_UUID" || true
-echo "Simulator shut down"
+echo "=== Simulator Ready ==="

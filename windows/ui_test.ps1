@@ -3,138 +3,102 @@ $ErrorActionPreference = "Stop"
 
 $SCREENSHOT_DIR = "screenshots"
 
-# GPU Detection and Driver Installation
+# GPU Detection and Mesa3d Installation
 Write-Host "=== GPU Detection Phase ==="
-Write-Host "Checking all display adapters..."
+Write-Host "Checking for hardware GPU..."
 $videoControllers = Get-WmiObject Win32_VideoController
 $videoControllers | Select-Object Name, DriverVersion, DriverDate, Status | Format-Table -AutoSize
 
-Write-Host "`nChecking PCI devices for GPUs..."
-$pciDevices = Get-PnpDevice -Class Display
-$pciDevices | Format-Table Name, Status, InstanceId -AutoSize
-
-Write-Host "`nChecking for hidden/disabled devices..."
-$allDisplayDevices = Get-PnpDevice -Class Display -Status ERROR,UNKNOWN -ErrorAction SilentlyContinue
-if ($allDisplayDevices) {
-  Write-Host "Found disabled/error devices:"
-  $allDisplayDevices | Format-Table Name, Status -AutoSize
-} else {
-  Write-Host "No disabled/error display devices found"
+# Check for any hardware GPU (NVIDIA, AMD, Intel)
+$hardwareGpu = $videoControllers | Where-Object {
+  $_.Name -like "*NVIDIA*" -or
+  $_.Name -like "*GeForce*" -or
+  $_.Name -like "*Tesla*" -or
+  $_.Name -like "*AMD*" -or
+  $_.Name -like "*Radeon*" -or
+  $_.Name -like "*Intel*HD*" -or
+  $_.Name -like "*Intel*UHD*" -or
+  $_.Name -like "*Intel*Iris*"
 }
 
-# Check if NVIDIA GPU exists in PCI devices but not activated
-$nvidiaInPci = $pciDevices | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
-$nvidiaInWmi = $videoControllers | Where-Object { $_.Name -like "*NVIDIA*" -or $_.Name -like "*Tesla*" -or $_.Name -like "*GeForce*" }
+$USING_MESA = $false
 
-if ($nvidiaInPci -and -not $nvidiaInWmi) {
-  Write-Host "`n[INFO] NVIDIA GPU found in PCI but not active in video controllers"
-  Write-Host "GPU is present but drivers may not be loaded"
-} elseif ($nvidiaInWmi) {
-  Write-Host "`n[SUCCESS] NVIDIA GPU is active: $($nvidiaInWmi.Name)"
-  Write-Host "Driver version: $($nvidiaInWmi.DriverVersion)"
-  Write-Host "No driver installation needed"
+if ($hardwareGpu) {
+  Write-Host "`n[SUCCESS] Hardware GPU detected: $($hardwareGpu.Name)"
+  Write-Host "Driver version: $($hardwareGpu.DriverVersion)"
+  Write-Host "Will use hardware acceleration"
 } else {
-  Write-Host "`n[ERROR] No NVIDIA GPU detected"
-  Write-Host "This runner does not have a suitable GPU for UI testing"
+  Write-Host "`n[INFO] No hardware GPU detected"
   Write-Host "Available adapters:"
   $videoControllers | Format-Table Name -AutoSize
-  exit 1
-}
+  Write-Host "Will use Mesa3D from MSYS2 for software rendering"
 
-Write-Host "`n=== Driver Installation Phase ==="
-if ($nvidiaInPci -and -not $nvidiaInWmi) {
-  Write-Host "Installing NVIDIA drivers for detected GPU..."
-  
-  # Use latest Game Ready driver (more reliable than GRID)
-  $nvidiaUrl = "https://us.download.nvidia.com/Windows/566.03/566.03-desktop-win10-win11-64bit-international-dch-whql.exe"
-  $installerPath = "$env:TEMP\nvidia-driver.exe"
-  
-  Write-Host "Downloading NVIDIA driver (this may take a few minutes)..."
-  try {
-    Invoke-WebRequest -Uri $nvidiaUrl -OutFile $installerPath -UseBasicParsing -TimeoutSec 300
-    Write-Host "Download completed: $(([System.IO.FileInfo]$installerPath).Length / 1MB) MB"
-  } catch {
-    Write-Host "[ERROR] Failed to download driver: $_"
+  Write-Host "`n=== Mesa3D Installation Phase ==="
+
+  # Determine if we're in CI or local mode to find the right directory
+  if (Test-Path "acidwarp-windows.exe") {
+    $appDir = Get-Location
+  } elseif (Test-Path "build/acidwarp-windows.exe") {
+    $appDir = Join-Path (Get-Location) "build"
+  } else {
+    Write-Host "[ERROR] Could not find acidwarp-windows.exe"
     exit 1
   }
-  
-  Write-Host "Installing NVIDIA driver (this may take 5-10 minutes)..."
-  $process = Start-Process -FilePath $installerPath -ArgumentList "/s", "/noreboot", "/noeula" -Wait -NoNewWindow -PassThru
-  
-  if ($process.ExitCode -eq 0) {
-    Write-Host "[SUCCESS] NVIDIA driver installation completed"
-  } else {
-    Write-Host "[WARNING] Driver installer exit code: $($process.ExitCode)"
-  }
-  
-  # Force driver service restart
-  Write-Host "Restarting display driver service..."
-  Get-Service -Name "nvlddmkm" -ErrorAction SilentlyContinue | Restart-Service -Force -ErrorAction SilentlyContinue
-  
-  Start-Sleep -Seconds 5
-}
 
-Write-Host "`n=== Post-Installation Verification ==="
-Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, Status | Format-Table -AutoSize
+  # Copy Mesa DLLs from MSYS2 installation
+  # Detect MSYS2 installation path (varies between local and CI environments)
+  $msys2Paths = @(
+    "D:\a\_temp\msys64\mingw64\bin",  # GitHub Actions default
+    "C:\msys64\mingw64\bin",           # Local installation default
+    "$env:RUNNER_TEMP\msys64\mingw64\bin"  # Alternative CI path
+  )
 
-# Check if nvidia-smi is available
-Write-Host "`nChecking nvidia-smi..."
-$nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-if ($nvidiaSmi) {
-  Write-Host "Running nvidia-smi:"
-  & nvidia-smi
-
-  # Check driver model (WDDM vs TCC)
-  Write-Host "`n=== Driver Model Check ==="
-  # Query driver model: WDDM (supports displays) or TCC (compute-only)
-  $driverModel = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
-  Write-Host "Current driver model: $driverModel"
-
-  if ($driverModel -match "TCC") {
-    Write-Host "[WARN] GPU is in TCC mode (compute-only, no display support)"
-    Write-Host "Switching to WDDM mode (required for display support)..."
-
-    # Switch to WDDM mode (0 = WDDM, 1 = TCC)
-    # Note: Requires administrator privileges and may require reboot
-    $dmResult = & nvidia-smi -i 0 -dm 0 2>&1
-    Write-Host $dmResult
-
-    if ($dmResult -match "reboot" -or $dmResult -match "restart") {
-      Write-Host "[ERROR] Driver model change requires a system reboot"
-      Write-Host "The GPU runner needs to be rebooted for WDDM mode to take effect"
-      exit 1
+  $msys2MesaPath = $null
+  foreach ($path in $msys2Paths) {
+    if (Test-Path "$path\opengl32.dll") {
+      $msys2MesaPath = $path
+      Write-Host "Found MSYS2 Mesa installation at: $msys2MesaPath"
+      break
     }
-
-    Start-Sleep -Seconds 2
-
-    # Re-check driver model
-    $driverModelNew = & nvidia-smi --query-gpu=driver_model.current --format=csv,noheader 2>&1
-    Write-Host "Driver model after change: $driverModelNew"
-  } elseif ($driverModel -match "WDDM") {
-    Write-Host "[OK] GPU is already in WDDM mode (display support enabled)"
-  } else {
-    Write-Host "[INFO] Driver model query returned: $driverModel"
   }
 
-  # Check display status
-  Write-Host "`n=== Display Status Check ==="
-  $displayStatus = & nvidia-smi --query-gpu=display_active,display_mode --format=csv 2>&1
-  Write-Host $displayStatus
+  if (-not $msys2MesaPath) {
+    Write-Host "[ERROR] Mesa DLLs not found in any expected MSYS2 location"
+    Write-Host "Searched paths:"
+    foreach ($path in $msys2Paths) {
+      Write-Host "  - $path $(if (Test-Path (Split-Path $path -Parent)) { '(directory exists but no opengl32.dll)' } else { '(directory does not exist)' })"
+    }
+    Write-Host "Make sure mingw-w64-x86_64-mesa is installed in the workflow"
+    exit 1
+  }
 
-  # Enable persistence mode (helps with driver stability)
-  Write-Host "`nEnabling NVIDIA persistence mode..."
-  $pmResult = & nvidia-smi -pm 1 2>&1
-  Write-Host $pmResult
+  Write-Host "Copying Mesa3D DLLs from MSYS2..."
+  # Copy required Mesa DLLs for desktop OpenGL software rendering
+  # - opengl32.dll: WGL runtime loader for desktop OpenGL
+  # - libgallium_wgl.dll: Gallium OpenGL megadriver (contains llvmpipe)
+  Copy-Item "$msys2MesaPath\opengl32.dll" "$appDir\opengl32.dll" -Force
+  Copy-Item "$msys2MesaPath\libgallium_wgl.dll" "$appDir\libgallium_wgl.dll" -Force
 
-  Start-Sleep -Seconds 2
+  Write-Host "[SUCCESS] Mesa3D DLLs copied"
 
-  # Verify final state
-  Write-Host "`n=== Final GPU State ==="
-  & nvidia-smi
-  Write-Host ""
-} else {
-  Write-Host "nvidia-smi not found in PATH"
+  # Add MSYS2 bin to PATH so Mesa dependencies (LLVM libs, etc.) can be found
+  Write-Host "Adding MSYS2 bin directory to PATH for Mesa dependencies..."
+  $env:PATH = "$msys2MesaPath;$env:PATH"
+
+  $USING_MESA = $true
+
+  # Set environment variables to use Mesa llvmpipe software renderer
+  $env:GALLIUM_DRIVER = "llvmpipe"
+  $env:MESA_GL_VERSION_OVERRIDE = "4.1COMPAT"
+  $env:MESA_GLSL_VERSION_OVERRIDE = "410"
+
+  Write-Host "Mesa environment configured:"
+  Write-Host "  GALLIUM_DRIVER=llvmpipe (software rendering)"
+  Write-Host "  MESA_GL_VERSION_OVERRIDE=4.1COMPAT"
+  Write-Host "  MESA_GLSL_VERSION_OVERRIDE=410"
+  Write-Host "  PATH includes: $msys2MesaPath"
 }
+
 Write-Host ""
 
 # Detect environment: CI (flat structure) vs Local (build/ subdirectory)
@@ -169,9 +133,29 @@ if (Test-Path "acidwarp-windows.exe") {
 $SCREENSHOT_DIR_FULL = Join-Path (Get-Location) $SCREENSHOT_DIR
 New-Item -ItemType Directory -Force -Path $SCREENSHOT_DIR_FULL | Out-Null
 
-Write-Host "Launching Acid Warp..."
+Write-Host "`n=== Environment Cleanup ==="
+# Close any distracting windows that might interfere
+Write-Host "Closing Visual Studio Code windows if open..."
+$vscodeProcesses = Get-Process -Name "Code" -ErrorAction SilentlyContinue
+if ($vscodeProcesses) {
+  foreach ($proc in $vscodeProcesses) {
+    Write-Host "  Closing VS Code process (PID: $($proc.Id))"
+    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+  }
+  Start-Sleep -Seconds 2
+  Write-Host "[OK] Closed Visual Studio Code"
+} else {
+  Write-Host "[INFO] No Visual Studio Code windows found"
+}
+
+Write-Host "`nLaunching Acid Warp..."
 # Launch the app in background
-$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput "$LOG_DIR/acidwarp.log" -RedirectStandardError "$LOG_DIR/acidwarp-error.log" -NoNewWindow
+$LOG_STDOUT = Join-Path $LOG_DIR "acidwarp.log"
+$LOG_STDERR = Join-Path $LOG_DIR "acidwarp-error.log"
+Write-Host "Log files will be written to:"
+Write-Host "  stdout: $LOG_STDOUT"
+Write-Host "  stderr: $LOG_STDERR"
+$appProcess = Start-Process -FilePath $APP_BINARY -PassThru -RedirectStandardOutput $LOG_STDOUT -RedirectStandardError $LOG_STDERR -NoNewWindow
 
 Write-Host "App launched with PID: $($appProcess.Id)"
 
@@ -179,13 +163,21 @@ Write-Host "App launched with PID: $($appProcess.Id)"
 Write-Host "Waiting for app initialization..."
 Start-Sleep -Seconds 5
 
-# Check if log file exists and show recent output
-if (Test-Path "$LOG_DIR/acidwarp.log") {
-    Write-Host "=== Recent app output ==="
-    Get-Content "$LOG_DIR/acidwarp.log" -Tail 50 -ErrorAction SilentlyContinue
-    Write-Host "=== End of app output ==="
+# Check if log files exist and show recent output
+if (Test-Path $LOG_STDERR) {
+    Write-Host "=== Recent app stderr output ==="
+    Get-Content $LOG_STDERR -Tail 50 -ErrorAction SilentlyContinue
+    Write-Host "=== End of stderr output ==="
 } else {
-    Write-Host "[WARN] Log file not found at $LOG_DIR/acidwarp.log"
+    Write-Host "[WARN] Error log file not found at $LOG_STDERR"
+}
+
+if (Test-Path $LOG_STDOUT) {
+    Write-Host "=== Recent app stdout output ==="
+    Get-Content $LOG_STDOUT -Tail 50 -ErrorAction SilentlyContinue
+    Write-Host "=== End of stdout output ==="
+} else {
+    Write-Host "[WARN] Output log file not found at $LOG_STDOUT"
 }
 
 # Verify the app process is still running
@@ -221,12 +213,61 @@ if ($processes) {
 # Also check if a window exists (alternative verification)
 Write-Host "DEBUG: Checking for Acid Warp window..."
 Add-Type -AssemblyName System.Windows.Forms
+
+# Add Window detection helper
+Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class WindowHelper {
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+    }
+"@
+
 $windowProcesses = Get-Process | Where-Object { $_.ProcessName -like "*acidwarp*" -or $_.MainWindowTitle -like "*Acid Warp*" }
 
 if ($windowProcesses) {
     Write-Host "Window found:"
     foreach ($proc in $windowProcesses) {
         Write-Host "  Process: $($proc.ProcessName), PID: $($proc.Id), Window: $($proc.MainWindowTitle)"
+        Write-Host "  Window Handle: $($proc.MainWindowHandle)"
+
+        # Check if window is visible
+        $isVisible = [WindowHelper]::IsWindowVisible($proc.MainWindowHandle)
+        Write-Host "  Window is visible: $isVisible"
+
+        # Check if window is in foreground
+        $foregroundWindow = [WindowHelper]::GetForegroundWindow()
+        $isForeground = ($proc.MainWindowHandle -eq $foregroundWindow)
+        Write-Host "  Window is in foreground: $isForeground"
+        Write-Host "  Current foreground window handle: $foregroundWindow"
+
+        # Try to bring window to foreground
+        Write-Host "  Attempting to bring window to foreground..."
+        [WindowHelper]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null  # SW_RESTORE = 9
+        Start-Sleep -Milliseconds 100
+        $bringToFrontResult = [WindowHelper]::SetForegroundWindow($proc.MainWindowHandle)
+        Write-Host "  SetForegroundWindow result: $bringToFrontResult"
+
+        Start-Sleep -Milliseconds 200
+
+        # Check again after attempting to bring to foreground
+        $foregroundWindowAfter = [WindowHelper]::GetForegroundWindow()
+        $isForegroundAfter = ($proc.MainWindowHandle -eq $foregroundWindowAfter)
+        Write-Host "  Window is in foreground after SetForegroundWindow: $isForegroundAfter"
+        Write-Host "  Foreground window handle after: $foregroundWindowAfter"
     }
     if (-not $PROCESS_FOUND) {
         $actualPid = $windowProcesses[0].Id
@@ -239,13 +280,21 @@ if (-not $PROCESS_FOUND) {
     Write-Host "[ERROR] Acid Warp process is not running!"
     Write-Host "The process may have crashed during initialization."
     Write-Host ""
-    Write-Host "=== Full app log (if available) ==="
-    if (Test-Path "$LOG_DIR/acidwarp.log") {
-        Get-Content "$LOG_DIR/acidwarp.log" -ErrorAction SilentlyContinue
+    Write-Host "=== Full app stderr log (if available) ==="
+    if (Test-Path $LOG_STDERR) {
+        Get-Content $LOG_STDERR -ErrorAction SilentlyContinue
     } else {
-        Write-Host "Log file not found"
+        Write-Host "Error log file not found"
     }
-    Write-Host "=== End of app log ==="
+    Write-Host "=== End of stderr log ==="
+    Write-Host ""
+    Write-Host "=== Full app stdout log (if available) ==="
+    if (Test-Path $LOG_STDOUT) {
+        Get-Content $LOG_STDOUT -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "Output log file not found"
+    }
+    Write-Host "=== End of stdout log ==="
     Write-Host ""
     Write-Host "Capturing screenshot to check if app window is visible..."
 
@@ -269,6 +318,33 @@ Write-Host "[OK] Acid Warp process is running"
 if ($actualPid) {
     Write-Host "DEBUG: Using actual PID: $actualPid"
     $appProcess = Get-Process -Id $actualPid
+}
+
+# Helper function to check if process is still alive
+function Test-ProcessAlive {
+    param (
+        [System.Diagnostics.Process]$process
+    )
+
+    $isAlive = -not $process.HasExited
+    if (-not $isAlive) {
+        Write-Host "[ERROR] Acid Warp process has exited unexpectedly!"
+        Write-Host "Exit code: $($process.ExitCode)"
+        Write-Host ""
+        Write-Host "=== Full app stderr log ==="
+        if (Test-Path $LOG_STDERR) {
+            Get-Content $LOG_STDERR -ErrorAction SilentlyContinue
+        }
+        Write-Host "=== End of stderr log ==="
+        Write-Host ""
+        Write-Host "=== Full app stdout log ==="
+        if (Test-Path $LOG_STDOUT) {
+            Get-Content $LOG_STDOUT -ErrorAction SilentlyContinue
+        }
+        Write-Host "=== End of stdout log ==="
+        exit 1
+    }
+    return $isAlive
 }
 
 # Helper function to take screenshot
@@ -296,27 +372,25 @@ function Send-Key {
         [System.Diagnostics.Process]$process
     )
 
-    # Bring window to foreground
-    Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class WindowHelper {
-            [DllImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool SetForegroundWindow(IntPtr hWnd);
-            
-            [DllImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        }
-"@
-
+    # Bring window to foreground (WindowHelper already defined above)
     if ($process.MainWindowHandle -ne [IntPtr]::Zero) {
+        Write-Host "  Bringing window to foreground before sending key '$key'..."
+        $isVisible = [WindowHelper]::IsWindowVisible($process.MainWindowHandle)
+        Write-Host "  Window visible before key send: $isVisible"
+
         # Show and activate window (SW_RESTORE = 9)
         [WindowHelper]::ShowWindow($process.MainWindowHandle, 9) | Out-Null
         Start-Sleep -Milliseconds 100
-        [WindowHelper]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+
+        $result = [WindowHelper]::SetForegroundWindow($process.MainWindowHandle)
+        Write-Host "  SetForegroundWindow result: $result"
+
         Start-Sleep -Milliseconds 100
+
+        # Verify it's in foreground
+        $foregroundWindow = [WindowHelper]::GetForegroundWindow()
+        $isForeground = ($process.MainWindowHandle -eq $foregroundWindow)
+        Write-Host "  Window is in foreground: $isForeground"
     }
 
     Add-Type -AssemblyName System.Windows.Forms
@@ -326,6 +400,9 @@ function Send-Key {
 # Capture startup screenshot
 Take-Screenshot "01-startup"
 Write-Host "[OK] Captured startup screenshot"
+
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
 
 # Check for error dialogs - look for SDL Error window
 Write-Host "Checking for error dialogs..."
@@ -360,6 +437,9 @@ for ($i = 1; $i -le 5; $i++) {
     Start-Sleep -Seconds 4  # Wait for fade-out + fade-in to complete
     Take-Screenshot "02-pattern-$i"
     Write-Host "[OK] Captured pattern $i screenshot"
+
+    # Check process is still alive
+    Test-ProcessAlive $appProcess | Out-Null
 }
 
 # Test mouse click - click center of screen
@@ -377,6 +457,9 @@ Start-Sleep -Seconds 1
 Take-Screenshot "03-after-click"
 Write-Host "[OK] Captured post-click screenshot"
 
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
+
 # Test palette change
 Write-Host "Testing palette change (p key)..."
 Send-Key "p" $appProcess
@@ -384,10 +467,16 @@ Start-Sleep -Seconds 1
 Take-Screenshot "04-palette-change"
 Write-Host "[OK] Captured palette change screenshot"
 
+# Check process is still alive
+Test-ProcessAlive $appProcess | Out-Null
+
 # Capture final state
 Start-Sleep -Seconds 2
 Take-Screenshot "05-final"
 Write-Host "[OK] Captured final screenshot"
+
+# Final process check
+Test-ProcessAlive $appProcess | Out-Null
 
 # Quit gracefully
 Write-Host "Sending quit signal (q key)..."
