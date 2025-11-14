@@ -329,17 +329,30 @@ jobs:
         run: echo "SDL3_IMAGE_VERSION=$(cat SDL3_IMAGE_VERSION)" >> $GITHUB_ENV
 
       - name: Cache SDL3_image.xcframework
+        id: cache-sdl3-image
         uses: actions/cache@v4
         with:
           path: SDL3_image.xcframework
           key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
+      - name: Block Apple developer services
+        run: sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
+
       - name: Build app and run UI tests
+        id: ui-tests
         working-directory: ios
         timeout-minutes: 20
         run: |
           chmod +x run-uitests.sh
           ./run-uitests.sh
+
+      - name: Upload UI tests xcodebuild log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-uitests-xcodebuild-log
+          path: ios/xcodebuild.log
+          if-no-files-found: ignore
 
       - name: Extract screenshots from test results
         if: always()
@@ -354,6 +367,41 @@ jobs:
           name: ios-ui-test-screenshots
           path: ios/screenshots/*.png
           if-no-files-found: error
+
+      - name: Build Release for physical device
+        if: success() && steps.ui-tests.outcome == 'success'
+        working-directory: ios
+        timeout-minutes: 15
+        run: |
+          echo "Building Release configuration for physical device..."
+          xcodebuild build \
+            -project acidwarp-ios.xcodeproj \
+            -scheme acidwarp \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ./build-release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | tee xcodebuild-release.log
+
+      - name: Upload Release build xcodebuild log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-xcodebuild-log
+          path: ios/xcodebuild-release.log
+          if-no-files-found: ignore
+
+      - name: Unblock Apple developer services
+        if: always()
+        run: sudo sed -i '' '/developerservices2\.apple\.com/d' /etc/hosts
+
+      - name: Save SDL3_image cache
+        if: success() && steps.ui-tests.outcome == 'success' && steps.cache-sdl3-image.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: SDL3_image.xcframework
+          key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
 
 

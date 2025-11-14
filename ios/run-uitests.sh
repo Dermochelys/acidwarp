@@ -1,18 +1,6 @@
 #!/bin/bash
 set -e
 
-# Cleanup function to remove hosts file block
-cleanup() {
-    echo ""
-    echo "Removing developerservices2.apple.com block from /etc/hosts..."
-    sudo sed -i '' '/developerservices2\.apple\.com/d' /etc/hosts
-}
-trap cleanup EXIT
-
-# Block Apple developer services to prevent provisioning checks
-echo "Blocking developerservices2.apple.com..."
-sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
-
 echo "=== Running iOS UI Tests ==="
 echo ""
 
@@ -71,18 +59,34 @@ echo "Waiting 5 more seconds for the emulator to finish initializing..."
 sleep 5
 
 echo ""
-echo "Building and running UI tests..."
-xcodebuild test \
+echo "Building for testing..."
+xcodebuild build-for-testing \
   -project acidwarp-ios.xcodeproj \
   -scheme acidwarpUITests \
-  -configuration Release \
+  -configuration Debug \
   -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
   -derivedDataPath ./build \
-  -parallel-testing-enabled NO \
-  -retry-tests-on-failure \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO
+
+# Sign test runner
+echo ""
+echo "Signing test runner..."
+codesign --force --deep --sign - build/Build/Products/Debug-iphonesimulator/acidwarpUITests-Runner.app || true
+
+# Run UI tests
+echo ""
+echo "Running UI tests..."
+set -o pipefail
+xcodebuild test-without-building \
+  -project acidwarp-ios.xcodeproj \
+  -scheme acidwarpUITests \
+  -configuration Debug \
+  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
+  -derivedDataPath ./build \
+  -parallel-testing-enabled NO \
+  -retry-tests-on-failure | tee xcodebuild.log
 
 echo ""
 echo "=== UI Tests Completed ==="
