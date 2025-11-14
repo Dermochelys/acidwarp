@@ -28,10 +28,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant execute permission for gradlew
-        working-directory: android
-        run: chmod +x gradlew
-
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -196,9 +192,7 @@ jobs:
 
       - name: Run UI tests
         working-directory: linux
-        run: |
-          chmod +x ui_test.sh
-          ./ui_test.sh
+        run: ./ui_test.sh
 
       - name: Upload screenshots
         if: always()
@@ -288,9 +282,7 @@ jobs:
       - name: Run UI tests
         working-directory: macos
         timeout-minutes: 20
-        run: |
-          chmod +x run-uitests.sh
-          ./run-uitests.sh
+        run: ./run-uitests.sh
 
       - name: Upload xcodebuild log
         if: failure()
@@ -302,9 +294,7 @@ jobs:
 
       - name: Extract screenshots from test results
         if: always()
-        run: |
-          chmod +x extract-test-screenshots.sh
-          ./extract-test-screenshots.sh macos macos/build macos/screenshots
+        run: ./extract-test-screenshots.sh macos macos/build macos/screenshots
 
       - name: Upload screenshots
         if: always()
@@ -344,38 +334,40 @@ jobs:
       - name: Block Apple developer services
         run: sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
 
-      - name: Start iOS simulator
+      - name: Start iOS simulator (background)
         working-directory: ios
-        timeout-minutes: 5
-        run: |
-          chmod +x start-simulator.sh
-          ./start-simulator.sh
+        timeout-minutes: 2
+        run: ./start-simulator-background.sh
 
       - name: Build UI tests
+        id: build-ui-tests
         working-directory: ios
         timeout-minutes: 10
-        run: |
-          chmod +x build-uitests.sh
-          ./build-uitests.sh
+        run: ./build-uitests.sh
 
       - name: Upload build-without-testing log
-        if: always()
+        if: always() && steps.build-ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: ios-xcodebuild-build-without-testing-log
           path: ios/xcodebuild-build-without-testing.log
           if-no-files-found: ignore
 
+      - name: Wait for iOS simulator to be ready
+        if: success()
+        working-directory: ios
+        timeout-minutes: 5
+        run: ./wait-for-simulator.sh
+
       - name: Run UI tests
         id: ui-tests
+        if: success()
         working-directory: ios
         timeout-minutes: 10
-        run: |
-          chmod +x test-uitests.sh
-          ./test-uitests.sh
+        run: ./test-uitests.sh
 
       - name: Upload test-without-building log
-        if: always()
+        if: always() && steps.ui-tests.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: ios-xcodebuild-test-without-building-log
@@ -383,13 +375,12 @@ jobs:
           if-no-files-found: ignore
 
       - name: Extract screenshots from test results
-        if: always()
-        run: |
-          chmod +x extract-test-screenshots.sh
-          ./extract-test-screenshots.sh ios ios/build ios/screenshots
+        id: extract-screenshots
+        if: always() && steps.ui-tests.outcome != 'skipped'
+        run: ./extract-test-screenshots.sh ios ios/build ios/screenshots
 
       - name: Upload screenshots
-        if: always()
+        if: always() && steps.extract-screenshots.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: ios-ui-test-screenshots
@@ -397,6 +388,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build Release for physical device
+        id: release-build
         if: success() && steps.ui-tests.outcome == 'success'
         working-directory: ios
         timeout-minutes: 15
@@ -414,7 +406,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO | tee xcodebuild-release.log
 
       - name: Upload Release build xcodebuild log
-        if: always()
+        if: always() && steps.release-build.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-xcodebuild-log

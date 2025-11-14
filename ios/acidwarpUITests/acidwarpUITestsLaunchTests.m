@@ -30,24 +30,15 @@
 
     // This test runs for each UI configuration (Light/Dark mode) due to
     // runsForEachTargetApplicationUIConfiguration returning YES.
-    // Detect the actual appearance mode to generate unique screenshot names.
-    NSString *appearance = app.userInterfaceStyle == XCUIUserInterfaceStyleDark ? @"Dark" : @"Light";
-
-    // Use a static counter for each appearance to handle multiple runs
-    static NSMutableDictionary *counters = nil;
-    if (!counters) {
-        counters = [NSMutableDictionary dictionary];
-    }
-
-    NSNumber *count = counters[appearance];
-    int currentCount = count ? [count intValue] + 1 : 1;
-    counters[appearance] = @(currentCount);
+    // Use a static counter to handle multiple test runs
+    static int screenshotCounter = 0;
+    screenshotCounter++;
 
     NSString *screenshotName;
-    if (currentCount == 1) {
-        screenshotName = [NSString stringWithFormat:@"Launch Screen %@", appearance];
+    if (screenshotCounter == 1) {
+        screenshotName = @"Launch Screen";
     } else {
-        screenshotName = [NSString stringWithFormat:@"Launch Screen %@ %d", appearance, currentCount];
+        screenshotName = [NSString stringWithFormat:@"Launch Screen %d", screenshotCounter];
     }
 
     XCTAttachment *attachment = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];
