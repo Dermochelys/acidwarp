@@ -31,36 +31,9 @@ if ($hardwareGpu) {
   Write-Host "`n[INFO] No hardware GPU detected"
   Write-Host "Available adapters:"
   $videoControllers | Format-Table Name -AutoSize
-  Write-Host "Will install Mesa3d for software rendering"
+  Write-Host "Will use Mesa3D from MSYS2 for software rendering"
 
-  Write-Host "`n=== Mesa3d Installation Phase ==="
-
-  # Download Mesa3d
-  $mesaUrl = "https://github.com/pal1000/mesa-dist-win/releases/download/24.3.1/mesa3d-24.3.1-release-msvc.7z"
-  $mesaArchive = "$env:TEMP\mesa3d.7z"
-  $mesaExtractDir = "$env:TEMP\mesa3d"
-
-  Write-Host "Downloading Mesa3d from $mesaUrl..."
-  try {
-    Invoke-WebRequest -Uri $mesaUrl -OutFile $mesaArchive -UseBasicParsing -TimeoutSec 300
-    Write-Host "Download completed: $(([System.IO.FileInfo]$mesaArchive).Length / 1MB) MB"
-  } catch {
-    Write-Host "[ERROR] Failed to download Mesa3d: $_"
-    exit 1
-  }
-
-  # Extract Mesa3d (requires 7-Zip)
-  Write-Host "Extracting Mesa3d..."
-  if (Test-Path "C:\Program Files\7-Zip\7z.exe") {
-    & "C:\Program Files\7-Zip\7z.exe" x $mesaArchive -o"$mesaExtractDir" -y
-  } else {
-    Write-Host "[ERROR] 7-Zip not found. Installing 7-Zip..."
-    choco install 7zip -y
-    & "C:\Program Files\7-Zip\7z.exe" x $mesaArchive -o"$mesaExtractDir" -y
-  }
-
-  # Copy Mesa3d OpenGL DLLs to application directory
-  Write-Host "Installing Mesa3d OpenGL drivers..."
+  Write-Host "`n=== Mesa3D Installation Phase ==="
 
   # Determine if we're in CI or local mode to find the right directory
   if (Test-Path "acidwarp-windows.exe") {
@@ -72,13 +45,29 @@ if ($hardwareGpu) {
     exit 1
   }
 
+  # Copy Mesa DLLs from MSYS2 installation
+  # MSYS2 is installed at C:\msys64 by the GitHub Actions msys2/setup-msys2 action
+  $msys2MesaPath = "C:\msys64\mingw64\bin"
+
+  if (-not (Test-Path "$msys2MesaPath\opengl32.dll")) {
+    Write-Host "[ERROR] Mesa DLLs not found in MSYS2 at $msys2MesaPath"
+    Write-Host "Make sure mingw-w64-x86_64-mesa is installed in the workflow"
+    exit 1
+  }
+
+  Write-Host "Copying Mesa3D DLLs from MSYS2..."
   # Copy required Mesa DLLs for desktop OpenGL software rendering
   # - opengl32.dll: WGL runtime loader for desktop OpenGL
   # - libgallium_wgl.dll: Gallium OpenGL megadriver (contains llvmpipe)
-  Copy-Item "$mesaExtractDir\x64\opengl32.dll" "$appDir\opengl32.dll" -Force
-  Copy-Item "$mesaExtractDir\x64\libgallium_wgl.dll" "$appDir\libgallium_wgl.dll" -Force
+  Copy-Item "$msys2MesaPath\opengl32.dll" "$appDir\opengl32.dll" -Force
+  Copy-Item "$msys2MesaPath\libgallium_wgl.dll" "$appDir\libgallium_wgl.dll" -Force
 
-  Write-Host "[SUCCESS] Mesa3d installed for software rendering"
+  Write-Host "[SUCCESS] Mesa3D DLLs copied"
+
+  # Add MSYS2 bin to PATH so Mesa dependencies (LLVM libs, etc.) can be found
+  Write-Host "Adding MSYS2 bin directory to PATH for Mesa dependencies..."
+  $env:PATH = "$msys2MesaPath;$env:PATH"
+
   $USING_MESA = $true
 
   # Set environment variables to use Mesa llvmpipe software renderer
@@ -90,6 +79,7 @@ if ($hardwareGpu) {
   Write-Host "  GALLIUM_DRIVER=llvmpipe (software rendering)"
   Write-Host "  MESA_GL_VERSION_OVERRIDE=4.1COMPAT"
   Write-Host "  MESA_GLSL_VERSION_OVERRIDE=410"
+  Write-Host "  PATH includes: $msys2MesaPath"
 }
 
 Write-Host ""
@@ -140,11 +130,6 @@ if ($vscodeProcesses) {
 } else {
   Write-Host "[INFO] No Visual Studio Code windows found"
 }
-
-# Give the system time to settle after GPU initialization and cleanup
-Write-Host "`nWaiting 10 seconds for environment to settle..."
-Start-Sleep -Seconds 10
-Write-Host "[OK] Environment ready"
 
 Write-Host "`nLaunching Acid Warp..."
 # Launch the app in background

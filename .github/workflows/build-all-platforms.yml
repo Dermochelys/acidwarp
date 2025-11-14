@@ -267,6 +267,7 @@ jobs:
             mingw-w64-x86_64-sdl3-image
             mingw-w64-x86_64-glew
             mingw-w64-x86_64-mesa
+            mingw-w64-x86_64-llvm
 
       - name: Configure CMake
         working-directory: windows
