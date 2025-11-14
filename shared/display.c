@@ -451,6 +451,12 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   printf("[DISP] OpenGL context created successfully\n");
   fflush(stdout);
 
+  printf("[DISP] Making OpenGL context current...\n");
+  fflush(stdout);
+  if (SDL_GL_MakeCurrent(window, context) < 0) fatalSDLError("making OpenGL context current");
+  printf("[DISP] OpenGL context is now current\n");
+  fflush(stdout);
+
 #ifdef _WIN32
   printf("[DISP] Initializing GLEW...\n");
   fflush(stdout);
