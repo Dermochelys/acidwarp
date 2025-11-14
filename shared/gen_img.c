@@ -1,7 +1,8 @@
 #pragma ide diagnostic ignored "cert-msc50-cpp"
 #include <math.h>
 #include "handy.h"
-#include "img_float.c"
+#include "acidwarp.h"
+#include "img_float.h"
 
 /* ACID WARP (c)Copyright 1992, 1993 by Noah Spurrier
  * All Rights reserved. Private Proprietary Source Code by Noah Spurrier
