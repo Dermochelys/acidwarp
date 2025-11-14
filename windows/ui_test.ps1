@@ -221,12 +221,61 @@ if ($processes) {
 # Also check if a window exists (alternative verification)
 Write-Host "DEBUG: Checking for Acid Warp window..."
 Add-Type -AssemblyName System.Windows.Forms
+
+# Add Window detection helper
+Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class WindowHelper {
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+    }
+"@
+
 $windowProcesses = Get-Process | Where-Object { $_.ProcessName -like "*acidwarp*" -or $_.MainWindowTitle -like "*Acid Warp*" }
 
 if ($windowProcesses) {
     Write-Host "Window found:"
     foreach ($proc in $windowProcesses) {
         Write-Host "  Process: $($proc.ProcessName), PID: $($proc.Id), Window: $($proc.MainWindowTitle)"
+        Write-Host "  Window Handle: $($proc.MainWindowHandle)"
+
+        # Check if window is visible
+        $isVisible = [WindowHelper]::IsWindowVisible($proc.MainWindowHandle)
+        Write-Host "  Window is visible: $isVisible"
+
+        # Check if window is in foreground
+        $foregroundWindow = [WindowHelper]::GetForegroundWindow()
+        $isForeground = ($proc.MainWindowHandle -eq $foregroundWindow)
+        Write-Host "  Window is in foreground: $isForeground"
+        Write-Host "  Current foreground window handle: $foregroundWindow"
+
+        # Try to bring window to foreground
+        Write-Host "  Attempting to bring window to foreground..."
+        [WindowHelper]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null  # SW_RESTORE = 9
+        Start-Sleep -Milliseconds 100
+        $bringToFrontResult = [WindowHelper]::SetForegroundWindow($proc.MainWindowHandle)
+        Write-Host "  SetForegroundWindow result: $bringToFrontResult"
+
+        Start-Sleep -Milliseconds 200
+
+        # Check again after attempting to bring to foreground
+        $foregroundWindowAfter = [WindowHelper]::GetForegroundWindow()
+        $isForegroundAfter = ($proc.MainWindowHandle -eq $foregroundWindowAfter)
+        Write-Host "  Window is in foreground after SetForegroundWindow: $isForegroundAfter"
+        Write-Host "  Foreground window handle after: $foregroundWindowAfter"
     }
     if (-not $PROCESS_FOUND) {
         $actualPid = $windowProcesses[0].Id
@@ -296,27 +345,25 @@ function Send-Key {
         [System.Diagnostics.Process]$process
     )
 
-    # Bring window to foreground
-    Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class WindowHelper {
-            [DllImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool SetForegroundWindow(IntPtr hWnd);
-            
-            [DllImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        }
-"@
-
+    # Bring window to foreground (WindowHelper already defined above)
     if ($process.MainWindowHandle -ne [IntPtr]::Zero) {
+        Write-Host "  Bringing window to foreground before sending key '$key'..."
+        $isVisible = [WindowHelper]::IsWindowVisible($process.MainWindowHandle)
+        Write-Host "  Window visible before key send: $isVisible"
+
         # Show and activate window (SW_RESTORE = 9)
         [WindowHelper]::ShowWindow($process.MainWindowHandle, 9) | Out-Null
         Start-Sleep -Milliseconds 100
-        [WindowHelper]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+
+        $result = [WindowHelper]::SetForegroundWindow($process.MainWindowHandle)
+        Write-Host "  SetForegroundWindow result: $result"
+
         Start-Sleep -Milliseconds 100
+
+        # Verify it's in foreground
+        $foregroundWindow = [WindowHelper]::GetForegroundWindow()
+        $isForeground = ($process.MainWindowHandle -eq $foregroundWindow)
+        Write-Host "  Window is in foreground: $isForeground"
     }
 
     Add-Type -AssemblyName System.Windows.Forms
