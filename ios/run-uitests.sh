@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+# Cleanup function to remove hosts file block
+cleanup() {
+    echo ""
+    echo "Removing developerservices2.apple.com block from /etc/hosts..."
+    sudo sed -i '' '/developerservices2\.apple\.com/d' /etc/hosts
+}
+trap cleanup EXIT
+
+# Block Apple developer services to prevent provisioning checks
+echo "Blocking developerservices2.apple.com..."
+sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
+
 echo "=== Running iOS UI Tests ==="
 echo ""
 
@@ -55,6 +67,7 @@ else
 fi
 
 # Give it a bit more time to fully initialize
+echo "Waiting 5 more seconds for the emulator to finish initializing..."
 sleep 5
 
 echo ""
