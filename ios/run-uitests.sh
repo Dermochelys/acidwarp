@@ -66,6 +66,7 @@ xcodebuild build-for-testing \
   -configuration Debug \
   -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
   -derivedDataPath ./build \
+  -showBuildTimingSummary \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO
@@ -86,7 +87,8 @@ xcodebuild test-without-building \
   -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
   -derivedDataPath ./build \
   -parallel-testing-enabled NO \
-  -retry-tests-on-failure | tee xcodebuild.log
+  -retry-tests-on-failure \
+  -showBuildTimingSummary | tee xcodebuild.log
 
 echo ""
 echo "=== UI Tests Completed ==="
