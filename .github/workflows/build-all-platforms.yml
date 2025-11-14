@@ -338,20 +338,42 @@ jobs:
       - name: Block Apple developer services
         run: sudo bash -c "echo '127.0.0.1 developerservices2.apple.com' >>/etc/hosts"
 
-      - name: Build app and run UI tests
-        id: ui-tests
+      - name: Start iOS simulator
         working-directory: ios
-        timeout-minutes: 20
+        timeout-minutes: 5
         run: |
-          chmod +x run-uitests.sh
-          ./run-uitests.sh
+          chmod +x start-simulator.sh
+          ./start-simulator.sh
 
-      - name: Upload UI tests xcodebuild log
+      - name: Build UI tests
+        working-directory: ios
+        timeout-minutes: 10
+        run: |
+          chmod +x build-uitests.sh
+          ./build-uitests.sh
+
+      - name: Upload build-without-testing log
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-uitests-xcodebuild-log
-          path: ios/xcodebuild.log
+          name: ios-xcodebuild-build-without-testing-log
+          path: ios/xcodebuild-build-without-testing.log
+          if-no-files-found: ignore
+
+      - name: Run UI tests
+        id: ui-tests
+        working-directory: ios
+        timeout-minutes: 10
+        run: |
+          chmod +x test-uitests.sh
+          ./test-uitests.sh
+
+      - name: Upload test-without-building log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcodebuild-test-without-building-log
+          path: ios/xcodebuild-test-without-building.log
           if-no-files-found: ignore
 
       - name: Extract screenshots from test results

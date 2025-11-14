@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Running iOS UI Tests ==="
+echo "=== Starting iOS Simulator ==="
 echo ""
 
 cd "$(dirname "$0")"
@@ -59,42 +59,4 @@ echo "Waiting 5 more seconds for the emulator to finish initializing..."
 sleep 5
 
 echo ""
-echo "Building for testing..."
-xcodebuild build-for-testing \
-  -project acidwarp-ios.xcodeproj \
-  -scheme acidwarpUITests \
-  -configuration Debug \
-  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
-  -derivedDataPath ./build \
-  -showBuildTimingSummary \
-  CODE_SIGN_IDENTITY="" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO
-
-# Sign test runner
-echo ""
-echo "Signing test runner..."
-codesign --force --deep --sign - build/Build/Products/Debug-iphonesimulator/acidwarpUITests-Runner.app || true
-
-# Run UI tests
-echo ""
-echo "Running UI tests..."
-set -o pipefail
-xcodebuild test-without-building \
-  -project acidwarp-ios.xcodeproj \
-  -scheme acidwarpUITests \
-  -configuration Debug \
-  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
-  -derivedDataPath ./build \
-  -parallel-testing-enabled NO \
-  -retry-tests-on-failure \
-  -showBuildTimingSummary | tee xcodebuild.log
-
-echo ""
-echo "=== UI Tests Completed ==="
-
-# Shutdown the simulator
-echo ""
-echo "Shutting down simulator..."
-xcrun simctl shutdown "$DEVICE_UUID" || true
-echo "Simulator shut down"
+echo "=== Simulator Ready ==="
