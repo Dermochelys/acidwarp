@@ -99,12 +99,13 @@
     [self takeScreenshotNamed:@"05-final"];
 }
 
-- (void)testLaunchPerformance {
-    // This measures how long it takes to launch your application.
-    [self measureWithMetrics:@[[[XCTApplicationLaunchMetric alloc] init]] block:^{
-        XCUIApplication *app = [[XCUIApplication alloc] init];
-        [app launch];
-    }];
-}
+// Disabled: Performance test takes too long in CI
+//- (void)testLaunchPerformance {
+//    // This measures how long it takes to launch your application.
+//    [self measureWithMetrics:@[[[XCTApplicationLaunchMetric alloc] init]] block:^{
+//        XCUIApplication *app = [[XCUIApplication alloc] init];
+//        [app launch];
+//    }];
+//}
 
 @end

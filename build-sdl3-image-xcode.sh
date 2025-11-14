@@ -7,7 +7,7 @@ SDL_IMAGE_VERSION=$(cat "$SCRIPT_DIR/SDL3_IMAGE_VERSION")
 
 # Target location for SDL3_image.xcframework (repo root)
 TARGET_FRAMEWORK="$SCRIPT_DIR/SDL3_image.xcframework"
-SDL_IMAGE_HEADER="$TARGET_FRAMEWORK/ios-arm64/SDL3_image.framework/Headers/SDL_image.h"
+SDL_IMAGE_PLIST="$TARGET_FRAMEWORK/ios-arm64/SDL3_image.framework/Info.plist"
 
 echo "Checking for SDL3_image.xcframework..."
 
@@ -15,12 +15,12 @@ echo "Checking for SDL3_image.xcframework..."
 if [ -d "$TARGET_FRAMEWORK" ]; then
     echo "SDL3_image.xcframework found. Checking version..."
 
-    # Check if SDL_image.h exists
-    if [ -f "$SDL_IMAGE_HEADER" ]; then
-        # Extract version from header (format: "version X.Y.Z")
-        INSTALLED_VERSION=$(grep -o "version [0-9]\+\.[0-9]\+\.[0-9]\+" "$SDL_IMAGE_HEADER" | head -1 | awk '{print $2}')
+    # Check if Info.plist exists
+    if [ -f "$SDL_IMAGE_PLIST" ]; then
+        # Extract version from Info.plist using PlistBuddy
+        INSTALLED_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$SDL_IMAGE_PLIST" 2>/dev/null || echo "")
 
-        if [ "$INSTALLED_VERSION" = "$SDL_IMAGE_VERSION" ]; then
+        if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" = "$SDL_IMAGE_VERSION" ]; then
             echo "SDL3_image version $INSTALLED_VERSION matches required version $SDL_IMAGE_VERSION"
             echo "Custom-built framework already exists."
             exit 0
@@ -30,7 +30,7 @@ if [ -d "$TARGET_FRAMEWORK" ]; then
             rm -rf "$TARGET_FRAMEWORK"
         fi
     else
-        echo "Warning: SDL_image.h not found in framework, will rebuild"
+        echo "Warning: Info.plist not found in framework, will rebuild"
         rm -rf "$TARGET_FRAMEWORK"
     fi
 fi

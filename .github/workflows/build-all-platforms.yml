@@ -269,6 +269,16 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
+      - name: Read SDL3_image version
+        id: sdl-image-version
+        run: echo "SDL3_IMAGE_VERSION=$(cat SDL3_IMAGE_VERSION)" >> $GITHUB_ENV
+
+      - name: Cache SDL3_image.xcframework
+        uses: actions/cache@v4
+        with:
+          path: SDL3_image.xcframework
+          key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
+
       - name: Run UI tests
         working-directory: macos
         timeout-minutes: 20
@@ -313,6 +323,16 @@ jobs:
 
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Read SDL3_image version
+        id: sdl-image-version
+        run: echo "SDL3_IMAGE_VERSION=$(cat SDL3_IMAGE_VERSION)" >> $GITHUB_ENV
+
+      - name: Cache SDL3_image.xcframework
+        uses: actions/cache@v4
+        with:
+          path: SDL3_image.xcframework
+          key: sdl3-image-xcframework-${{ env.SDL3_IMAGE_VERSION }}
 
       - name: Build app and run UI tests
         working-directory: ios

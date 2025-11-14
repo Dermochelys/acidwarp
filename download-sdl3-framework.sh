@@ -17,10 +17,14 @@ echo "Checking for SDL3.xcframework..."
 if [ -d "$TARGET_FRAMEWORK" ]; then
     echo "SDL3.xcframework found. Checking version..."
 
-    # Check if SDL.h exists
-    if [ -f "$SDL_HEADER" ]; then
-        # Extract version from header (format: "version X.Y.Z")
-        INSTALLED_VERSION=$(grep -o "version [0-9]\+\.[0-9]\+\.[0-9]\+" "$SDL_HEADER" | head -1 | awk '{print $2}')
+    # Check if SDL.h exists - need to check SDL_version.h for version macros
+    SDL_VERSION_HEADER="$TARGET_FRAMEWORK/ios-arm64/SDL3.framework/Headers/SDL_version.h"
+    if [ -f "$SDL_VERSION_HEADER" ]; then
+        # Extract version from header macros (SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION)
+        MAJOR=$(grep "^#define SDL_MAJOR_VERSION" "$SDL_VERSION_HEADER" | awk '{print $3}')
+        MINOR=$(grep "^#define SDL_MINOR_VERSION" "$SDL_VERSION_HEADER" | awk '{print $3}')
+        MICRO=$(grep "^#define SDL_MICRO_VERSION" "$SDL_VERSION_HEADER" | awk '{print $3}')
+        INSTALLED_VERSION="${MAJOR}.${MINOR}.${MICRO}"
 
         if [ "$INSTALLED_VERSION" = "$SDL_VERSION" ]; then
             echo "SDL3 version $INSTALLED_VERSION matches required version $SDL_VERSION"
@@ -31,7 +35,7 @@ if [ -d "$TARGET_FRAMEWORK" ]; then
             rm -rf "$TARGET_FRAMEWORK"
         fi
     else
-        echo "Warning: SDL.h not found in framework, will re-download"
+        echo "Warning: SDL_version.h not found in framework, will re-download"
         rm -rf "$TARGET_FRAMEWORK"
     fi
 fi
