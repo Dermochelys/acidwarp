@@ -8,7 +8,7 @@
 #import <XCTest/XCTest.h>
 
 @interface acidwarpUITests : XCTestCase
-
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *screenshotCounts;
 @end
 
 @implementation acidwarpUITests
@@ -19,6 +19,9 @@
     // In UI tests it is usually best to stop immediately when a failure occurs.
     self.continueAfterFailure = NO;
 
+    // Initialize screenshot counter
+    self.screenshotCounts = [NSMutableDictionary dictionary];
+
     // In UI tests it's important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
 }
 
@@ -27,29 +30,18 @@
 }
 
 - (void)takeScreenshotNamed:(NSString *)name {
-    // Get current orientation from device
-    UIDeviceOrientation orientation = [[XCUIDevice sharedDevice] orientation];
-    NSString *orientationStr;
-
-    switch (orientation) {
-        case UIDeviceOrientationPortrait:
-            orientationStr = @"portrait";
-            break;
-        case UIDeviceOrientationPortraitUpsideDown:
-            orientationStr = @"portrait-upside-down";
-            break;
-        case UIDeviceOrientationLandscapeLeft:
-            orientationStr = @"landscape-left";
-            break;
-        case UIDeviceOrientationLandscapeRight:
-            orientationStr = @"landscape-right";
-            break;
-        default:
-            orientationStr = @"unknown";
-            break;
+    // Increment counter for this screenshot name
+    NSNumber *count = self.screenshotCounts[name];
+    if (count == nil) {
+        count = @1;
+    } else {
+        count = @([count intValue] + 1);
     }
+    self.screenshotCounts[name] = count;
 
-    NSString *fullName = [NSString stringWithFormat:@"%@-%@", name, orientationStr];
+    // Create filename with incremented suffix
+    NSString *fullName = [NSString stringWithFormat:@"%@-%d", name, [count intValue]];
+
     XCTAttachment *attachment = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];
     attachment.name = fullName;
     attachment.lifetime = XCTAttachmentLifetimeKeepAlways;

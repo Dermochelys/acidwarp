@@ -187,13 +187,20 @@ static void timer_wait(void)
 
 int main (int argc, char *argv[])
 {
+  fprintf(stderr, "[INIT] Acid Warp starting...\n");
+  fflush(stderr);
+
   /* Initialize SDL */
+  fprintf(stderr, "[INIT] Initializing SDL...\n");
+  fflush(stderr);
   if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0 ) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     /* SDL 2 docs say this is safe, but SDL 1 docs don't. */
     SDL_Quit();
     return -1;
   }
+  fprintf(stderr, "[INIT] SDL initialized successfully\n");
+  fflush(stderr);
 
 #ifdef __ANDROID__
   // Trap the Android back button, only works on API 30 (Android 11) and earlier
@@ -208,9 +215,20 @@ int main (int argc, char *argv[])
 
   RANDOMIZE();
 
+  fprintf(stderr, "[INIT] Initializing display...\n");
+  fflush(stderr);
   disp_init(width, height, disp_flags);
+  fprintf(stderr, "[INIT] Display initialized\n");
+  fflush(stderr);
 
+  fprintf(stderr, "[INIT] Initializing timer...\n");
+  fflush(stderr);
   timer_init();
+  fprintf(stderr, "[INIT] Timer initialized\n");
+  fflush(stderr);
+
+  fprintf(stderr, "[INIT] Entering main loop\n");
+  fflush(stderr);
 
   // ReSharper disable once CppDFALoopConditionNotUpdated
   #pragma ide diagnostic ignored "LoopDoesntUseConditionVariableInspection"
@@ -219,6 +237,8 @@ int main (int argc, char *argv[])
     timer_wait();
   }
 
+  fprintf(stderr, "[EXIT] Main loop exited\n");
+  fflush(stderr);
   return 0;
 }
 
@@ -255,8 +275,12 @@ static void mainLoop(void)
 
   switch (state) {
   case STATE_INITIAL:
+    fprintf(stderr, "[INIT] Initializing drawing system\n");
+    fflush(stderr);
     draw_init(draw_flags | (show_logo ? DRAW_LOGO : 0));
     initRolNFade(show_logo);
+    fprintf(stderr, "[INIT] Drawing system initialized, starting pattern display\n");
+    fflush(stderr);
 
     /* Fall through */
   case STATE_NEXT:

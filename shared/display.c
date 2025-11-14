@@ -401,6 +401,9 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 #endif
   GLint status;
 
+  fprintf(stderr, "[DISP] Starting OpenGL initialization (%dx%d)\n", width, height);
+  fflush(stderr);
+
   /* Vertices consist of point x, y, z, w followed by texture x and y */
   static const GLfloat vertices[] = {
       -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
@@ -424,26 +427,42 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+  fprintf(stderr, "[DISP] Creating SDL window...\n");
+  fflush(stderr);
   window = SDL_CreateWindow("Acid Warp", width, height, videoflags | SDL_WINDOW_OPENGL);
   if (window == NULL) fatalSDLError("creating SDL OpenGL window");
+  fprintf(stderr, "[DISP] SDL window created\n");
+  fflush(stderr);
 
+  fprintf(stderr, "[DISP] Creating OpenGL context...\n");
+  fflush(stderr);
   context = SDL_GL_CreateContext(window);
   if (context == NULL) fatalSDLError("creating OpenGL profile");
+  fprintf(stderr, "[DISP] OpenGL context created\n");
+  fflush(stderr);
 
 #ifdef _WIN32
+  fprintf(stderr, "[DISP] Initializing GLEW...\n");
+  fflush(stderr);
   GLenum glew_err = glewInit();
   if (glew_err != GLEW_OK) {
     fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glew_err));
     quit(-1);
   }
+  fprintf(stderr, "[DISP] GLEW initialized\n");
+  fflush(stderr);
 #endif
 
+  fprintf(stderr, "[DISP] Compiling shaders...\n");
+  fflush(stderr);
   glprogram = glCreateProgram();
   if (glprogram == 0) disp_glerror("glCreateProgram");
 
   loadShader(glprogram, GL_VERTEX_SHADER, vertex);
 
   loadShader(glprogram, GL_FRAGMENT_SHADER, fragment);
+  fprintf(stderr, "[DISP] Shaders compiled successfully\n");
+  fflush(stderr);
 
   glBindAttribLocation(glprogram, 0, "Position");
   glBindAttribLocation(glprogram, 1, "TexPos");
@@ -496,6 +515,9 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+  fprintf(stderr, "[DISP] OpenGL initialization complete\n");
+  fflush(stderr);
 }
 
 void disp_init(int newwidth, int newheight, int flags)
