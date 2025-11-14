@@ -19,8 +19,11 @@ if [ -d "$TARGET_FRAMEWORK" ]; then
 
     # Check if SDL_image.h exists
     if [ -f "$SDL_IMAGE_HEADER" ]; then
-        # Extract version from header (format: "version X.Y.Z")
-        INSTALLED_VERSION=$(grep -o "version [0-9]\+\.[0-9]\+\.[0-9]\+" "$SDL_IMAGE_HEADER" | head -1 | awk '{print $2}')
+        # Extract version from header macros (SDL_IMAGE_MAJOR_VERSION, SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_MICRO_VERSION)
+        MAJOR=$(grep "^#define SDL_IMAGE_MAJOR_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
+        MINOR=$(grep "^#define SDL_IMAGE_MINOR_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
+        MICRO=$(grep "^#define SDL_IMAGE_MICRO_VERSION" "$SDL_IMAGE_HEADER" | awk '{print $3}')
+        INSTALLED_VERSION="${MAJOR}.${MINOR}.${MICRO}"
 
         if [ "$INSTALLED_VERSION" = "$SDL_IMAGE_VERSION" ]; then
             echo "SDL3_image version $INSTALLED_VERSION matches required version $SDL_IMAGE_VERSION"
