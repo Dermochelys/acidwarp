@@ -49,7 +49,7 @@ endif()
 # Android: To add logging, use this:
 #find_library(log-lib log)
 
-set(SOURCES acidwarp.c bit_map.c display.c draw.c gen_img.c img_float.c palinit.c rolnfade.c remote_overlay.c)
+set(SOURCES acidwarp.c bit_map.c display.c draw.c gen_img.c palinit.c rolnfade.c remote_overlay.c)
 
 # Embed remote.png as a binary resource for Linux
 if(UNIX AND NOT ANDROID)
