@@ -30,7 +30,11 @@ xcodebuild test-without-building \
   -parallel-testing-enabled NO \
   -retry-tests-on-failure \
   -showBuildTimingSummary \
-  -verbose | tee xcodebuild-test-without-building.log
+  -verbose \
+  ONLY_ACTIVE_ARCH=YES \
+  CODE_SIGN_IDENTITY="" \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=NO | tee xcodebuild-test-without-building.log
 
 echo ""
 echo "=== UI Tests Completed ==="
