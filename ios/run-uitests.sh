@@ -58,19 +58,28 @@ fi
 sleep 5
 
 echo ""
-echo "Running tests..."
-
-xcodebuild test \
+echo "Building for testing..."
+xcodebuild build-for-testing \
   -project acidwarp-ios.xcodeproj \
   -scheme acidwarpUITests \
   -configuration Release \
-  -destination "platform=iOS Simulator,arch=$ARCH,name=iPhone 17 Pro" \
-  -parallel-testing-enabled NO \
-  -resultBundlePath ./build/Logs/Test/Test-results.xcresult \
-  -retry-tests-on-failure \
+  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
+  -derivedDataPath ./build \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO
+
+echo ""
+echo "Running UI tests..."
+xcodebuild test-without-building \
+  -project acidwarp-ios.xcodeproj \
+  -scheme acidwarpUITests \
+  -configuration Release \
+  -destination "platform=iOS Simulator,id=$DEVICE_UUID" \
+  -derivedDataPath ./build \
+  -parallel-testing-enabled NO \
+  -resultBundlePath ./build/Logs/Test/Test-results.xcresult \
+  -retry-tests-on-failure
 
 echo ""
 echo "=== UI Tests Completed ==="
