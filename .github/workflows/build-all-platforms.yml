@@ -623,13 +623,9 @@ jobs:
               console.log(`Gist created: ${gist.data.html_url}`);
 
               // Build screenshot section with gist URLs
-              screenshotSection = `
-### Sample Screenshots
-
-<details>
-<summary>Click to view sample screenshots from each platform</summary>
-
-`;
+              screenshotSection = '### Sample Screenshots\n\n';
+              screenshotSection += '<details>\n';
+              screenshotSection += '<summary>Click to view sample screenshots from each platform</summary>\n\n';
 
               // Get raw URLs for each screenshot
               for (const [filename, fileData] of Object.entries(gist.data.files)) {
@@ -637,19 +633,12 @@ jobs:
                 const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
                 const rawUrl = fileData.raw_url;
 
-                screenshotSection += `
-#### ${platformName}
-\`${filename}\`
-
-![${platformName} - ${filename}](${rawUrl})
-
-`;
+                screenshotSection += '\n#### ' + platformName + '\n';
+                screenshotSection += '`' + filename + '`\n\n';
+                screenshotSection += '![' + platformName + ' - ' + filename + '](' + rawUrl + ')\n\n';
               }
 
-              screenshotSection += `
-</details>
-
-`;
+              screenshotSection += '</details>\n\n';
             } else {
               console.log('No screenshots found to upload to gist');
             }
@@ -657,24 +646,20 @@ jobs:
             // Build platform results table
             let tableRows = '';
             for (const [platform, count] of Object.entries(platforms)) {
-              tableRows += `| ${platform} | ✅ | ${count} screenshots ([view artifact](${runUrl}#artifacts)) |\n`;
+              tableRows += '| ' + platform + ' | ✅ | ' + count + ' screenshots ([view artifact](' + runUrl + '#artifacts)) |\n';
             }
 
             // Build complete comment
-            const commentBody = `## UI Test Screenshots
-
-This PR includes automated UI tests for all platforms. Screenshots are available as artifacts in the workflow run.
-
-### Platform Test Results
-
-| Platform | Status | Screenshots |
-|----------|--------|-------------|
-${tableRows}
-${screenshotSection}
----
-📦 **Download all screenshots**: Visit the [workflow run artifacts](${runUrl}#artifacts)
-
-*Automated UI test results from CI run [#${{ github.run_id }}](${runUrl})*`;
+            let commentBody = '## UI Test Screenshots\n\n';
+            commentBody += 'This PR includes automated UI tests for all platforms. Screenshots are available as artifacts in the workflow run.\n\n';
+            commentBody += '### Platform Test Results\n\n';
+            commentBody += '| Platform | Status | Screenshots |\n';
+            commentBody += '|----------|--------|-------------|\n';
+            commentBody += tableRows;
+            commentBody += screenshotSection;
+            commentBody += '---\n';
+            commentBody += '📦 **Download all screenshots**: Visit the [workflow run artifacts](' + runUrl + '#artifacts)\n\n';
+            commentBody += '*Automated UI test results from CI run [#${{ github.run_id }}](' + runUrl + ')*';
 
             // Find existing bot comment
             const { data: comments } = await github.rest.issues.listComments({
