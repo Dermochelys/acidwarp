@@ -545,137 +545,95 @@ jobs:
       - name: Generate PR comment with screenshots
         id: generate-comment
         run: |
-          cat > comment.md << 'EOF'
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          cat > comment.md << EOF
           ## UI Test Screenshots
 
-          This PR includes automated UI tests for all platforms. Screenshots captured during testing are shown below.
+          This PR includes automated UI tests for all platforms. Screenshots are available as artifacts in the workflow run.
+
+          ### Platform Test Results
+
+          | Platform | Status | Screenshots |
+          |----------|--------|-------------|
+          EOF
+
+          # Function to count screenshots
+          count_screenshots() {
+            local dir="$1"
+            if [ -d "$dir" ]; then
+              find "$dir" -name "*.png" -type f | wc -l
+            else
+              echo "0"
+            fi
+          }
+
+          # Android
+          android_count=$(count_screenshots "screenshots/android-ui-test-screenshots")
+          echo "| Android | ✅ | ${android_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
+
+          # Linux
+          linux_count=$(count_screenshots "screenshots/linux-ui-test-screenshots")
+          echo "| Linux | ✅ | ${linux_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
+
+          # Windows
+          windows_count=$(count_screenshots "screenshots/windows-ui-test-screenshots")
+          echo "| Windows | ✅ | ${windows_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
+
+          # macOS
+          macos_count=$(count_screenshots "screenshots/macos-ui-test-screenshots")
+          echo "| macOS | ✅ | ${macos_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
+
+          # iOS
+          ios_count=$(count_screenshots "screenshots/ios-ui-test-screenshots")
+          echo "| iOS | ✅ | ${ios_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
+
+          cat >> comment.md << EOF
+
+          ### Sample Screenshots
 
           <details>
-          <summary>Android Screenshots</summary>
+          <summary>Click to view sample screenshots from each platform</summary>
 
           EOF
 
-          # Android screenshots
-          if [ -d "screenshots/android-ui-test-screenshots" ]; then
-            for img in screenshots/android-ui-test-screenshots/*.png; do
-              if [ -f "$img" ]; then
-                filename=$(basename "$img")
-                echo "### $filename" >> comment.md
-                base64_img=$(base64 -w 0 "$img")
-                echo "![Android - $filename](data:image/png;base64,$base64_img)" >> comment.md
+          # Function to add first screenshot from each platform
+          add_sample_screenshot() {
+            local platform="$1"
+            local dir="$2"
+
+            if [ -d "$dir" ]; then
+              local first_img=$(find "$dir" -name "*.png" -type f | sort | head -n 1)
+              if [ -n "$first_img" ] && [ -f "$first_img" ]; then
+                local filename=$(basename "$first_img")
+                echo "" >> comment.md
+                echo "#### ${platform}" >> comment.md
+                echo "\`${filename}\`" >> comment.md
+                echo "" >> comment.md
+                base64_img=$(base64 -w 0 "$first_img")
+                echo "![${platform} - ${filename}](data:image/png;base64,${base64_img})" >> comment.md
                 echo "" >> comment.md
               fi
-            done
-          else
-            echo "No Android screenshots available." >> comment.md
-          fi
+            fi
+          }
 
-          cat >> comment.md << 'EOF'
+          add_sample_screenshot "Android" "screenshots/android-ui-test-screenshots"
+          add_sample_screenshot "Linux" "screenshots/linux-ui-test-screenshots"
+          add_sample_screenshot "Windows" "screenshots/windows-ui-test-screenshots"
+          add_sample_screenshot "macOS" "screenshots/macos-ui-test-screenshots"
+          add_sample_screenshot "iOS" "screenshots/ios-ui-test-screenshots"
 
-          </details>
-
-          <details>
-          <summary>Linux Screenshots</summary>
-
-          EOF
-
-          # Linux screenshots
-          if [ -d "screenshots/linux-ui-test-screenshots" ]; then
-            for img in screenshots/linux-ui-test-screenshots/*.png; do
-              if [ -f "$img" ]; then
-                filename=$(basename "$img")
-                echo "### $filename" >> comment.md
-                base64_img=$(base64 -w 0 "$img")
-                echo "![Linux - $filename](data:image/png;base64,$base64_img)" >> comment.md
-                echo "" >> comment.md
-              fi
-            done
-          else
-            echo "No Linux screenshots available." >> comment.md
-          fi
-
-          cat >> comment.md << 'EOF'
-
-          </details>
-
-          <details>
-          <summary>Windows Screenshots</summary>
-
-          EOF
-
-          # Windows screenshots
-          if [ -d "screenshots/windows-ui-test-screenshots" ]; then
-            for img in screenshots/windows-ui-test-screenshots/*.png; do
-              if [ -f "$img" ]; then
-                filename=$(basename "$img")
-                echo "### $filename" >> comment.md
-                base64_img=$(base64 -w 0 "$img")
-                echo "![Windows - $filename](data:image/png;base64,$base64_img)" >> comment.md
-                echo "" >> comment.md
-              fi
-            done
-          else
-            echo "No Windows screenshots available." >> comment.md
-          fi
-
-          cat >> comment.md << 'EOF'
-
-          </details>
-
-          <details>
-          <summary>macOS Screenshots</summary>
-
-          EOF
-
-          # macOS screenshots
-          if [ -d "screenshots/macos-ui-test-screenshots" ]; then
-            for img in screenshots/macos-ui-test-screenshots/*.png; do
-              if [ -f "$img" ]; then
-                filename=$(basename "$img")
-                echo "### $filename" >> comment.md
-                base64_img=$(base64 -w 0 "$img")
-                echo "![macOS - $filename](data:image/png;base64,$base64_img)" >> comment.md
-                echo "" >> comment.md
-              fi
-            done
-          else
-            echo "No macOS screenshots available." >> comment.md
-          fi
-
-          cat >> comment.md << 'EOF'
-
-          </details>
-
-          <details>
-          <summary>iOS Screenshots</summary>
-
-          EOF
-
-          # iOS screenshots
-          if [ -d "screenshots/ios-ui-test-screenshots" ]; then
-            for img in screenshots/ios-ui-test-screenshots/*.png; do
-              if [ -f "$img" ]; then
-                filename=$(basename "$img")
-                echo "### $filename" >> comment.md
-                base64_img=$(base64 -w 0 "$img")
-                echo "![iOS - $filename](data:image/png;base64,$base64_img)" >> comment.md
-                echo "" >> comment.md
-              fi
-            done
-          else
-            echo "No iOS screenshots available." >> comment.md
-          fi
-
-          cat >> comment.md << 'EOF'
+          cat >> comment.md << EOF
 
           </details>
 
           ---
-          *Automated screenshots from CI run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*
+          📦 **Download all screenshots**: Visit the [workflow run artifacts](${RUN_URL}#artifacts)
+
+          *Automated UI test results from CI run [#${{ github.run_id }}](${RUN_URL})*
           EOF
 
-          # Don't print the full comment (it's huge with base64 images)
-          echo "Generated PR comment with embedded screenshots"
+          echo "Generated PR comment with screenshot summary"
 
       - name: Post PR comment
         uses: actions/github-script@v7
