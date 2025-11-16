@@ -542,106 +542,139 @@ jobs:
           path: screenshots
           merge-multiple: false
 
-      - name: Generate PR comment with screenshots
-        id: generate-comment
+      - name: Prepare screenshots for upload
+        id: prepare-screenshots
         run: |
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # Find first screenshot from each platform and prepare for gist upload
+          mkdir -p gist-screenshots
 
-          cat > comment.md << EOF
-          ## UI Test Screenshots
-
-          This PR includes automated UI tests for all platforms. Screenshots are available as artifacts in the workflow run.
-
-          ### Platform Test Results
-
-          | Platform | Status | Screenshots |
-          |----------|--------|-------------|
-          EOF
-
-          # Function to count screenshots
-          count_screenshots() {
-            local dir="$1"
+          platforms=("android" "linux" "windows" "macos" "ios")
+          for platform in "${platforms[@]}"; do
+            dir="screenshots/${platform}-ui-test-screenshots"
             if [ -d "$dir" ]; then
-              find "$dir" -name "*.png" -type f | wc -l
-            else
-              echo "0"
-            fi
-          }
-
-          # Android
-          android_count=$(count_screenshots "screenshots/android-ui-test-screenshots")
-          echo "| Android | ✅ | ${android_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
-
-          # Linux
-          linux_count=$(count_screenshots "screenshots/linux-ui-test-screenshots")
-          echo "| Linux | ✅ | ${linux_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
-
-          # Windows
-          windows_count=$(count_screenshots "screenshots/windows-ui-test-screenshots")
-          echo "| Windows | ✅ | ${windows_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
-
-          # macOS
-          macos_count=$(count_screenshots "screenshots/macos-ui-test-screenshots")
-          echo "| macOS | ✅ | ${macos_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
-
-          # iOS
-          ios_count=$(count_screenshots "screenshots/ios-ui-test-screenshots")
-          echo "| iOS | ✅ | ${ios_count} screenshots ([view artifact](${RUN_URL}#artifacts)) |" >> comment.md
-
-          cat >> comment.md << EOF
-
-          ### Sample Screenshots
-
-          <details>
-          <summary>Click to view sample screenshots from each platform</summary>
-
-          EOF
-
-          # Function to add first screenshot from each platform
-          add_sample_screenshot() {
-            local platform="$1"
-            local dir="$2"
-
-            if [ -d "$dir" ]; then
-              local first_img=$(find "$dir" -name "*.png" -type f | sort | head -n 1)
+              first_img=$(find "$dir" -name "*.png" -type f | sort | head -n 1)
               if [ -n "$first_img" ] && [ -f "$first_img" ]; then
-                local filename=$(basename "$first_img")
-                echo "" >> comment.md
-                echo "#### ${platform}" >> comment.md
-                echo "\`${filename}\`" >> comment.md
-                echo "" >> comment.md
-                base64_img=$(base64 -w 0 "$first_img")
-                echo "![${platform} - ${filename}](data:image/png;base64,${base64_img})" >> comment.md
-                echo "" >> comment.md
+                filename=$(basename "$first_img")
+                # Copy with platform prefix to avoid naming conflicts
+                cp "$first_img" "gist-screenshots/${platform}-${filename}"
+                echo "Prepared ${platform}-${filename}"
               fi
             fi
-          }
+          done
 
-          add_sample_screenshot "Android" "screenshots/android-ui-test-screenshots"
-          add_sample_screenshot "Linux" "screenshots/linux-ui-test-screenshots"
-          add_sample_screenshot "Windows" "screenshots/windows-ui-test-screenshots"
-          add_sample_screenshot "macOS" "screenshots/macos-ui-test-screenshots"
-          add_sample_screenshot "iOS" "screenshots/ios-ui-test-screenshots"
+          # Check if we have any screenshots
+          screenshot_count=$(find gist-screenshots -name "*.png" -type f | wc -l)
+          echo "screenshot_count=${screenshot_count}" >> $GITHUB_OUTPUT
+          echo "Found ${screenshot_count} screenshots to upload"
 
-          cat >> comment.md << EOF
-
-          </details>
-
-          ---
-          📦 **Download all screenshots**: Visit the [workflow run artifacts](${RUN_URL}#artifacts)
-
-          *Automated UI test results from CI run [#${{ github.run_id }}](${RUN_URL})*
-          EOF
-
-          echo "Generated PR comment with screenshot summary"
-
-      - name: Post PR comment
+      - name: Upload screenshots and post PR comment
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const commentBody = fs.readFileSync('comment.md', 'utf8');
+            const path = require('path');
+
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
+            // Count screenshots for each platform
+            function countScreenshots(dir) {
+              if (!fs.existsSync(dir)) return 0;
+              const files = fs.readdirSync(dir).filter(f => f.endsWith('.png'));
+              return files.length;
+            }
+
+            const platforms = {
+              'Android': countScreenshots('screenshots/android-ui-test-screenshots'),
+              'Linux': countScreenshots('screenshots/linux-ui-test-screenshots'),
+              'Windows': countScreenshots('screenshots/windows-ui-test-screenshots'),
+              'macOS': countScreenshots('screenshots/macos-ui-test-screenshots'),
+              'iOS': countScreenshots('screenshots/ios-ui-test-screenshots')
+            };
+
+            // Upload screenshots to a public Gist
+            const gistDir = 'gist-screenshots';
+            let gistFiles = {};
+
+            if (fs.existsSync(gistDir)) {
+              const screenshots = fs.readdirSync(gistDir).filter(f => f.endsWith('.png'));
+
+              for (const screenshot of screenshots) {
+                const filePath = path.join(gistDir, screenshot);
+                const content = fs.readFileSync(filePath, { encoding: 'base64' });
+                gistFiles[screenshot] = {
+                  content: content,
+                  encoding: 'base64'
+                };
+              }
+            }
+
+            let screenshotSection = '';
+
+            if (Object.keys(gistFiles).length > 0) {
+              console.log(`Creating gist with ${Object.keys(gistFiles).length} screenshots...`);
+
+              const gist = await github.rest.gists.create({
+                description: `UI Test Screenshots - PR #${{ github.event.pull_request.number }} - Run ${{ github.run_id }}`,
+                public: true,
+                files: gistFiles
+              });
+
+              console.log(`Gist created: ${gist.data.html_url}`);
+
+              // Build screenshot section with gist URLs
+              screenshotSection = `
+### Sample Screenshots
+
+<details>
+<summary>Click to view sample screenshots from each platform</summary>
+
+`;
+
+              // Get raw URLs for each screenshot
+              for (const [filename, fileData] of Object.entries(gist.data.files)) {
+                const platform = filename.split('-')[0];
+                const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+                const rawUrl = fileData.raw_url;
+
+                screenshotSection += `
+#### ${platformName}
+\`${filename}\`
+
+![${platformName} - ${filename}](${rawUrl})
+
+`;
+              }
+
+              screenshotSection += `
+</details>
+
+`;
+            } else {
+              console.log('No screenshots found to upload to gist');
+            }
+
+            // Build platform results table
+            let tableRows = '';
+            for (const [platform, count] of Object.entries(platforms)) {
+              tableRows += `| ${platform} | ✅ | ${count} screenshots ([view artifact](${runUrl}#artifacts)) |\n`;
+            }
+
+            // Build complete comment
+            const commentBody = `## UI Test Screenshots
+
+This PR includes automated UI tests for all platforms. Screenshots are available as artifacts in the workflow run.
+
+### Platform Test Results
+
+| Platform | Status | Screenshots |
+|----------|--------|-------------|
+${tableRows}
+${screenshotSection}
+---
+📦 **Download all screenshots**: Visit the [workflow run artifacts](${runUrl}#artifacts)
+
+*Automated UI test results from CI run [#${{ github.run_id }}](${runUrl})*`;
 
             // Find existing bot comment
             const { data: comments } = await github.rest.issues.listComments({
