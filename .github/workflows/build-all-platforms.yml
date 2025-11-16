@@ -8,6 +8,7 @@ on:
 
 permissions:
   actions: write  # Required to delete artifacts
+  pull-requests: write  # Required to post comments on PRs
 
 jobs:
   # ============================================================================
@@ -521,3 +522,191 @@ jobs:
           else
             echo "? All builds completed successfully"
           fi
+
+
+
+  # ============================================================================
+  # PR COMMENT WITH SCREENSHOTS
+  # ============================================================================
+  pr-comment:
+    name: Post PR Comment with Screenshots
+    runs-on: ubuntu-latest
+    needs: [android, linux, windows, macos, ios]
+    if: success() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Download all screenshot artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-ui-test-screenshots'
+          path: screenshots
+          merge-multiple: false
+
+      - name: Generate PR comment with screenshots
+        id: generate-comment
+        run: |
+          cat > comment.md << 'EOF'
+          ## UI Test Screenshots
+
+          This PR includes automated UI tests for all platforms. Screenshots captured during testing are shown below.
+
+          <details>
+          <summary>Android Screenshots</summary>
+
+          EOF
+
+          # Android screenshots
+          if [ -d "screenshots/android-ui-test-screenshots" ]; then
+            for img in screenshots/android-ui-test-screenshots/*.png; do
+              if [ -f "$img" ]; then
+                filename=$(basename "$img")
+                echo "### $filename" >> comment.md
+                echo "![Android - $filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/android-ui-test-screenshots/$filename)" >> comment.md
+                echo "" >> comment.md
+              fi
+            done
+          else
+            echo "No Android screenshots available." >> comment.md
+          fi
+
+          cat >> comment.md << 'EOF'
+
+          </details>
+
+          <details>
+          <summary>Linux Screenshots</summary>
+
+          EOF
+
+          # Linux screenshots
+          if [ -d "screenshots/linux-ui-test-screenshots" ]; then
+            for img in screenshots/linux-ui-test-screenshots/*.png; do
+              if [ -f "$img" ]; then
+                filename=$(basename "$img")
+                echo "### $filename" >> comment.md
+                echo "![Linux - $filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/linux-ui-test-screenshots/$filename)" >> comment.md
+                echo "" >> comment.md
+              fi
+            done
+          else
+            echo "No Linux screenshots available." >> comment.md
+          fi
+
+          cat >> comment.md << 'EOF'
+
+          </details>
+
+          <details>
+          <summary>Windows Screenshots</summary>
+
+          EOF
+
+          # Windows screenshots
+          if [ -d "screenshots/windows-ui-test-screenshots" ]; then
+            for img in screenshots/windows-ui-test-screenshots/*.png; do
+              if [ -f "$img" ]; then
+                filename=$(basename "$img")
+                echo "### $filename" >> comment.md
+                echo "![Windows - $filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/windows-ui-test-screenshots/$filename)" >> comment.md
+                echo "" >> comment.md
+              fi
+            done
+          else
+            echo "No Windows screenshots available." >> comment.md
+          fi
+
+          cat >> comment.md << 'EOF'
+
+          </details>
+
+          <details>
+          <summary>macOS Screenshots</summary>
+
+          EOF
+
+          # macOS screenshots
+          if [ -d "screenshots/macos-ui-test-screenshots" ]; then
+            for img in screenshots/macos-ui-test-screenshots/*.png; do
+              if [ -f "$img" ]; then
+                filename=$(basename "$img")
+                echo "### $filename" >> comment.md
+                echo "![macOS - $filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/macos-ui-test-screenshots/$filename)" >> comment.md
+                echo "" >> comment.md
+              fi
+            done
+          else
+            echo "No macOS screenshots available." >> comment.md
+          fi
+
+          cat >> comment.md << 'EOF'
+
+          </details>
+
+          <details>
+          <summary>iOS Screenshots</summary>
+
+          EOF
+
+          # iOS screenshots
+          if [ -d "screenshots/ios-ui-test-screenshots" ]; then
+            for img in screenshots/ios-ui-test-screenshots/*.png; do
+              if [ -f "$img" ]; then
+                filename=$(basename "$img")
+                echo "### $filename" >> comment.md
+                echo "![iOS - $filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/ios-ui-test-screenshots/$filename)" >> comment.md
+                echo "" >> comment.md
+              fi
+            done
+          else
+            echo "No iOS screenshots available." >> comment.md
+          fi
+
+          cat >> comment.md << 'EOF'
+
+          </details>
+
+          ---
+          *Automated screenshots from CI run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*
+          EOF
+
+          cat comment.md
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const commentBody = fs.readFileSync('comment.md', 'utf8');
+
+            // Find existing bot comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('UI Test Screenshots')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+              console.log('Updated existing PR comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+              console.log('Created new PR comment');
+            }
