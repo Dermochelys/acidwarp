@@ -193,7 +193,7 @@ int main (int argc, char *argv[])
   /* Initialize SDL */
   printf("[INIT] Initializing SDL...\n");
   fflush(stdout);
-  if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0 ) {
+  if ( !SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) ) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     /* SDL 2 docs say this is safe, but SDL 1 docs don't. */
     SDL_Quit();

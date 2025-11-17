@@ -48,81 +48,12 @@ trap cleanup EXIT
 
 cd "$TEMP_DIR"
 
-# Clone SDL_image
+# Clone SDL_image (using pre-release commit with exported symbols list)
 echo "Cloning SDL_image..."
-git clone --depth 1 --branch "release-${SDL_IMAGE_VERSION}" https://github.com/libsdl-org/SDL_image.git
+git clone https://github.com/madebr/SDL_image.git
 cd SDL_image
-
-# Configure the build to rename JXL symbols for App Store compliance
-echo "Configuring build to rename JXL symbols..."
-
-# Add symbol renaming to IMG_jxl.c
-if [ -f "src/IMG_jxl.c" ]; then
-    # Add symbol renaming macros at the top of IMG_jxl.c
-    cat > src/IMG_jxl.c.new <<'PREFIX_CODE'
-/*
-  SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
-*/
-
-/* Rename JXL symbols to avoid App Store private API detection */
-#define JxlDecoderCreate SDL_JxlDecoderCreate
-#define JxlDecoderDestroy SDL_JxlDecoderDestroy
-#define JxlDecoderGetBasicInfo SDL_JxlDecoderGetBasicInfo
-#define JxlDecoderImageOutBufferSize SDL_JxlDecoderImageOutBufferSize
-#define JxlDecoderProcessInput SDL_JxlDecoderProcessInput
-#define JxlDecoderSetImageOutBuffer SDL_JxlDecoderSetImageOutBuffer
-#define JxlDecoderSetInput SDL_JxlDecoderSetInput
-#define JxlDecoderSubscribeEvents SDL_JxlDecoderSubscribeEvents
-
-PREFIX_CODE
-    # Append the original file content
-    cat src/IMG_jxl.c >> src/IMG_jxl.c.new
-    mv src/IMG_jxl.c.new src/IMG_jxl.c
-    echo "Added symbol renaming to IMG_jxl.c"
-fi
-
-# Modify the jxl library build to export symbols with prefix
-# We need to add -alias or -reexport flags to rename symbols in the built library
-echo "Configuring JXL library build with symbol prefixes..."
-python3 <<'PYTHON_SCRIPT'
-import sys
-import re
-
-project_file = "Xcode/jxl/jxl.xcodeproj/project.pbxproj"
-
-# Read the project file
-with open(project_file, 'r') as f:
-    content = f.read()
-
-# Add preprocessor macros to rename JXL symbols during compilation
-# Find the GCC_PREPROCESSOR_DEFINITIONS line and add our macros
-symbols_to_rename = [
-    'JxlDecoderCreate=SDL_JxlDecoderCreate',
-    'JxlDecoderDestroy=SDL_JxlDecoderDestroy',
-    'JxlDecoderGetBasicInfo=SDL_JxlDecoderGetBasicInfo',
-    'JxlDecoderImageOutBufferSize=SDL_JxlDecoderImageOutBufferSize',
-    'JxlDecoderProcessInput=SDL_JxlDecoderProcessInput',
-    'JxlDecoderSetImageOutBuffer=SDL_JxlDecoderSetImageOutBuffer',
-    'JxlDecoderSetInput=SDL_JxlDecoderSetInput',
-    'JxlDecoderSubscribeEvents=SDL_JxlDecoderSubscribeEvents',
-]
-
-# Add the defines to the preprocessor definitions
-for symbol in symbols_to_rename:
-    # This will add them to both debug and release configs
-    content = re.sub(
-        r'(GCC_PREPROCESSOR_DEFINITIONS = \()',
-        r'\1\n\t\t\t\t\t' + symbol + ',',
-        content
-    )
-
-# Write back
-with open(project_file, 'w') as f:
-    f.write(content)
-
-print("Modified JXL library project to rename symbols")
-PYTHON_SCRIPT
+git checkout ef63a6a
+echo "Using SDL_image commit ef63a6a (adds exported symbols list for Apple platforms)"
 
 # Disable code signing and fix deployment target in the SDL_image Xcode project
 echo "Configuring Xcode project settings..."
@@ -274,4 +205,4 @@ else
 fi
 
 echo "SDL3_image.xcframework built successfully!"
-echo "JXL symbols have been renamed to SDL_Jxl* to comply with App Store requirements."
+echo "Using pre-release version with exported symbols list for App Store compliance."

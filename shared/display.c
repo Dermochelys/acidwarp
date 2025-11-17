@@ -253,7 +253,7 @@ void disp_processInput(void) {
     }
   }
 
-  while ( SDL_PollEvent(&event) > 0 ) {
+  while ( SDL_PollEvent(&event) ) {
     switch (event.type) {
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (event.button.button == SDL_BUTTON_LEFT) {
@@ -453,7 +453,7 @@ static void disp_glinit(int width, int height, Uint32 videoflags)
 
   printf("[DISP] Making OpenGL context current...\n");
   fflush(stdout);
-  if (SDL_GL_MakeCurrent(window, context) < 0) fatalSDLError("making OpenGL context current");
+  if (!SDL_GL_MakeCurrent(window, context)) fatalSDLError("making OpenGL context current");
   printf("[DISP] OpenGL context is now current\n");
   fflush(stdout);
 

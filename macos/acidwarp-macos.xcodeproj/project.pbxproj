@@ -305,7 +305,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\" && ./download-sdl3-framework.sh\n";
+			shellScript = "cd \"$SRCROOT/..\" && ./build-sdl3-xcode.sh\n";
 		};
 		501D302B2E96BFA500DE30A6 /* dsymutil */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -567,7 +567,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
-				MARKETING_VERSION = 5.0.0;
+				MARKETING_VERSION = 5.1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -629,7 +629,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
-				MARKETING_VERSION = 5.0.0;
+				MARKETING_VERSION = 5.1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
