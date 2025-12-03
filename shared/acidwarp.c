@@ -187,6 +187,28 @@ static void timer_wait(void)
 
 int main (int argc, char *argv[])
 {
+  /* Handle command-line arguments */
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
+      printf("%s\n", VERSION);
+      return 0;
+    } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      printf("Usage: %s [OPTIONS]\n", argv[0]);
+      printf("\nOptions:\n");
+      printf("  -v, --version    Display version information and exit\n");
+      printf("  -h, --help       Display this help message and exit\n");
+      printf("\nKeyboard Controls:\n");
+      printf("  n                Next pattern\n");
+      printf("  p                New palette\n");
+      printf("  l                Lock current pattern\n");
+      printf("  +                Speed up palette rotation\n");
+      printf("  -                Slow down palette rotation\n");
+      printf("  Space            Pause/Resume\n");
+      printf("  q/Esc            Quit\n");
+      return 0;
+    }
+  }
+
   printf("[INIT] Acid Warp starting...\n");
   fflush(stdout);
 
