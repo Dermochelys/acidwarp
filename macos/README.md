@@ -10,6 +10,21 @@ Xcode 26+ has been used to develop the app.  It may be possible to use older Xco
 
 SDL3 and SDL3_image are automatically downloaded during the build via Run Script build phases. The scripts check if `SDL3.xcframework` and `SDL3_image.xcframework` exist in the repo root and download them if needed based on the versions in `SDL_VERSION` and `SDL3_IMAGE_VERSION`.
 
+## App Store Distribution
+
+**Build Number (CFBundleVersion):**
+
+The build number (`CURRENT_PROJECT_VERSION` in Xcode, exposed as `CFBundleVersion` in Info.plist) must be incremented for each App Store submission. Apple requires each new upload to have a higher build number than any previously uploaded build for the same version.
+
+**Location**: `acidwarp-macos.xcodeproj/project.pbxproj` (search for `CURRENT_PROJECT_VERSION`)
+
+**Before uploading to App Store:**
+1. Increment the build number in both Debug and Release configurations
+2. The build number must be higher than any previous uploads (check App Store Connect for current value)
+3. Example: If App Store shows build 6, use 7 or higher for your next upload
+
+**Marketing Version**: The `MARKETING_VERSION` only needs to change when you release a new user-facing version.
+
 ## Workaround for SDL_image issue with libjxl
 
 - Starting with iOS 18 and Xcode 16, Apple bundled libjxl (JPEG XL decoder library) into iOS as an internal/private API. When apps are submitted to the App Store, Apple's automated review
