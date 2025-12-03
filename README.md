@@ -80,8 +80,12 @@ To check which SDL3 and SDL3_image versions are currently installed on your syst
 
 ## Version History (see commit history for full details)
 
+### 5.1.0
+- Switch to SDL_Timer for improved animation timing and smoother visual appearance with higher FPS.
+- Update SDL from 3.2.26 to 3.2.28.
+
 ### 5.0.0
-- Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993). 
+- Standardize version numbering across all platforms, continuing from the original MS-DOS version 4.2 (1993).
 - Update to SDL 3.2.26 and SDL3_image 3.2.4.
 - Add GUI controls
 
